@@ -109,7 +109,7 @@
       1
     ],
     "WFBE_SPT1": 0.001,
-    "WFBE_SPT2": "0.0005 //unused",
+    "WFBE_SPT2": 0.0005,
     "WFBE_Menu_Button_Color": [
       0.258823529,
       0.71372549,
@@ -420,7 +420,7 @@
         1,
         1
       ],
-      "colorbackground2": [
+      "colorBackground2": [
         1,
         1,
         1,
@@ -539,7 +539,7 @@
         1,
         1
       ],
-      "colorbackground2": [
+      "colorBackground2": [
         1,
         1,
         1,
@@ -929,7 +929,7 @@
       "y": 0.1,
       "w": 0.1,
       "h": 0.1,
-      "colorbackground": [
+      "colorBackground": [
         0,
         0,
         0,
