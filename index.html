@@ -651,19 +651,28 @@ button.flash{animation:btn-flash .4s ease}
       <div class="inspector" id="inspector" style="display:none"></div>
     </div>
 
-    <!-- Export panel -->
-    <div class="export-panel" role="region" aria-label="Export">
+    <!-- Export / Import panel -->
+    <div class="export-panel" role="region" aria-label="Export and Import">
       <div class="export-panel-hdr" id="export-toggle" role="button" tabindex="0"
            aria-expanded="false" aria-controls="export-body">
-        <h2>Export .hpp</h2>
+        <h2>Export / Import .hpp</h2>
         <span class="tog" id="export-tog-label" aria-hidden="true">▼</span>
       </div>
       <div class="export-body" id="export-body">
-        <textarea id="export-out" readonly placeholder="Click Export to generate…" rows="6" aria-label="Exported HPP code"></textarea>
+        <!-- Export section -->
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Export</div>
+        <textarea id="export-out" readonly placeholder="Click Export to generate…" rows="5" aria-label="Exported HPP code"></textarea>
         <div class="btnbar">
           <button class="sm primary" id="export-btn">Export</button>
           <button class="sm" id="copy-btn">Copy</button>
           <button class="sm" id="download-btn">Save .hpp</button>
+        </div>
+        <!-- Import section -->
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;text-transform:uppercase;letter-spacing:.5px;margin-top:8px;margin-bottom:4px">Import .hpp</div>
+        <textarea id="import-in" placeholder="Paste a display class { … } or class controls { … } block here…" rows="5" aria-label="HPP code to import" style="background:var(--gunmetal);border:1px solid var(--line);color:#a8d890;font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:4px;padding:6px;resize:vertical;outline:none;min-height:60px;width:100%"></textarea>
+        <div class="btnbar">
+          <button class="sm primary" id="import-btn">Parse &amp; Load</button>
+          <button class="sm" id="import-clear-btn">Clear</button>
         </div>
         <div id="status-msg" role="status" aria-live="polite"></div>
       </div>
@@ -2980,8 +2989,214 @@ document.getElementById('et-ungroup').addEventListener('click', ungroupSelection
 document.getElementById('et-add').addEventListener('click', openPalette);
 
 // ============================================================
-// Export
+// Export — faithful whole-display .hpp with delta-only props
 // ============================================================
+
+/**
+ * Resolve the full inherited props for a control's baseClass chain.
+ * Returns a flat object of key→value from the chain (no ctrl.props overrides).
+ */
+function resolveBaseChain(baseClassName) {
+  if (!uiData || !uiData.baseClasses) return {};
+  const result = {};
+  const visited = new Set();
+  let cur = baseClassName;
+  // Walk up the chain and collect props (child overrides parent)
+  const chain = [];
+  while (cur && !visited.has(cur)) {
+    visited.add(cur);
+    const bc = uiData.baseClasses[cur];
+    if (!bc) break;
+    chain.push(bc.props || {});
+    cur = bc.parent;
+  }
+  // Apply from root down so child wins
+  for (let i = chain.length - 1; i >= 0; i--) {
+    Object.assign(result, chain[i]);
+  }
+  return result;
+}
+
+/**
+ * Check if two values are "equal enough" for delta detection.
+ * Handles RGBA arrays (within 0.0005 per channel) and primitives.
+ */
+function valsEqual(a, b) {
+  if (a === b) return true;
+  if (Array.isArray(a) && Array.isArray(b) && a.length === b.length) {
+    return a.every((v, i) => Math.abs(v - (b[i] || 0)) < 0.0005);
+  }
+  if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) < 0.000001;
+  return false;
+}
+
+/**
+ * For an RGBA array value, check if it matches a WFBE_* macro.
+ * Returns the macro name (string) or null.
+ */
+function rgbaToMacro(val) {
+  if (!uiData || !Array.isArray(val)) return null;
+  for (const [name, mv] of Object.entries(uiData.macros || {})) {
+    if (!name.startsWith('WFBE_') && !name.startsWith('subcolor')) continue;
+    if (Array.isArray(mv) && mv.length === val.length) {
+      if (mv.every((v, i) => Math.abs(v - val[i]) < 0.0005)) return name;
+    }
+  }
+  return null;
+}
+
+/**
+ * For a scalar/string value, check if it matches a WFBE_* scalar macro.
+ * Returns macro name or null.
+ */
+function scalarToMacro(val) {
+  if (!uiData) return null;
+  for (const [name, mv] of Object.entries(uiData.macros || {})) {
+    if (!name.startsWith('WFBE_')) continue;
+    if (typeof mv === 'number' && typeof val === 'number' && Math.abs(mv - val) < 0.000001) return name;
+    if (typeof mv === 'string' && typeof val === 'string' && mv === val) return name;
+  }
+  return null;
+}
+
+// Keys that use [] array syntax in Arma .hpp
+const ARRAY_KEYS = new Set([
+  'colorText','colorBackground','colorBackgroundActive','colorFocused',
+  'colorShadow','colorBorder','colorDisabled','colorBackgroundDisabled',
+  'colorSelectBackground','color','color2','colorBackground2','colorSelect',
+  'colorActive','colorOutside','colorPictureFocused',
+  'soundEnter','soundPush','soundClick','soundEscape',
+  'soundSelect','soundExpand','soundCollapse','soundDoubleClick',
+  'animTextureNormal','animTextureDisabled','animTextureOver','animTextureFocused',
+  'animTexturePressed','animTextureDefault','textureNoShortcut',
+]);
+
+// Keys whose string value should be double-quoted in output
+const QUOTED_STRING_KEYS = new Set([
+  'text','tooltip','action','onButtonClick','onLoad','onUnload',
+  'onLBSelChanged','onLBDblClick','onKeyUp','onKeyDown','onMouseButtonDown',
+  'onMouseButtonUp','onMouseMove','onMouseEnter','onMouseExit',
+]);
+
+/**
+ * Emit a single prop line at a given indent level.
+ * Handles: RGBA arrays → macro names, scalar macros, quoted strings, plain values.
+ */
+function emitProp(key, val, indent) {
+  const tab = indent;
+
+  // Special: $STR_ text refs — no quotes in .hpp
+  if ((key === 'text' || key === 'tooltip') && typeof val === 'string' && val.startsWith('$')) {
+    return tab + key + ' = ' + val + ';';
+  }
+
+  if (Array.isArray(val)) {
+    // Try macro match first
+    const macro = rgbaToMacro(val);
+    if (macro) {
+      return tab + key + '[] = ' + macro + ';';
+    }
+    // Emit as numeric array
+    const nums = val.map(x => typeof x === 'number' ? parseFloat(x.toFixed(6)) : JSON.stringify(x));
+    return tab + key + '[] = {' + nums.join(', ') + '};';
+  }
+
+  if (typeof val === 'number') {
+    // Try scalar macro match
+    const macro = scalarToMacro(val);
+    if (macro) return tab + key + ' = ' + macro + ';';
+    return tab + key + ' = ' + parseFloat(val.toFixed(6)) + ';';
+  }
+
+  if (typeof val === 'string') {
+    // Try scalar macro match (string macros like WFBE_SoundClick)
+    const macro = scalarToMacro(val);
+    if (macro) return tab + key + ' = ' + macro + ';';
+    if (QUOTED_STRING_KEYS.has(key)) {
+      // Escape inner quotes
+      return tab + key + ' = "' + val.replace(/"/g, '""') + '";';
+    }
+    // Unquoted string (e.g. macro expressions like "WFBE_MenuAction = 1")
+    return tab + key + ' = ' + val + ';';
+  }
+
+  if (val !== null && val !== undefined) {
+    return tab + key + ' = ' + val + ';';
+  }
+  return null;
+}
+
+/**
+ * Emit a sub-class block verbatim from the ctrl.subClasses structure.
+ * Sub-class format: { Attributes: { align:'left', color:'#...', font:'...', shadow:true } }
+ */
+function emitSubClass(name, body, indent) {
+  const lines = [];
+  lines.push(indent + 'class ' + name + ' {');
+  for (const [k, v] of Object.entries(body)) {
+    if (v === true || v === false) {
+      lines.push(indent + '\t' + k + ' = ' + (v ? 1 : 0) + ';');
+    } else if (typeof v === 'number') {
+      lines.push(indent + '\t' + k + ' = ' + v + ';');
+    } else if (typeof v === 'string') {
+      // color hex strings and align values stay unquoted in Arma sub-classes
+      lines.push(indent + '\t' + k + ' = "' + v + '";');
+    } else if (Array.isArray(v)) {
+      const nums = v.map(x => typeof x === 'number' ? parseFloat(x.toFixed(6)) : JSON.stringify(x));
+      lines.push(indent + '\t' + k + '[] = {' + nums.join(', ') + '};');
+    }
+  }
+  lines.push(indent + '};');
+  return lines;
+}
+
+/**
+ * Compute the delta props for a control vs its baseClass chain.
+ * Returns only props that differ from the inherited value, PLUS
+ * any props that were explicitly set (props object) even if same value
+ * (since the source file had them explicitly).
+ *
+ * Strategy: emit ctrl.props if present; for any key also in the baseChain,
+ * skip it if it's identical (that's the "delta only" rule). Always emit
+ * geometry (x/y/w/h), idc, text, tooltip, action since those define the control.
+ */
+function computeDelta(ctrl) {
+  const p = ctrl.props || {};
+  const base = ctrl.baseClass || ctrl.rscBase || '';
+  const inherited = base ? resolveBaseChain(base) : {};
+
+  // Also check if baseClass is a sibling control name (in-array inheritance)
+  // In that case inherited = that sibling's props (already merged by the generator)
+  const allCtrlsList = displayData ? [...(displayData.background || []), ...(displayData.controls || [])] : [];
+  const siblingBase = allCtrlsList.find(c => c !== ctrl && c.name === base);
+  const siblingInherited = siblingBase ? (siblingBase.props || {}) : null;
+
+  const delta = {};
+  // Always include geometry + core identity props if present
+  const ALWAYS_EMIT = new Set(['idc', 'x', 'y', 'w', 'h', 'text', 'tooltip', 'action',
+    'onButtonClick', 'onLoad', 'onUnload', 'onLBSelChanged', 'onLBDblClick',
+    'moving', 'movingEnable']);
+
+  for (const [k, v] of Object.entries(p)) {
+    if (k === 'idc' && (v === -1 || v === -2) && !ALWAYS_EMIT.has(k)) continue; // skip default idc
+    if (k === 'type' || k === 'type_name') continue; // skip internal
+    if (k === 'idc' && v < 0) continue; // skip negative idc
+
+    const inhVal = siblingInherited ? (siblingInherited[k] ?? inherited[k]) : inherited[k];
+
+    if (ALWAYS_EMIT.has(k)) {
+      // Always emit these if present in props
+      delta[k] = v;
+    } else if (inhVal !== undefined && valsEqual(v, inhVal)) {
+      // Inherited and identical → skip (true delta)
+      continue;
+    } else {
+      delta[k] = v;
+    }
+  }
+  return delta;
+}
+
 function exportHpp() {
   if (!displayData) return '';
   const lines = [];
@@ -2999,20 +3214,23 @@ function exportHpp() {
     (arr || []).forEach(ctrl => {
       const base = ctrl.baseClass || ctrl.rscBase || '';
       lines.push('\t\tclass ' + ctrl.name + (base ? ' : ' + base : '') + ' {');
-      const p = ctrl.props || {};
-      for (const [k, v] of Object.entries(p)) {
-        if (Array.isArray(v)) {
-          lines.push('\t\t\t' + k + '[] = {' + v.map(x => typeof x === 'number' ? parseFloat(x.toFixed(6)) : x).join(', ') + '};');
-        } else if (typeof v === 'string') {
-          if (k === 'text' || k === 'tooltip' || k === 'action' || k === 'onButtonClick') {
-            lines.push('\t\t\t' + k + ' = "' + v + '";');
-          } else {
-            lines.push('\t\t\t' + k + ' = ' + v + ';');
+
+      // Delta props only
+      const delta = computeDelta(ctrl);
+      for (const [k, v] of Object.entries(delta)) {
+        const line = emitProp(k, v, '\t\t\t');
+        if (line !== null) lines.push(line);
+      }
+
+      // Sub-class blocks verbatim (HitZone, ShortcutPos, TextPos, Attributes, ScrollBar, etc.)
+      if (ctrl.subClasses) {
+        for (const [scName, scBody] of Object.entries(ctrl.subClasses)) {
+          if (scBody && typeof scBody === 'object') {
+            lines.push(...emitSubClass(scName, scBody, '\t\t\t'));
           }
-        } else if (v !== null && v !== undefined) {
-          lines.push('\t\t\t' + k + ' = ' + v + ';');
         }
       }
+
       lines.push('\t\t};');
     });
     lines.push('\t};');
@@ -3022,7 +3240,8 @@ function exportHpp() {
   lines.push('');
   emitSection(displayData.controls, 'controls');
 
-  if (displayData.titlesArray) {
+  // RscTitles HUD displays also emit a controls[] name array
+  if (displayData.titlesArray && displayData.titlesArray.length) {
     lines.push('');
     lines.push('\tcontrols[] = {' + displayData.titlesArray.map(n => '"' + n + '"').join(', ') + '};');
   }
@@ -3060,6 +3279,621 @@ document.getElementById('download-btn').addEventListener('click', () => {
   a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
   a.download = (currentDisplay || 'WF_Menu') + '.hpp';
   a.click();
+});
+
+// ============================================================
+// Import — parse .hpp text → display data model
+// ============================================================
+
+/**
+ * Parse a .hpp display class string into the internal display model.
+ *
+ * Handles:
+ *   class DisplayName { idd = N; movingEnable = N; class controlsBackground { ... }; class controls { ... }; controls[] = {"A","B",...}; };
+ *   class controls { class CtrlName : Base { ... }; ... }  (partial block)
+ *
+ * Returns: { name, idd, movingEnable, posSystem, background:[], controls:[], titlesArray? }
+ * or throws with a descriptive message.
+ */
+function parseHpp(src) {
+  // Strip C-style block comments (/* ... */)
+  src = src.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Strip line comments (// ...)
+  src = src.replace(/\/\/.*/g, '');
+
+  // Tokenize into a flat string without extra whitespace
+  src = src.trim();
+
+  // ---- Tokenizer ----
+  // We build a simple recursive-descent parser over the token stream.
+  // Tokens: identifiers, numbers, strings (quoted), punctuation
+  const TOKEN_RE = /([A-Za-z_$][A-Za-z0-9_$]*)|("(?:[^"\\]|\\.)*")|(\$[A-Za-z_][A-Za-z0-9_]*)|([0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)|(-[0-9]+(?:\.[0-9]+)?)|([{}();,\[\]=])|(\#[^\n]*)/g;
+
+  const tokens = [];
+  let m;
+  while ((m = TOKEN_RE.exec(src)) !== null) {
+    if (m[8]) continue; // preprocessor directive — skip
+    tokens.push(m[0]);
+  }
+
+  let pos = 0;
+  function peek() { return tokens[pos]; }
+  function consume() { return tokens[pos++]; }
+  function expect(t) {
+    const v = consume();
+    if (v !== t) throw new Error('Expected "' + t + '" but got "' + v + '" at token ' + pos);
+    return v;
+  }
+  function consumeIdent() {
+    const v = consume();
+    if (!/^[A-Za-z_$]/.test(v)) throw new Error('Expected identifier, got: ' + v);
+    return v;
+  }
+
+  // Parse a value: number | string | identifier | array {v, v, ...} | macro name
+  function parseValue() {
+    const t = peek();
+    if (t === '{') {
+      // Array value
+      consume(); // {
+      const arr = [];
+      while (peek() !== '}') {
+        arr.push(parseAtom());
+        if (peek() === ',') consume();
+      }
+      consume(); // }
+      return arr;
+    }
+    return parseAtom();
+  }
+
+  function parseAtom() {
+    const t = consume();
+    if (t === undefined) throw new Error('Unexpected end of input');
+    if (/^"/.test(t)) return t.slice(1, -1).replace(/""/g, '"'); // unquote, unescape
+    if (/^\$/.test(t)) return t; // $STR_ reference — keep as-is
+    // Number (possibly negative)
+    const n = parseFloat(t);
+    if (!isNaN(n) && /^-?[0-9]/.test(t)) return n;
+    // Hex
+    if (/^0x/i.test(t)) return parseInt(t, 16);
+    // Identifier / macro name — return as string
+    return t;
+  }
+
+  // Parse a multi-token value that may be a macro expression:
+  // e.g. "WFBE_MenuAction = 1" (unquoted RHS of action = WFBE_MenuAction = 1)
+  // We read until ';' collecting tokens, joining with spaces.
+  function parseRawUntilSemicolon() {
+    const parts = [];
+    while (peek() !== ';' && peek() !== undefined) {
+      parts.push(consume());
+    }
+    const raw = parts.join(' ');
+    // If it looks like a number, return number
+    const n = parseFloat(raw);
+    if (!isNaN(n) && /^-?[0-9.eE+\-]+$/.test(raw.trim())) return n;
+    // Quoted string
+    if (/^".*"$/.test(raw.trim())) return raw.trim().slice(1,-1);
+    // Otherwise: might be a macro name like WFBE_Background_Color
+    // or an array literal — check if the first token was already consumed as value
+    return raw;
+  }
+
+  // Parse class body: { properties + sub-classes }; returns {props, subClasses}
+  function parseClassBody() {
+    expect('{');
+    const props = {};
+    const subClasses = {};
+
+    while (peek() !== '}' && peek() !== undefined) {
+      const t = peek();
+
+      if (t === 'class') {
+        // nested sub-class
+        consume(); // class
+        const subName = consumeIdent();
+        // optional : Base
+        if (peek() === ':') { consume(); consumeIdent(); }
+        const {props: sp} = parseClassBody();
+        subClasses[subName] = sp;
+        if (peek() === ';') consume();
+        continue;
+      }
+
+      // Property: ident ([] optional) = value;
+      const key = consumeIdent();
+
+      // Check for [] array declaration (e.g. colorBackground[] = ...)
+      let isArray = false;
+      if (peek() === '[') {
+        consume(); // [
+        expect(']');
+        isArray = true;
+      }
+
+      expect('=');
+
+      let val;
+      if (peek() === '{') {
+        // Inline array
+        val = parseValue();
+        // If it's an array, resolve RGBA floats
+        if (Array.isArray(val)) {
+          val = val.map(v => typeof v === 'number' ? v : parseFloat(v) || 0);
+        }
+      } else if (peek() === '$') {
+        val = consume(); // $STR_... reference
+      } else {
+        // Could be: number, string, identifier (macro name), or compound expression
+        // Collect all tokens until ';'
+        const rawParts = [];
+        while (peek() !== ';' && peek() !== undefined && peek() !== '}') {
+          rawParts.push(consume());
+        }
+        const raw = rawParts.join(' ').trim();
+
+        // Resolve: number?
+        const n = parseFloat(raw);
+        if (!isNaN(n) && /^-?[0-9.eE+\-xX]+$/.test(raw)) {
+          val = /^0x/i.test(raw) ? parseInt(raw, 16) : n;
+        } else if (/^".*"$/.test(raw)) {
+          // Quoted string
+          val = raw.slice(1, -1).replace(/""/g, '"');
+        } else if (raw.startsWith('$')) {
+          val = raw; // $STR_ ref
+        } else {
+          // Macro name or expression — store as string
+          // Try resolving against known macros
+          const resolved = uiData && uiData.macros && uiData.macros[raw];
+          if (resolved !== undefined) {
+            val = resolved; // Store resolved value (array or number)
+            // But we want to preserve the macro name for round-trip
+            // Store as string if it's a recognized WFBE_ macro
+            if (typeof resolved !== 'string' || !resolved.startsWith('"')) {
+              // Keep macro name as string so delta detection can re-emit it
+              // Actually, store the resolved value + annotate with macroName
+              val = resolved;
+              // We'll tag it so export can emit the macro name
+              // For arrays: the rgbaToMacro() in export will re-detect it
+              // For scalars: scalarToMacro() will re-detect it
+            }
+          } else {
+            // Unknown expression — store as raw string
+            val = raw;
+          }
+        }
+      }
+
+      if (peek() === ';') consume();
+
+      props[key] = val;
+    }
+
+    expect('}');
+    return { props, subClasses };
+  }
+
+  // ---- Main parse ----
+  // Detect if input starts with a full display class or a controls section
+  let displayName = null;
+  let idd = -1;
+  let movingEnable = undefined;
+  let background = [];
+  let controls = [];
+  let titlesArray = null;
+
+  // Could be: "class DISPLAY { ... }" or "class controls { ... }"
+  if (peek() !== 'class') throw new Error('Expected "class" keyword, got: ' + peek());
+  consume(); // class
+
+  const firstName = consumeIdent();
+
+  // Detect if this is a controls section (shorthand paste)
+  if (firstName === 'controls' || firstName === 'controlsBackground') {
+    // Partial block paste — just load controls
+    displayName = currentDisplay || 'Imported';
+    idd = displayData ? displayData.idd : -1;
+    movingEnable = displayData ? displayData.movingEnable : undefined;
+    const {props: sectProps, subClasses: sectSubs} = parseClassBody();
+    // sectSubs contains the named control classes
+    const ctrls = parseControlsBlock(sectSubs);
+    if (firstName === 'controls') controls = ctrls;
+    else background = ctrls;
+    if (peek() === ';') consume();
+  } else {
+    // Full display class
+    displayName = firstName;
+    expect('{');
+
+    while (peek() !== '}' && peek() !== undefined) {
+      const t = peek();
+
+      if (t === 'class') {
+        consume(); // class
+        const sectionName = consumeIdent();
+        const { subClasses: sectSubs } = parseClassBody();
+        const ctrls = parseControlsBlock(sectSubs);
+        if (sectionName === 'controlsBackground') background = ctrls;
+        else controls = ctrls;
+        if (peek() === ';') consume();
+        continue;
+      }
+
+      // Top-level property (idd, movingEnable, controls[], etc.)
+      const key = consumeIdent();
+
+      let isArray = false;
+      if (peek() === '[') {
+        consume(); expect(']');
+        isArray = true;
+      }
+      expect('=');
+
+      if (isArray && peek() === '{') {
+        // e.g. controls[] = {"Ctrl1", "Ctrl2"};
+        consume(); // {
+        const arr = [];
+        while (peek() !== '}') {
+          const v = consume();
+          if (v === ',') continue;
+          arr.push(v.replace(/^"|"$/g, ''));
+        }
+        consume(); // }
+        if (key === 'controls') titlesArray = arr;
+      } else {
+        // scalar value
+        const rawParts = [];
+        while (peek() !== ';' && peek() !== '}' && peek() !== undefined) {
+          rawParts.push(consume());
+        }
+        const raw = rawParts.join(' ').trim();
+        const n = parseFloat(raw);
+        const v = isNaN(n) ? raw : n;
+        if (key === 'idd') idd = Math.round(n);
+        else if (key === 'movingEnable') movingEnable = n ? 1 : 0;
+      }
+
+      if (peek() === ';') consume();
+    }
+
+    if (peek() === '}') consume();
+    if (peek() === ';') consume();
+  }
+
+  return { name: displayName, idd, movingEnable, background, controls, titlesArray };
+}
+
+/**
+ * Convert the subClasses map from parseClassBody into an array of control objects
+ * with the shape the rest of the app expects: {name, baseClass, idc, props, subClasses}
+ */
+function parseControlsBlock(subClassMap) {
+  // subClassMap is what parseClassBody returns as subClasses:
+  // { CtrlName: { props: {...}, subClasses: {...} }, ... }
+  // But our parseClassBody doesn't separate sub-class children from props
+  // because we call it recursively. Let's re-parse by looking at the raw subClasses.
+  const result = [];
+  for (const [ctrlName, ctrlData] of Object.entries(subClassMap)) {
+    const p = ctrlData || {};
+    // The parseClassBody stored {props, subClasses} but we passed the result as just body
+    // Need to handle both paths depending on how it was called
+    const rawProps = (p.props !== undefined) ? p.props : p;
+    const rawSubs = (p.subClasses !== undefined) ? p.subClasses : {};
+
+    // Extract baseClass — it was stored by the caller when it saw ": Base"
+    // Unfortunately our current parser doesn't preserve it in the value.
+    // We need the baseClass from the parser. Let's store it in a sentinel key.
+    const baseClass = rawProps.__base__ || '';
+    const props = Object.assign({}, rawProps);
+    delete props.__base__;
+
+    const idc = props.idc !== undefined ? Math.round(props.idc) : -1;
+
+    // Resolve inherited props from baseClass for the 'resolved' field
+    const inherited = baseClass ? resolveBaseChain(baseClass) : {};
+    const resolved = Object.assign({}, inherited, props);
+
+    result.push({
+      name: ctrlName,
+      baseClass: baseClass || (uiData && uiData.baseClasses && uiData.baseClasses[ctrlName] ? ctrlName : ''),
+      rscBase: baseClass,
+      idc,
+      props,
+      resolved,
+      subClasses: rawSubs,
+      _section: 'controls', // will be fixed by caller
+    });
+  }
+  return result;
+}
+
+/**
+ * Full import parse that properly captures the ": BaseClass" inheritance.
+ * This is a revised entry point that uses a tokenizer with baseClass support.
+ */
+function importHppFull(src) {
+  // Strip comments
+  src = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '').trim();
+
+  // We'll tokenize differently: build a list including all identifiers,
+  // punctuation, numbers, strings
+  const TOKEN_RE2 = /("(?:[^"\\]|\\.)*")|\$[A-Za-z_][A-Za-z0-9_]*|0x[0-9a-fA-F]+|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|[A-Za-z_][A-Za-z0-9_]*|[{}();,\[\]=:]/g;
+  const toks = [];
+  let m2;
+  while ((m2 = TOKEN_RE2.exec(src)) !== null) {
+    toks.push(m2[0]);
+  }
+
+  let tp = 0;
+  const pk = () => toks[tp];
+  const cn = () => toks[tp++];
+  const ex = (v) => { if (toks[tp] !== v) throw new Error('Expected "' + v + '" got "' + toks[tp] + '" at ' + tp); tp++; };
+  const ident = () => {
+    const v = toks[tp];
+    if (!/^[A-Za-z_$]/.test(v || '')) throw new Error('Expected ident got ' + v + ' at ' + tp);
+    return toks[tp++];
+  };
+
+  function parseVal() {
+    if (pk() === '{') {
+      cn(); // {
+      const arr = [];
+      while (pk() !== '}' && pk() !== undefined) {
+        if (pk() === ',') { cn(); continue; }
+        arr.push(parseAtomV());
+      }
+      ex('}');
+      return arr.map(v => typeof v === 'string' && !isNaN(parseFloat(v)) ? parseFloat(v) : v);
+    }
+    return parseAtomV();
+  }
+
+  function parseAtomV() {
+    const t = cn();
+    if (t === undefined) return '';
+    if (/^"/.test(t)) return t.slice(1, -1).replace(/""/g, '"');
+    if (/^\$/.test(t)) return t;
+    const n = parseFloat(t);
+    if (!isNaN(n)) return n;
+    if (/^0x/i.test(t)) return parseInt(t, 16);
+    return t; // identifier / macro name
+  }
+
+  // Parse a class body; returns {name, baseClass, props, subClasses}[]  (for sections)
+  // or {props, subClasses} for simple props blocks
+  function parseBodyAsSection() {
+    // Returns array of control objects
+    ex('{');
+    const ctrls = [];
+    while (pk() !== '}' && pk() !== undefined) {
+      if (pk() !== 'class') { skipStatement(); continue; }
+      cn(); // class
+      const ctrlName = ident();
+      let base = '';
+      if (pk() === ':') { cn(); base = ident(); }
+      const { props, subClasses } = parsePropsBlock();
+      if (pk() === ';') cn();
+
+      const idc = props.idc !== undefined ? Math.round(Number(props.idc)) : -1;
+      const inherited = base ? resolveBaseChain(base) : {};
+      const resolved = Object.assign({}, inherited, props);
+
+      ctrls.push({ name: ctrlName, baseClass: base, rscBase: base, idc, props, resolved, subClasses });
+    }
+    ex('}');
+    return ctrls;
+  }
+
+  function parsePropsBlock() {
+    ex('{');
+    const props = {};
+    const subClasses = {};
+    while (pk() !== '}' && pk() !== undefined) {
+      if (pk() === 'class') {
+        cn();
+        const subName = ident();
+        let subBase = '';
+        if (pk() === ':') { cn(); subBase = ident(); }
+        const { props: sp } = parsePropsBlock();
+        if (pk() === ';') cn();
+        subClasses[subName] = sp;
+        continue;
+      }
+      skipStatement_into(props);
+    }
+    ex('}');
+    return { props, subClasses };
+  }
+
+  function skipStatement() {
+    // Skip an unknown statement up to ';'
+    while (pk() !== ';' && pk() !== '}' && pk() !== undefined) cn();
+    if (pk() === ';') cn();
+  }
+
+  function skipStatement_into(props) {
+    // Parse a key (= value)? ; and store into props
+    const key = toks[tp];
+    if (!/^[A-Za-z_$]/.test(key || '')) { skipStatement(); return; }
+    tp++; // key
+
+    let isArr = false;
+    if (pk() === '[') { cn(); ex(']'); isArr = true; }
+    if (pk() !== '=') { skipStatement(); return; }
+    cn(); // =
+
+    if (pk() === '{') {
+      const arr = [];
+      cn(); // {
+      while (pk() !== '}' && pk() !== undefined) {
+        if (pk() === ',') { cn(); continue; }
+        arr.push(parseAtomV());
+      }
+      if (pk() === '}') cn();
+      // Resolve RGBA
+      const resolved_arr = arr.map(v => {
+        if (typeof v === 'number') return v;
+        const n = parseFloat(v);
+        return isNaN(n) ? v : n;
+      });
+      props[key] = resolved_arr;
+    } else if (pk() === '$') {
+      props[key] = cn();
+    } else {
+      // Collect until ';' — may be macro name, expression, quoted string
+      const parts = [];
+      while (pk() !== ';' && pk() !== '}' && pk() !== undefined) {
+        parts.push(cn());
+      }
+      const raw = parts.join(' ').trim();
+      // Resolve
+      if (/^".*"$/.test(raw)) {
+        props[key] = raw.slice(1,-1).replace(/""/g,'"');
+      } else if (/^-?[0-9.eE+\-]+$/.test(raw)) {
+        props[key] = parseFloat(raw);
+      } else if (/^0x/i.test(raw)) {
+        props[key] = parseInt(raw, 16);
+      } else if (raw.startsWith('$')) {
+        props[key] = raw;
+      } else {
+        // Macro name or expression — try resolving
+        const macroVal = uiData && uiData.macros && uiData.macros[raw];
+        props[key] = macroVal !== undefined ? macroVal : raw;
+      }
+    }
+    if (pk() === ';') cn();
+  }
+
+  // ---- Main parse ----
+  let displayName = null;
+  let idd = -1;
+  let movingEnable = undefined;
+  let background = [];
+  let controls = [];
+  let titlesArray = null;
+  let posSystem = 'unit_square';
+
+  if (pk() !== 'class') throw new Error('Expected "class", got: ' + pk());
+  cn(); // class
+
+  const firstName = ident();
+
+  if (firstName === 'controls' || firstName === 'controlsBackground') {
+    // Partial section paste
+    displayName = currentDisplay || 'Imported';
+    idd = displayData ? displayData.idd : -1;
+    movingEnable = displayData ? displayData.movingEnable : undefined;
+    posSystem = displayData ? (displayData.posSystem || 'unit_square') : 'unit_square';
+    const ctrls = parseBodyAsSection();
+    if (pk() === ';') cn();
+    if (firstName === 'controls') controls = ctrls;
+    else background = ctrls;
+  } else {
+    // Full display
+    displayName = firstName;
+    ex('{');
+
+    while (pk() !== '}' && pk() !== undefined) {
+      if (pk() === 'class') {
+        cn();
+        const sname = ident();
+        const ctrls = parseBodyAsSection();
+        if (pk() === ';') cn();
+        if (sname === 'controlsBackground') background = ctrls;
+        else if (sname === 'controls') controls = ctrls;
+        continue;
+      }
+
+      // Top-level prop
+      const key = toks[tp];
+      if (!/^[A-Za-z_$]/.test(key || '')) { skipStatement(); continue; }
+      tp++;
+
+      let isArr = false;
+      if (pk() === '[') { cn(); ex(']'); isArr = true; }
+      if (pk() !== '=') { skipStatement(); continue; }
+      cn(); // =
+
+      if (isArr && pk() === '{') {
+        cn(); // {
+        const arr = [];
+        while (pk() !== '}' && pk() !== undefined) {
+          if (pk() === ',') { cn(); continue; }
+          const v = cn();
+          arr.push(v.replace(/^"|"$/g, ''));
+        }
+        if (pk() === '}') cn();
+        if (key === 'controls') titlesArray = arr;
+      } else {
+        const parts = [];
+        while (pk() !== ';' && pk() !== '}' && pk() !== undefined) parts.push(cn());
+        const raw = parts.join(' ').trim();
+        const n = parseFloat(raw);
+        if (key === 'idd') idd = isNaN(n) ? -1 : Math.round(n);
+        else if (key === 'movingEnable') movingEnable = n ? 1 : 0;
+        else if (key === 'posSystem') posSystem = raw.replace(/^"|"$/g,'');
+      }
+      if (pk() === ';') cn();
+    }
+    if (pk() === '}') cn();
+    if (pk() === ';') cn();
+
+    // Detect posSystem from display name (HUD displays)
+    if (posSystem === 'unit_square' && uiData && uiData.displays) {
+      const known = uiData.displays[displayName];
+      if (known) posSystem = known.posSystem || 'unit_square';
+    }
+  }
+
+  // Tag sections
+  background.forEach(c => { c._section = 'background'; });
+  controls.forEach(c => { c._section = 'controls'; });
+
+  return { name: displayName, idd, movingEnable, posSystem, background, controls, titlesArray };
+}
+
+function doImport() {
+  const src = document.getElementById('import-in').value.trim();
+  if (!src) { setStatus('Paste a .hpp class to import.', 'err'); return; }
+
+  try {
+    const parsed = importHppFull(src);
+    if (!parsed) { setStatus('Parse returned nothing.', 'err'); return; }
+
+    // Load into UI as a new display (or override current)
+    const name = parsed.name || currentDisplay || 'Imported';
+
+    // Merge into uiData.displays (or create new entry)
+    if (!uiData) { setStatus('ui.json not loaded yet.', 'err'); return; }
+
+    uiData.displays[name] = {
+      idd: parsed.idd,
+      movingEnable: parsed.movingEnable,
+      posSystem: parsed.posSystem || 'unit_square',
+      category: parsed.posSystem === 'safezone' ? 'hud' : 'dialog',
+      background: parsed.background,
+      controls: parsed.controls,
+      titlesArray: parsed.titlesArray || null,
+    };
+
+    // Add to picker if not already there
+    buildDisplayPicker();
+    loadDisplay(name);
+
+    document.getElementById('import-in').value = '';
+    setStatus('Imported "' + name + '" — ' +
+      (parsed.background.length + parsed.controls.length) + ' controls loaded.', 'ok');
+  } catch(e) {
+    setStatus('Parse error: ' + e.message, 'err');
+    console.error('HPP import error:', e);
+  }
+}
+
+document.getElementById('import-btn').addEventListener('click', doImport);
+document.getElementById('import-clear-btn').addEventListener('click', () => {
+  document.getElementById('import-in').value = '';
+  setStatus('', '');
 });
 
 // ============================================================
