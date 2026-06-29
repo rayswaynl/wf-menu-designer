@@ -607,6 +607,11 @@ button.flash{animation:btn-flash .4s ease}
     </div>
 
     <div class="canvas-toolbar" role="toolbar" aria-label="Canvas controls">
+      <label title="Derive readable labels + sample values for blank HUD controls in Preview mode">
+        <input type="checkbox" id="sample-data-chk" aria-label="Sample data — show placeholder text in HUD preview" checked>
+        Sample data
+      </label>
+      <span style="width:1px;height:14px;background:var(--line);display:inline-block;margin:0 2px"></span>
       <label>
         <input type="checkbox" id="snap-chk" aria-label="Enable grid snap">
         Grid snap
@@ -740,6 +745,7 @@ let selectedSet = new Set(); // multi-select set of ctrl objects
 let zoom = 1.0;
 let editMode = false;
 let dragging = null;
+let sampleDataEnabled = true; // "Sample data" toggle — show placeholder text in HUD preview
 
 // Pro editing state
 let undoStack = [];          // array of {background:[], controls:[]} snapshots
@@ -871,17 +877,112 @@ function evalSZ(val) {
  * Clean a display text string:
  * "$STR_WF_MAIN_Purchase_Units" => "Purchase Units"
  * "$STR_RUBHUD_Money" => "Money"
+ * "$STR_WF_FOO_BAR" => "Bar"  (last segment, Title Case)
  */
 function cleanText(t) {
   if (!t || typeof t !== 'string') return '';
   if (!t.startsWith('$')) return t;
-  return t
+  // Strip known prefixes, then return readable last segment(s)
+  const stripped = t
     .replace(/^\$STR_WF_MAIN_/, '')
     .replace(/^\$STR_WF_/, '')
     .replace(/^\$STR_RUBHUD_/, '')
-    .replace(/^\$STR_/, '')
-    .replace(/_/g, ' ')
-    .trim();
+    .replace(/^\$STR_/, '');
+  // If multiple segments remain, take the last word as the primary label
+  const parts = stripped.split('_').filter(Boolean);
+  if (parts.length === 0) return stripped;
+  // Title-case the last part
+  const last = parts[parts.length - 1];
+  return last.charAt(0).toUpperCase() + last.slice(1).toLowerCase();
+}
+
+/**
+ * Derive a readable label from a control name for HUD sample-data rendering.
+ * Examples:
+ *   RUBHUD_Money          → "Money"
+ *   RUBHUD_FPS_Client     → "FPS Client"
+ *   RUBHUD_AICOUNT        → "AI Count"
+ *   CA_Something          → "Something"
+ *   OptionsIcon0          → (null — picture type, skip)
+ * Returns null if the control should not get a text placeholder.
+ */
+function deriveSampleLabel(name) {
+  if (!name) return null;
+  // Strip known prefixes
+  let s = name
+    .replace(/^RUBHUD_/, '')
+    .replace(/^CA_/, '')
+    .replace(/^WF_/, '')
+    .replace(/^UNITS_/, '')
+    .replace(/^Options/, '');
+  if (!s || s === name) {
+    // No prefix was stripped — use name as-is if it has a useful form
+    s = name;
+  }
+  // camelCase → words (insert space before uppercase run or single cap)
+  s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
+  // underscores → spaces
+  s = s.replace(/_/g, ' ');
+  // Expand known acronyms
+  s = s.replace(/\bAICOUNT\b/gi, 'AI Count');
+  s = s.replace(/\bFPS\b/g, 'FPS');
+  // Trim and collapse spaces
+  s = s.trim().replace(/\s+/g, ' ');
+  return s || null;
+}
+
+/**
+ * Derive a sample VALUE string for a _Value / _Val control in HUD.
+ * Maps known keywords in the control name to representative values.
+ */
+function deriveSampleValue(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('money'))      return '12500';
+  if (n.includes('supplymin'))  return '50';
+  if (n.includes('supply'))     return '340';
+  if (n.includes('income'))     return '+85';
+  if (n.includes('health'))     return '100%';
+  if (n.includes('aicount'))    return '24';
+  if (n.includes('commander'))  return 'Player1';
+  if (n.includes('uptime'))     return '1:24:30';
+  if (n.includes('fps'))        return '62';
+  if (n.includes('city'))       return 'Chernogorsk';
+  return '123';
+}
+
+// Known HUD control name prefixes that should get sample data
+const HUD_NAME_PREFIXES = ['RUBHUD_', 'CA_', 'WF_', 'UNITS_', 'CaptureBar_', 'Overlay_'];
+
+/**
+ * For a control with no real text, derive sample placeholder text for HUD preview.
+ * Only fires for HUD displays (posSystem=safezone) AND for controls whose names
+ * match known HUD prefixes — never for dialog decorative panels.
+ * Returns '' (empty string) if no placeholder is applicable.
+ * Picture/icon controls return '' — they keep their icon placeholder box.
+ */
+function deriveSampleText(ctrl) {
+  const name = ctrl.name || '';
+  const wclass = getWClass(ctrl);
+
+  // Only apply to HUD displays
+  if (!displayData || displayData.posSystem !== 'safezone') return '';
+
+  // Picture / icon controls → keep the box placeholder, don't add text
+  if (wclass === 'picture') return '';
+
+  // Background panels / frames → no text
+  if (wclass === 'iguiback' || wclass === 'rscframe') return '';
+
+  // Only generate sample text for controls with known HUD name prefixes
+  const hasHudPrefix = HUD_NAME_PREFIXES.some(pfx => name.startsWith(pfx));
+  if (!hasHudPrefix) return '';
+
+  // _Value or _Val suffix → show a sample numeric/status value
+  if (/_(Value|Val)$/i.test(name)) return deriveSampleValue(name);
+
+  // Label control → derive readable label from name
+  const label = deriveSampleLabel(name);
+  return label || '';
 }
 
 /**
@@ -1387,43 +1488,92 @@ function buildControlEl(ctrl, zIndex) {
         el.style.textShadow = '0 0 3px rgba(0,0,0,.9),-1px -1px 0 rgba(0,0,0,.6),1px 1px 0 rgba(0,0,0,.6)';
       }
 
-      // In preview mode: only render the actual text content — never fall back
-      // to ctrl.name (that would show "Background_M" etc. over decorative panels).
-      // In edit mode: show the name as an overlay tag (added below) but still
-      // use only real text for the control's own textContent.
+      // In preview mode: render real text; if empty and sample-data is ON, show placeholder.
+      // In edit mode: use real text only (name shown via overlay tag added below).
       const rawTxt = r.text !== undefined ? r.text : p.text;
-      const displayTxt = cleanText(rawTxt || '');
+      let displayTxt = cleanText(rawTxt || '');
+      if (!editMode && !displayTxt && sampleDataEnabled) {
+        displayTxt = deriveSampleText(ctrl);
+        if (displayTxt) {
+          // Style sample text slightly dimmed/italic to distinguish from real content
+          el.style.opacity = '0.72';
+          el.style.fontStyle = 'italic';
+        }
+      }
       el.textContent = displayTxt;
       break;
     }
   }
 
-  // Edit-mode name overlay tag — shows ctrl.name as a small label in the top-left
-  // corner so decorative controls (Background_M, IGUIBack, frames) are identifiable
-  // in edit mode without polluting their text content in preview.
+  // Edit-mode name overlay tag — compact on HUD displays to avoid tag-mass overlap.
+  // For dialogs: show full name (controls are large enough).
+  // For HUD: show a small dot for unselected/unhovered controls; only the
+  // selected control and the hovered control (via CSS :hover) get the full tag.
   if (editMode && ctrl.name) {
+    const isHUD = displayData && displayData.posSystem === 'safezone';
     const nameTag = document.createElement('div');
     nameTag.setAttribute('aria-hidden', 'true');
     nameTag.dataset.nametag = '1';
-    nameTag.style.cssText = [
-      'position:absolute',
-      'top:1px',
-      'left:1px',
-      'font-family:"JetBrains Mono",monospace',
-      `font-size:${Math.max(6, Math.min(10, fontPx * 0.55))}px`,
-      'color:rgba(75,184,200,0.75)',
-      'background:rgba(0,0,0,0.55)',
-      'padding:0 2px',
-      'border-radius:2px',
-      'pointer-events:none',
-      'z-index:2',
-      'white-space:nowrap',
-      'overflow:hidden',
-      `max-width:${Math.max(20, geo.width * zoom - 4)}px`,
-      'text-overflow:ellipsis',
-      'line-height:1.4',
-    ].join(';');
-    nameTag.textContent = ctrl.name;
+    nameTag.title = ctrl.name; // full name in browser tooltip
+
+    const tagFontPx = Math.max(6, Math.min(10, fontPx * 0.55));
+
+    if (isHUD && !isSelected) {
+      // Compact: tiny dot-badge for unselected HUD controls
+      nameTag.style.cssText = [
+        'position:absolute',
+        'top:1px',
+        'left:1px',
+        'font-family:"JetBrains Mono",monospace',
+        `font-size:${tagFontPx}px`,
+        'color:rgba(75,184,200,0.9)',
+        'background:rgba(0,0,0,0.65)',
+        'padding:0 2px',
+        'border-radius:2px',
+        'pointer-events:none',
+        'z-index:2',
+        'white-space:nowrap',
+        'overflow:hidden',
+        'line-height:1.4',
+        'max-width:80px',
+        'text-overflow:ellipsis',
+      ].join(';');
+      // Truncate to ~10 chars with ellipsis indicator
+      const shortName = ctrl.name.length > 10 ? ctrl.name.slice(0, 9) + '…' : ctrl.name;
+      nameTag.textContent = shortName;
+      // On hover show full name (CSS handles visibility via data attr)
+      nameTag.dataset.fullname = ctrl.name;
+      nameTag.dataset.shortname = shortName;
+      // Hover expand via inline event (mouseenter/leave on the tag itself won't
+      // fire since pointer-events:none; use the parent ctrl element instead)
+      el.addEventListener('mouseenter', () => {
+        if (nameTag.isConnected) nameTag.textContent = ctrl.name;
+      });
+      el.addEventListener('mouseleave', () => {
+        if (nameTag.isConnected) nameTag.textContent = shortName;
+      });
+    } else {
+      // Dialog or selected HUD control: show full name
+      nameTag.style.cssText = [
+        'position:absolute',
+        'top:1px',
+        'left:1px',
+        'font-family:"JetBrains Mono",monospace',
+        `font-size:${tagFontPx}px`,
+        'color:rgba(75,184,200,0.75)',
+        'background:rgba(0,0,0,0.55)',
+        'padding:0 2px',
+        'border-radius:2px',
+        'pointer-events:none',
+        'z-index:2',
+        'white-space:nowrap',
+        'overflow:hidden',
+        `max-width:${Math.max(20, geo.width * zoom - 4)}px`,
+        'text-overflow:ellipsis',
+        'line-height:1.4',
+      ].join(';');
+      nameTag.textContent = ctrl.name;
+    }
     el.appendChild(nameTag);
   }
 
@@ -2706,6 +2856,12 @@ function setMode(isEdit) {
 
 document.getElementById('btn-preview').addEventListener('click', () => setMode(false));
 document.getElementById('btn-edit').addEventListener('click', () => setMode(true));
+
+// Sample data toggle
+document.getElementById('sample-data-chk').addEventListener('change', e => {
+  sampleDataEnabled = e.target.checked;
+  renderControls();
+});
 
 // ============================================================
 // Pro editing: Copy / Paste / Duplicate / Delete
