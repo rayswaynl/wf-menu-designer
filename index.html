@@ -413,16 +413,47 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 }
 
 /* ---- Inspector ---- */
-.inspector{padding:10px 12px}
-.inspector h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad;margin-bottom:8px}
-.field-row{margin-bottom:7px}
-.field-row label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
-.field-row input,.field-row select{width:100%;background:var(--gunmetal);border:1px solid var(--line);
-  color:var(--bone);border-radius:4px;padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
-.field-row input:focus,.field-row select:focus{border-color:var(--orange)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.inspector{padding:8px 10px}
+.inspector h3{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad;margin-bottom:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.inspector h3:first-child{margin-top:0;padding-top:0;border-top:none}
+.field-row{margin-bottom:6px}
+.field-row label{display:flex;align-items:center;justify-content:space-between;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.field-row label .lbl-text{flex:1}
+.field-row label .override-badge{font-size:8px;background:rgba(217,118,60,.2);border:1px solid rgba(217,118,60,.4);color:var(--orange);border-radius:2px;padding:0 4px;margin-left:4px;cursor:default}
+.field-row label .reset-btn{font-size:8px;background:transparent;border:1px solid rgba(217,118,60,.3);color:rgba(217,118,60,.7);border-radius:2px;padding:0 4px;cursor:pointer;margin-left:3px;line-height:1.4;min-width:auto}
+.field-row label .reset-btn:hover{border-color:var(--orange);color:var(--orange)}
+.field-row input,.field-row select,.field-row textarea{width:100%;background:var(--gunmetal);border:1px solid var(--line);
+  color:var(--bone);border-radius:4px;padding:4px 6px;font-family:'JetBrains Mono',monospace;font-size:10px;outline:none}
+.field-row input:focus,.field-row select:focus,.field-row textarea:focus{border-color:var(--orange)}
+.field-row input.is-override{border-color:rgba(217,118,60,.5);background:rgba(217,118,60,.06)}
+.field-row select.is-override{border-color:rgba(217,118,60,.5);background:rgba(217,118,60,.06)}
+.field-row .inherited-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:#39414b;margin-top:2px;font-style:italic}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .inspector-placeholder{font-size:11px;color:#556;font-family:'JetBrains Mono',monospace;
   padding:20px 12px;text-align:center;line-height:1.6}
+.multi-insp-banner{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;
+  background:rgba(66,182,255,.06);border:1px solid rgba(66,182,255,.2);border-radius:3px;
+  padding:5px 8px;margin-bottom:8px;line-height:1.4}
+
+/* Color picker row */
+.color-row{display:flex;align-items:center;gap:5px}
+.color-row input[type=color]{width:28px;height:22px;border:1px solid var(--line);border-radius:3px;
+  background:transparent;cursor:pointer;padding:1px;flex:0 0 28px}
+.color-row .alpha-in{width:44px;flex:0 0 44px}
+.color-row .macro-sel{flex:1;min-width:0;font-size:9px}
+.color-swatch-lg{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,.2);vertical-align:middle;margin-right:4px;flex:0 0 14px}
+
+/* Style flags */
+.style-flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.style-flag{display:flex;align-items:center;gap:3px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;cursor:pointer;user-select:none}
+.style-flag input[type=checkbox]{accent-color:var(--orange);width:11px;height:11px;cursor:pointer;margin:0}
+.style-flag:hover{color:var(--bone)}
+
+/* Geo toggle (number / string-expr) */
+.geo-toggle{display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:8px;color:#556;margin-bottom:3px}
+.geo-toggle button{font-size:8px;padding:1px 5px;border-radius:2px;border:1px solid var(--line);background:transparent;color:#556;cursor:pointer;line-height:1.4;min-width:auto}
+.geo-toggle button.active{border-color:rgba(66,182,255,.5);color:rgba(66,182,255,.9);background:rgba(66,182,255,.08)}
+.geo-toggle button:hover:not(.active){border-color:#9aa3ad;color:#9aa3ad}
 
 /* Resolved prop display */
 .resolved-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;
@@ -616,48 +647,8 @@ button.flash{animation:btn-flash .4s ease}
     <div class="panel-hdr"><h2>Inspector</h2></div>
     <div class="scroll" id="inspector-wrap">
       <div class="inspector-placeholder" id="inspector-placeholder">Select a control<br>to inspect its properties</div>
-      <div class="inspector" id="inspector" style="display:none">
-        <div id="insp-name" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--bone);margin-bottom:4px;font-weight:600"></div>
-        <div id="insp-baseclass" class="resolved-badge" style="margin-bottom:8px"></div>
-
-        <div class="field-row">
-          <label for="f-idc">IDC</label>
-          <input type="number" id="f-idc" readonly style="opacity:.7">
-        </div>
-        <div class="field-row">
-          <label for="f-text">Text</label>
-          <input type="text" id="f-text" placeholder="(none)" readonly style="opacity:.7">
-        </div>
-
-        <div style="height:1px;background:var(--line);margin:8px 0"></div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Geometry</div>
-        <div class="grid-2" style="margin-bottom:8px">
-          <div>
-            <div class="prop-k">x</div>
-            <div class="prop-v" id="insp-x">—</div>
-          </div>
-          <div>
-            <div class="prop-k">y</div>
-            <div class="prop-v" id="insp-y">—</div>
-          </div>
-          <div>
-            <div class="prop-k">w</div>
-            <div class="prop-v" id="insp-w">—</div>
-          </div>
-          <div>
-            <div class="prop-k">h</div>
-            <div class="prop-v" id="insp-h">—</div>
-          </div>
-        </div>
-
-        <div style="height:1px;background:var(--line);margin:8px 0"></div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Resolved Props</div>
-        <div class="prop-grid" id="insp-resolved"></div>
-
-        <div style="height:1px;background:var(--line);margin:8px 0"></div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Overrides (delta)</div>
-        <div class="prop-grid" id="insp-overrides"></div>
-      </div>
+      <!-- Full property inspector — built dynamically by renderInspector() -->
+      <div class="inspector" id="inspector" style="display:none"></div>
     </div>
 
     <!-- Export panel -->
@@ -1595,117 +1586,643 @@ function getWClassColor(wclass) {
 }
 
 // ============================================================
-// Inspector
+// Inspector — full editable property inspector
 // ============================================================
+
+// HUD displays use SafeZone string expressions for geometry
+function isHudDisplay() {
+  return displayData && displayData.posSystem === 'safezone';
+}
+
+// Retrieve the inherited value of a prop from the baseClass chain (not from ctrl.props)
+function inheritedVal(ctrl, key) {
+  if (!uiData) return undefined;
+  let base = ctrl.baseClass || ctrl.rscBase;
+  const visited = new Set();
+  while (base && !visited.has(base)) {
+    visited.add(base);
+    const bc = uiData.baseClasses && uiData.baseClasses[base];
+    if (!bc) break;
+    if (bc.props && key in bc.props) return bc.props[key];
+    base = bc.parent;
+  }
+  return undefined;
+}
+
+// Check if a prop is overridden (present in ctrl.props)
+function isPropOverride(ctrl, key) {
+  return ctrl.props && key in ctrl.props;
+}
+
+// Get effective value: override → resolved → inherited
+function effectiveVal(ctrl, key) {
+  const p = ctrl.props || {};
+  const r = ctrl.resolved || {};
+  if (key in p) return p[key];
+  if (key in r) return r[key];
+  return inheritedVal(ctrl, key);
+}
+
+// Convert RGBA array [r,g,b,a] → hex #rrggbb (for color input)
+function rgbaToHex(arr) {
+  if (!Array.isArray(arr) || arr.length < 3) return '#000000';
+  const r = Math.round(Math.min(1, Math.max(0, arr[0])) * 255);
+  const g = Math.round(Math.min(1, Math.max(0, arr[1])) * 255);
+  const b = Math.round(Math.min(1, Math.max(0, arr[2])) * 255);
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+// Convert hex #rrggbb + alpha 0..1 → RGBA array
+function hexAlphaToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  return [parseFloat(r.toFixed(4)), parseFloat(g.toFixed(4)), parseFloat(b.toFixed(4)), parseFloat(alpha.toFixed(4))];
+}
+
+// Get macro name for an RGBA array (or null if not a macro match)
+function macroForRgba(arr) {
+  if (!uiData || !arr) return null;
+  for (const [name, val] of Object.entries(uiData.macros || {})) {
+    if (Array.isArray(val) && val.length === arr.length) {
+      if (val.every((v, i) => Math.abs(v - arr[i]) < 0.001)) return name;
+    }
+  }
+  return null;
+}
+
+// Style flag bit definitions (Arma 2 control style constants)
+const STYLE_FLAGS = [
+  { bit: 0x01, label: 'ST_MULTI' },
+  { bit: 0x02, label: 'ST_CENTER' },
+  { bit: 0x04, label: 'ST_RIGHT' },
+  { bit: 0x06, label: 'ST_LEFT (def)' },
+  { bit: 0x10, label: 'ST_TITLE_BAR' },
+  { bit: 0x20, label: 'ST_PICTURE' },
+  { bit: 0x40, label: 'ST_FRAME' },
+  { bit: 0x80, label: 'ST_BACKGROUND' },
+  { bit: 0x100, label: 'ST_GROUP_BOX' },
+  { bit: 0x200, label: 'ST_UPPER' },
+  { bit: 0x400, label: 'ST_GROUP_BOX2' },
+  { bit: 0x800, label: 'ST_HUD_BACKGROUND' },
+  { bit: 0x1000, label: 'ST_TILE_PICTURE' },
+  { bit: 0x2000, label: 'ST_WITH_RECT' },
+  { bit: 0x4000, label: 'ST_LINE' },
+];
+
+// Parse style value (can be "0x02 + 0x100", "0x02", "2", etc.) → integer
+function parseStyle(val) {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return val;
+  const str = String(val).replace(/\s+/g,'');
+  // Evaluate addition of hex/decimal literals
+  try {
+    return str.split('+').reduce((sum, part) => {
+      const t = part.trim();
+      return sum + (t.startsWith('0x') || t.startsWith('0X') ? parseInt(t,16) : parseInt(t,10)||0);
+    }, 0);
+  } catch(e) { return 0; }
+}
+
+// Convert integer style → "0x02 + 0x100" string (skip 0)
+function formatStyle(bits) {
+  if (!bits) return '0';
+  const parts = STYLE_FLAGS.filter(f => (bits & f.bit) === f.bit && f.bit !== 0x06)
+    .map(f => '0x' + f.bit.toString(16).toUpperCase());
+  // Also check left-align non-flags
+  return parts.length ? parts.join(' + ') : String(bits);
+}
+
+// Known font names from Arma 2
+const KNOWN_FONTS = [
+  'Zeppelin32', 'Zeppelin35', 'EtelkaNarrowMediumPro',
+  'PuristaMedium', 'LucidaConsoleB', 'TahomaB', 'Bitstream',
+  'RobotoCondensed', 'puristaMedium', 'lucidaConsoleB'
+];
+
+// Color prop keys
+const COLOR_KEYS = new Set([
+  'colorText','colorBackground','colorBackgroundActive','colorFocused',
+  'colorShadow','colorBorder','colorDisabled','colorBackgroundDisabled',
+  'colorSelectBackground','color','color2','colorBackground2','colorSelect',
+  'colorActive','colorOutside','colorPictureFocused',
+]);
+
+// Geo keys (skip from props section — shown in Geometry section)
+const GEO_KEYS = new Set(['x','y','w','h']);
+
+// Keys to skip entirely in inspector (internal / texture arrays / sound arrays)
+const SKIP_KEYS = new Set([
+  'type','type_name','idc',
+  'animTextureNormal','animTextureDisabled','animTextureOver','animTextureFocused',
+  'animTexturePressed','animTextureDefault','textureNoShortcut',
+  'soundEnter','soundPush','soundClick','soundEscape',
+  'soundSelect','soundExpand','soundCollapse','soundDoubleClick',
+  'period','periodFocus','periodOver','default',
+  'columns','maxHistoryDelay','autoScrollSpeed','autoScrollDelay','autoScrollRewind',
+  'offsetX','offsetY','offsetPressedX','offsetPressedY',
+  'borderSize','colorShadow','colorBorder',
+]);
+
+// State: geo mode per axis ('num' or 'expr') — persists across inspector refreshes
+const geoMode = { x:'num', y:'num', w:'num', h:'num' };
+
+// Track which control is currently inspected to avoid full rebuilds during drags
+let _inspectedCtrl = null;
+
 function renderInspector() {
   const ctrl = selectedCtrl;
+  const multiCount = selectedSet.size;
   const placeholder = document.getElementById('inspector-placeholder');
   const insp = document.getElementById('inspector');
 
   if (!ctrl) {
     placeholder.style.display = '';
     insp.style.display = 'none';
+    _inspectedCtrl = null;
     return;
   }
 
   placeholder.style.display = 'none';
   insp.style.display = '';
 
-  document.getElementById('insp-name').textContent = ctrl.name;
-  document.getElementById('insp-baseclass').textContent = ctrl.baseClass || ctrl.rscBase || '—';
+  // Rebuild the inspector DOM completely (it's cheap enough; avoids stale listeners)
+  insp.innerHTML = '';
+  _inspectedCtrl = ctrl;
 
-  document.getElementById('f-idc').value = ctrl.idc !== undefined ? ctrl.idc : -2;
+  const isMulti = multiCount > 1;
 
-  const r = ctrl.resolved || ctrl.props || {};
-  const p = ctrl.props || {};
+  // Helper: create a labelled field row
+  function makeRow(key, labelText, inputEl, isOverride, inheritVal) {
+    const row = document.createElement('div');
+    row.className = 'field-row';
 
-  document.getElementById('f-text').value = cleanText(r.text !== undefined ? r.text : (p.text || ''));
+    const lbl = document.createElement('label');
 
-  // Geometry
-  document.getElementById('insp-x').textContent = fmtVal(r.x !== undefined ? r.x : p.x);
-  document.getElementById('insp-y').textContent = fmtVal(r.y !== undefined ? r.y : p.y);
-  document.getElementById('insp-w').textContent = fmtVal(r.w !== undefined ? r.w : p.w);
-  document.getElementById('insp-h').textContent = fmtVal(r.h !== undefined ? r.h : p.h);
+    const lblText = document.createElement('span');
+    lblText.className = 'lbl-text';
+    lblText.textContent = labelText;
+    lbl.appendChild(lblText);
 
-  // Resolved props (skip geometry + giant arrays of textures)
-  const resolvedEl = document.getElementById('insp-resolved');
-  resolvedEl.innerHTML = '';
-  const skipKeys = new Set(['x','y','w','h','idc','text','type','type_name',
-    'animTextureNormal','animTextureDisabled','animTextureOver','animTextureFocused',
-    'animTexturePressed','animTextureDefault','soundEnter','soundPush','soundClick','soundEscape',
-    'period','periodFocus','periodOver','default','textureNoShortcut',
-    'columns','maxHistoryDelay','autoScrollSpeed','autoScrollDelay','autoScrollRewind',
-    'soundSelect','soundExpand','soundCollapse','soundDoubleClick','soundPush']);
+    if (isOverride) {
+      const badge = document.createElement('span');
+      badge.className = 'override-badge';
+      badge.title = 'This prop overrides the inherited value';
+      badge.textContent = 'override';
+      lbl.appendChild(badge);
 
-  const colorKeys = new Set(['colorText','colorBackground','colorBackgroundActive','colorFocused',
-    'colorShadow','colorBorder','colorDisabled','colorBackgroundDisabled','colorSelectBackground',
-    'color','color2','colorBackground2','colorSelect','colorActive','colorOutside']);
+      if (key && !isMulti) {
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'reset-btn';
+        resetBtn.title = 'Reset to inherited';
+        resetBtn.textContent = '↺';
+        resetBtn.addEventListener('click', () => {
+          if (ctrl.props) delete ctrl.props[key];
+          // Also sync resolved
+          const inh = inheritedVal(ctrl, key);
+          if (ctrl.resolved && inh !== undefined) ctrl.resolved[key] = inh;
+          else if (ctrl.resolved) delete ctrl.resolved[key];
+          renderAll();
+        });
+        lbl.appendChild(resetBtn);
+      }
+    }
 
-  const importantKeys = ['colorText','colorBackground','colorFocused','color','sizeEx','shadow','font','style'];
-  const resolvedEntries = Object.entries(ctrl.resolved || ctrl.props || {})
-    .filter(([k]) => !skipKeys.has(k))
-    .sort(([a],[b]) => {
-      const ai = importantKeys.indexOf(a);
-      const bi = importantKeys.indexOf(b);
-      if (ai === -1 && bi === -1) return a.localeCompare(b);
-      if (ai === -1) return 1;
-      if (bi === -1) return -1;
-      return ai - bi;
+    row.appendChild(lbl);
+    row.appendChild(inputEl);
+
+    if (inheritVal !== undefined && !isOverride) {
+      const hint = document.createElement('div');
+      hint.className = 'inherited-hint';
+      hint.textContent = 'inherited: ' + fmtVal(inheritVal);
+      row.appendChild(hint);
+    }
+
+    return row;
+  }
+
+  // Apply a prop change to the selected control(s)
+  function applyProp(key, value) {
+    pushUndo();
+    const targets = isMulti ? [...selectedSet] : [ctrl];
+    for (const c of targets) {
+      if (!c.props) c.props = {};
+      c.props[key] = value;
+      if (c.resolved) c.resolved[key] = value;
+    }
+    renderControls();
+    // Don't re-render inspector to avoid losing focus; just update override styling
+    updateOverrideStyling(key);
+  }
+
+  function updateOverrideStyling(key) {
+    // Update input override class without full re-render
+    const el = insp.querySelector('[data-prop="' + key + '"]');
+    if (el) {
+      const over = isPropOverride(ctrl, key);
+      el.classList.toggle('is-override', over);
+    }
+  }
+
+  // ---- Section: Identity ----
+  const secIdentity = document.createElement('h3');
+  secIdentity.textContent = isMulti ? 'Multi-select (' + multiCount + ')' : 'Identity';
+  insp.appendChild(secIdentity);
+
+  if (isMulti) {
+    const banner = document.createElement('div');
+    banner.className = 'multi-insp-banner';
+    const names = [...selectedSet].map(c => c.name);
+    banner.textContent = names.slice(0, 5).join(', ') + (names.length > 5 ? ' +' + (names.length-5) + ' more' : '');
+    insp.appendChild(banner);
+  }
+
+  // Name field (single only)
+  if (!isMulti) {
+    const nameIn = document.createElement('input');
+    nameIn.type = 'text';
+    nameIn.value = ctrl.name || '';
+    nameIn.dataset.prop = '_name';
+    nameIn.addEventListener('change', () => {
+      const newName = nameIn.value.trim();
+      if (newName && newName !== ctrl.name) {
+        pushUndo();
+        ctrl.name = newName;
+        renderAll();
+      }
+    });
+    insp.appendChild(makeRow('_name', 'Name', nameIn, false));
+
+    // IDC
+    const idcIn = document.createElement('input');
+    idcIn.type = 'number';
+    idcIn.value = ctrl.idc !== undefined ? ctrl.idc : -2;
+    idcIn.dataset.prop = '_idc';
+    idcIn.addEventListener('change', () => {
+      const v = parseInt(idcIn.value);
+      if (!isNaN(v)) {
+        pushUndo();
+        ctrl.idc = v;
+        renderLayers();
+      }
+    });
+    insp.appendChild(makeRow('_idc', 'IDC', idcIn, false));
+  }
+
+  // BaseClass dropdown (single only)
+  if (!isMulti) {
+    const baseIn = document.createElement('select');
+    baseIn.dataset.prop = '_baseClass';
+    const baseClasses = Object.keys(uiData && uiData.baseClasses || {});
+    const common = ['RscText','RscButton','RscButton_Main','RscButton_Exit',
+      'RscShortcutButton','RscShortcutButtonMain','RscListBox','RscListnBox',
+      'RscCombo','RscEdit','RscStructuredText','RscPicture','RscFrame',
+      'IGUIBack','RscMapControl','RscXSliderH','RscControlsGroup','RscClickableText'];
+    const allBases = [...new Set([...common, ...baseClasses])].sort();
+    // Add current value even if not in the list
+    const curBase = ctrl.baseClass || ctrl.rscBase || '';
+    if (curBase && !allBases.includes(curBase)) allBases.unshift(curBase);
+    allBases.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      if (name === curBase) opt.selected = true;
+      baseIn.appendChild(opt);
+    });
+    baseIn.addEventListener('change', () => {
+      pushUndo();
+      ctrl.baseClass = baseIn.value;
+      // Re-resolve inherited props from new base
+      if (uiData && uiData.baseClasses && uiData.baseClasses[baseIn.value]) {
+        const newResolved = Object.assign({}, uiData.baseClasses[baseIn.value].props || {});
+        // Merge existing prop overrides on top
+        ctrl.resolved = Object.assign(newResolved, ctrl.props || {});
+      }
+      renderAll();
+    });
+    insp.appendChild(makeRow('_baseClass', 'Base Class', baseIn, false));
+  }
+
+  // ---- Section: Geometry ----
+  const secGeo = document.createElement('h3');
+  secGeo.textContent = 'Geometry';
+  insp.appendChild(secGeo);
+
+  const isHUD = isHudDisplay();
+
+  // Toggle row for HUD
+  if (isHUD) {
+    const toggleRow = document.createElement('div');
+    toggleRow.className = 'geo-toggle';
+    toggleRow.innerHTML = '<span>Input mode:</span>';
+    ['x','y','w','h'].forEach(axis => {
+      const btn = document.createElement('button');
+      btn.textContent = axis + ':' + (geoMode[axis] === 'expr' ? 'expr' : 'num');
+      btn.className = geoMode[axis] === 'expr' ? 'active' : '';
+      btn.title = 'Toggle ' + axis + ' between numeric and SafeZone expression';
+      btn.addEventListener('click', () => {
+        geoMode[axis] = geoMode[axis] === 'expr' ? 'num' : 'expr';
+        renderInspector(); // rebuild with new mode
+      });
+      toggleRow.appendChild(btn);
+    });
+    insp.appendChild(toggleRow);
+  }
+
+  const geoGrid = document.createElement('div');
+  geoGrid.className = 'grid-2';
+  insp.appendChild(geoGrid);
+
+  ['x','y','w','h'].forEach(axis => {
+    const rawVal = effectiveVal(ctrl, axis);
+    const isOver = isPropOverride(ctrl, axis);
+    const inh = inheritedVal(ctrl, axis);
+
+    const useExpr = isHUD && geoMode[axis] === 'expr';
+    const inp = document.createElement('input');
+    inp.dataset.prop = axis;
+    inp.type = useExpr ? 'text' : 'number';
+    if (useExpr) {
+      inp.value = (ctrl.props && axis in ctrl.props) ? String(ctrl.props[axis])
+        : (rawVal !== undefined ? String(rawVal) : '');
+    } else {
+      const numVal = isHUD ? evalSZ(rawVal) : (parseFloat(rawVal) || 0);
+      inp.value = parseFloat(numVal.toFixed(6));
+      inp.step = '0.001';
+    }
+    if (isOver) inp.classList.add('is-override');
+
+    inp.addEventListener('change', () => {
+      const v = useExpr ? inp.value.trim() : parseFloat(inp.value);
+      if (!useExpr && isNaN(v)) return;
+      applyProp(axis, v);
     });
 
-  for (const [k, v] of resolvedEntries.slice(0, 20)) {
-    const kEl = document.createElement('div');
-    kEl.className = 'prop-k';
-    kEl.textContent = k;
-    resolvedEl.appendChild(kEl);
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(makeRow(axis, axis.toUpperCase(), inp, isOver, isOver ? inh : undefined));
+    geoGrid.appendChild(wrapper);
+  });
 
-    const vEl = document.createElement('div');
-    vEl.className = 'prop-v';
+  // ---- Section: Text / Label ----
+  const secText = document.createElement('h3');
+  secText.textContent = 'Text';
+  insp.appendChild(secText);
 
-    if (colorKeys.has(k) && Array.isArray(v)) {
-      const swatch = document.createElement('span');
-      swatch.className = 'color-swatch';
-      swatch.style.background = rgba(v);
-      vEl.appendChild(swatch);
-      vEl.appendChild(document.createTextNode(rgba(v)));
-    } else {
-      vEl.textContent = fmtVal(v);
+  // Get common text value for multi-select
+  const multiTextVal = isMulti
+    ? ([...selectedSet].map(c => effectiveVal(c,'text')).every((v,_,a) => v===a[0]) ? effectiveVal(ctrl,'text') : '(mixed)')
+    : effectiveVal(ctrl,'text');
+
+  const textIn = document.createElement('input');
+  textIn.type = 'text';
+  textIn.value = typeof multiTextVal === 'string' ? multiTextVal : '';
+  textIn.placeholder = isMulti && multiTextVal === '(mixed)' ? '(mixed)' : '(none)';
+  textIn.dataset.prop = 'text';
+  if (isPropOverride(ctrl, 'text')) textIn.classList.add('is-override');
+  textIn.addEventListener('change', () => {
+    applyProp('text', textIn.value);
+    renderControls();
+  });
+  insp.appendChild(makeRow('text', 'Text', textIn, isPropOverride(ctrl, 'text'), inheritedVal(ctrl,'text')));
+
+  // Tooltip
+  const tooltipIn = document.createElement('input');
+  tooltipIn.type = 'text';
+  tooltipIn.value = effectiveVal(ctrl, 'tooltip') || '';
+  tooltipIn.dataset.prop = 'tooltip';
+  if (isPropOverride(ctrl, 'tooltip')) tooltipIn.classList.add('is-override');
+  tooltipIn.addEventListener('change', () => applyProp('tooltip', tooltipIn.value));
+  insp.appendChild(makeRow('tooltip', 'Tooltip', tooltipIn, isPropOverride(ctrl,'tooltip'), inheritedVal(ctrl,'tooltip')));
+
+  // ---- Section: Appearance ----
+  const secAppear = document.createElement('h3');
+  secAppear.textContent = 'Appearance';
+  insp.appendChild(secAppear);
+
+  // Font
+  const fontIn = document.createElement('select');
+  fontIn.dataset.prop = 'font';
+  const fontVal = effectiveVal(ctrl, 'font') || 'Zeppelin32';
+  const allFonts = [...new Set([...KNOWN_FONTS, fontVal])];
+  allFonts.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f; opt.textContent = f;
+    if (f === fontVal) opt.selected = true;
+    fontIn.appendChild(opt);
+  });
+  if (isPropOverride(ctrl, 'font')) fontIn.classList.add('is-override');
+  fontIn.addEventListener('change', () => applyProp('font', fontIn.value));
+  insp.appendChild(makeRow('font', 'Font', fontIn, isPropOverride(ctrl,'font'), inheritedVal(ctrl,'font')));
+
+  // sizeEx
+  const sizeIn = document.createElement('input');
+  sizeIn.type = 'number';
+  sizeIn.step = '0.001';
+  sizeIn.value = parseFloat((effectiveVal(ctrl,'sizeEx') || 0.03).toFixed(5));
+  sizeIn.dataset.prop = 'sizeEx';
+  if (isPropOverride(ctrl, 'sizeEx')) sizeIn.classList.add('is-override');
+  sizeIn.addEventListener('change', () => applyProp('sizeEx', parseFloat(sizeIn.value)));
+  insp.appendChild(makeRow('sizeEx', 'sizeEx', sizeIn, isPropOverride(ctrl,'sizeEx'), inheritedVal(ctrl,'sizeEx')));
+
+  // Shadow
+  const shadowIn = document.createElement('select');
+  shadowIn.dataset.prop = 'shadow';
+  [[0,'0 — none'],[1,'1 — outline'],[2,'2 — drop']].forEach(([v,l]) => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = l;
+    const sv = effectiveVal(ctrl,'shadow');
+    if (sv !== undefined && parseInt(sv) === v) opt.selected = true;
+    shadowIn.appendChild(opt);
+  });
+  if (isPropOverride(ctrl, 'shadow')) shadowIn.classList.add('is-override');
+  shadowIn.addEventListener('change', () => applyProp('shadow', parseInt(shadowIn.value)));
+  insp.appendChild(makeRow('shadow', 'Shadow', shadowIn, isPropOverride(ctrl,'shadow'), inheritedVal(ctrl,'shadow')));
+
+  // Style (flag checkboxes)
+  const styleVal = parseStyle(effectiveVal(ctrl, 'style'));
+  const styleIsOver = isPropOverride(ctrl, 'style');
+  const styleRow = document.createElement('div');
+  styleRow.className = 'field-row';
+  const styleLbl = document.createElement('label');
+  const styleLblText = document.createElement('span');
+  styleLblText.className = 'lbl-text';
+  styleLblText.textContent = 'Style';
+  styleLbl.appendChild(styleLblText);
+  if (styleIsOver) {
+    const badge = document.createElement('span');
+    badge.className = 'override-badge';
+    badge.textContent = 'override';
+    styleLbl.appendChild(badge);
+    if (!isMulti) {
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'reset-btn';
+      resetBtn.textContent = '↺';
+      resetBtn.addEventListener('click', () => {
+        if (ctrl.props) delete ctrl.props.style;
+        const inh = inheritedVal(ctrl, 'style');
+        if (ctrl.resolved && inh !== undefined) ctrl.resolved.style = inh;
+        else if (ctrl.resolved) delete ctrl.resolved.style;
+        renderAll();
+      });
+      styleLbl.appendChild(resetBtn);
     }
-    resolvedEl.appendChild(vEl);
   }
+  styleRow.appendChild(styleLbl);
+  const flagsWrap = document.createElement('div');
+  flagsWrap.className = 'style-flags';
+  STYLE_FLAGS.slice(0, 8).forEach(({ bit, label }) => {
+    const flagEl = document.createElement('label');
+    flagEl.className = 'style-flag';
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.checked = (styleVal & bit) !== 0;
+    chk.addEventListener('change', () => {
+      let cur = parseStyle(effectiveVal(ctrl, 'style'));
+      if (chk.checked) cur |= bit; else cur &= ~bit;
+      applyProp('style', cur ? formatStyle(cur) : '0');
+    });
+    flagEl.appendChild(chk);
+    flagEl.appendChild(document.createTextNode(label));
+    flagsWrap.appendChild(flagEl);
+  });
+  styleRow.appendChild(flagsWrap);
+  insp.appendChild(styleRow);
 
-  // Override props (delta)
-  const overEl = document.getElementById('insp-overrides');
-  overEl.innerHTML = '';
-  for (const [k, v] of Object.entries(ctrl.props || {})) {
-    if (skipKeys.has(k)) continue;
-    const kEl = document.createElement('div');
-    kEl.className = 'prop-k';
-    kEl.style.color = 'var(--orange)';
-    kEl.textContent = k;
-    overEl.appendChild(kEl);
+  // ---- Section: Colors ----
+  const secColors = document.createElement('h3');
+  secColors.textContent = 'Colors';
+  insp.appendChild(secColors);
 
-    const vEl = document.createElement('div');
-    vEl.className = 'prop-v';
-    if (colorKeys.has(k) && Array.isArray(v)) {
-      const swatch = document.createElement('span');
-      swatch.className = 'color-swatch';
-      swatch.style.background = rgba(v);
-      vEl.appendChild(swatch);
-      vEl.appendChild(document.createTextNode(rgba(v)));
-    } else {
-      vEl.textContent = fmtVal(v);
+  const colorPropList = [
+    'colorBackground','colorText','colorFocused','color',
+    'colorBackgroundActive','colorDisabled','colorBackgroundDisabled','colorSelect',
+  ];
+
+  // Collect which color props are actually relevant (present in resolved or props)
+  const relevantColors = colorPropList.filter(k => {
+    const v = effectiveVal(ctrl, k);
+    return Array.isArray(v);
+  });
+  // Always show at least the core 3
+  const coreColors = ['colorBackground','colorText','colorFocused','color'];
+  const showColors = [...new Set([...coreColors, ...relevantColors])];
+
+  showColors.forEach(key => {
+    const curVal = effectiveVal(ctrl, key);
+    const isOver = isPropOverride(ctrl, key);
+    const inh = inheritedVal(ctrl, key);
+    const arr = Array.isArray(curVal) ? curVal : [0,0,0,1];
+
+    const colorRow = document.createElement('div');
+    colorRow.className = 'color-row';
+
+    // Color picker
+    const colorPick = document.createElement('input');
+    colorPick.type = 'color';
+    colorPick.value = rgbaToHex(arr);
+    colorPick.title = 'Pick color';
+
+    // Alpha input
+    const alphaIn = document.createElement('input');
+    alphaIn.type = 'number';
+    alphaIn.className = 'alpha-in';
+    alphaIn.min = '0'; alphaIn.max = '1'; alphaIn.step = '0.01';
+    alphaIn.value = parseFloat((arr[3] !== undefined ? arr[3] : 1).toFixed(3));
+    alphaIn.title = 'Alpha (0–1)';
+    alphaIn.style.cssText = 'width:50px;padding:2px 4px;font-size:9px';
+
+    // Macro dropdown
+    const macroSel = document.createElement('select');
+    macroSel.className = 'macro-sel';
+    macroSel.style.fontSize = '9px';
+    const noMacroOpt = document.createElement('option');
+    noMacroOpt.value = ''; noMacroOpt.textContent = '— macro —';
+    macroSel.appendChild(noMacroOpt);
+    const curMacro = macroForRgba(arr);
+    Object.entries(uiData && uiData.macros || {}).forEach(([name, val]) => {
+      if (!Array.isArray(val)) return;
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      if (name === curMacro) opt.selected = true;
+      macroSel.appendChild(opt);
+    });
+
+    // Swatch
+    const swatch = document.createElement('span');
+    swatch.className = 'color-swatch-lg';
+    swatch.style.background = rgba(arr);
+
+    function refreshSwatch(newArr) {
+      swatch.style.background = rgba(newArr);
+      colorPick.value = rgbaToHex(newArr);
+      alphaIn.value = parseFloat((newArr[3] !== undefined ? newArr[3] : 1).toFixed(3));
+      // Update macro dropdown
+      const nm = macroForRgba(newArr);
+      macroSel.value = nm || '';
     }
-    overEl.appendChild(vEl);
-  }
 
-  if (overEl.children.length === 0) {
-    const note = document.createElement('div');
-    note.className = 'prop-k';
-    note.style.gridColumn = '1/-1';
-    note.textContent = '(no overrides — all inherited)';
-    overEl.appendChild(note);
-  }
+    colorPick.addEventListener('input', () => {
+      const newArr = hexAlphaToRgba(colorPick.value, parseFloat(alphaIn.value)||1);
+      applyProp(key, newArr);
+      refreshSwatch(newArr);
+      macroSel.value = macroForRgba(newArr) || '';
+    });
+
+    alphaIn.addEventListener('change', () => {
+      const newArr = hexAlphaToRgba(colorPick.value, Math.max(0, Math.min(1, parseFloat(alphaIn.value)||1)));
+      applyProp(key, newArr);
+      refreshSwatch(newArr);
+    });
+
+    macroSel.addEventListener('change', () => {
+      if (!macroSel.value) return;
+      const macroVal = uiData.macros[macroSel.value];
+      if (Array.isArray(macroVal)) {
+        applyProp(key, macroVal);
+        refreshSwatch(macroVal);
+      }
+    });
+
+    colorRow.appendChild(swatch);
+    colorRow.appendChild(colorPick);
+    colorRow.appendChild(alphaIn);
+    colorRow.appendChild(macroSel);
+
+    insp.appendChild(makeRow(key, key, colorRow, isOver, isOver ? inh : undefined));
+  });
+
+  // ---- Section: Events / Actions ----
+  const secEvents = document.createElement('h3');
+  secEvents.textContent = 'Events';
+  insp.appendChild(secEvents);
+
+  const eventKeys = ['action','onButtonClick','onLBSelChanged','onLBDblClick','onMouseButtonClick'];
+  eventKeys.forEach(key => {
+    const curVal = effectiveVal(ctrl, key);
+    if (curVal === undefined && !isPropOverride(ctrl, key)) {
+      // Only show if it's a common key or already has a value
+      const commonEvents = ['action','onButtonClick','onLBSelChanged'];
+      if (!commonEvents.includes(key)) return;
+    }
+    const eventIn = document.createElement('textarea');
+    eventIn.rows = 2;
+    eventIn.style.cssText = 'font-size:9px;resize:vertical;min-height:36px';
+    eventIn.value = (curVal !== undefined && curVal !== null) ? String(curVal) : '';
+    eventIn.placeholder = '(none)';
+    eventIn.dataset.prop = key;
+    if (isPropOverride(ctrl, key)) eventIn.classList.add('is-override');
+    eventIn.addEventListener('change', () => {
+      const v = eventIn.value.trim();
+      if (v) applyProp(key, v);
+      else {
+        // Remove override if empty
+        if (ctrl.props) delete ctrl.props[key];
+        if (ctrl.resolved) delete ctrl.resolved[key];
+        renderControls();
+      }
+    });
+    insp.appendChild(makeRow(key, key, eventIn, isPropOverride(ctrl, key), inheritedVal(ctrl, key)));
+  });
 }
 
 function fmtVal(v) {
