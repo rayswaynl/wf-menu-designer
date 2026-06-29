@@ -1,0 +1,17 @@
+# Python (tools/)
+__pycache__/
+*.pyc
+
+# Node (dev tooling)
+node_modules/
+package-lock.json
+package.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+nul
+*.log
+.vscode/
+.idea/
