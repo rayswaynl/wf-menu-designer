@@ -9,10 +9,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --gunmetal:#14171B;--steel:#2A2F36;--steel2:#343b44;
-  --olive:#5C6536;--bone:#E7E3D6;--orange:#D9763C;--orange-deep:#B85F2A;
-  --chalk:#F2EFE8;--line:#39414b;--danger:#c0392b;--cyan:#4BB8C8;
+/* ---- CSS Variables ---- */
+:root {
+  --gunmetal: #14171B;
+  --steel: #2A2F36;
+  --steel2: #343b44;
+  --olive: #5C6536;
+  --bone: #E7E3D6;
+  --orange: #D9763C;
+  --orange-deep: #B85F2A;
+  --chalk: #F2EFE8;
+  --line: #39414b;
+  --danger: #c0392b;
+  --cyan: #4BB8C8;
+  --wasp-blue: rgba(66,182,255,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:Inter,system-ui,'Segoe UI',Arial,sans-serif;background:var(--gunmetal);color:var(--bone);overflow:hidden}
@@ -33,58 +43,27 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 /* ---- Layout ---- */
 .layout{display:flex;height:calc(100vh - 50px);overflow:hidden}
 .panel{display:flex;flex-direction:column;min-height:0}
-.panel-left{width:180px;flex:0 0 180px;border-right:1px solid var(--line);background:var(--steel)}
+.panel-left{width:200px;flex:0 0 200px;border-right:1px solid var(--line);background:var(--steel)}
 .panel-center{flex:1;min-width:0;background:var(--gunmetal)}
-.panel-right{width:240px;flex:0 0 240px;border-left:1px solid var(--line);background:var(--steel)}
+.panel-right{width:260px;flex:0 0 260px;border-left:1px solid var(--line);background:var(--steel)}
 
 .panel-hdr{padding:9px 12px;border-bottom:1px solid var(--line);background:var(--gunmetal);flex:0 0 auto}
 .panel-hdr h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad}
 .scroll{overflow-y:auto;flex:1;min-height:0}
 
-/* ---- Palette ---- */
-.palette-list{padding:8px}
-.type-btn{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:none;
-  border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin-bottom:4px;
-  color:var(--bone);font-family:Inter,sans-serif;font-size:11px;cursor:pointer;transition:all .12s}
-.type-btn:hover{border-color:var(--orange);background:rgba(217,118,60,.08)}
-.type-btn:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
-.type-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
-.palette-divider{height:1px;background:var(--line);margin:6px 0}
-.palette-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;padding:3px 4px 5px;text-transform:uppercase;letter-spacing:.5px}
+/* ---- Display picker ---- */
+.display-picker-wrap{padding:8px;flex:0 0 auto;border-bottom:1px solid var(--line)}
+.display-picker-wrap label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+#display-picker{width:100%;background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:4px;padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:10px;outline:none;cursor:pointer}
+#display-picker:focus{border-color:var(--orange)}
+#display-picker optgroup{color:#9aa3ad;font-style:normal;font-size:9px}
+#display-picker option{color:var(--bone);background:var(--gunmetal)}
 
-/* ---- Canvas area ---- */
-.canvas-toolbar{padding:8px 12px;border-bottom:1px solid var(--line);background:#101317;
-  display:flex;align-items:center;gap:10px;flex:0 0 auto}
-.canvas-toolbar label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;cursor:pointer}
-.canvas-toolbar input[type=checkbox]{accent-color:var(--orange)}
-.canvas-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;
-  padding:24px;background:#0d1014}
-.stage{position:relative;background:#1a1e24;border:1px solid var(--line);
-  flex:0 0 auto;user-select:none;overflow:hidden}
-.stage-bg{position:absolute;inset:0;pointer-events:none}
-
-/* ---- Controls on canvas ---- */
-.ctrl-box{position:absolute;border:1px solid;cursor:move;display:flex;
-  align-items:center;justify-content:center;font-size:9px;font-family:'JetBrains Mono',monospace;
-  text-align:center;padding:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  line-height:1.2;transition:box-shadow .08s}
-.ctrl-box.selected{outline:2px solid var(--orange);outline-offset:1px;z-index:100!important}
-.ctrl-box .resize-handle{position:absolute;right:-4px;bottom:-4px;width:8px;height:8px;
-  background:var(--orange);cursor:se-resize;z-index:10;border-radius:1px}
-
-/* ---- Type colours ---- */
-.t-CT_STATIC      {background:rgba(42,47,54,.85);border-color:#39414b;color:#aab}
-.t-CT_BUTTON      {background:rgba(41,61,92,.8);border-color:#2a5a8c;color:#a8ccee}
-.t-RscShortcutButton{background:rgba(30,65,100,.85);border-color:#4bb8c8;color:#8de0ec}
-.t-CT_CLICKABLETEXT{background:rgba(92,101,54,.7);border-color:#7a8a38;color:#c8d88a}
-.t-CT_LISTBOX     {background:rgba(80,40,80,.8);border-color:#884488;color:#d4a0d4}
-.t-CT_COMBO       {background:rgba(80,60,20,.8);border-color:#b88820;color:#e8c860}
-.t-CT_STRUCTUREDTEXT{background:rgba(60,80,40,.8);border-color:#6a9040;color:#a8d870}
-.t-CT_EDIT        {background:rgba(80,30,30,.8);border-color:#a04040;color:#e88080}
-.t-CT_CONTROLS_GROUP{background:rgba(30,30,60,.8);border-color:#4444aa;color:#9090d8}
-.t-CT_LISTNBOX    {background:rgba(80,50,60,.8);border-color:#a06070;color:#e0b0c0}
-.t-RscXSliderH    {background:rgba(50,70,50,.8);border-color:#609060;color:#a0c0a0}
-.t-RscMapControl  {background:rgba(20,60,50,.8);border-color:#208060;color:#60c0a0}
+/* ---- Mode toggle ---- */
+.mode-toggle{display:flex;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line);flex:0 0 auto;align-items:center}
+.mode-btn{flex:1;font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 6px;border-radius:3px;border:1px solid var(--line);background:transparent;color:#9aa3ad;cursor:pointer;transition:all .12s;text-align:center}
+.mode-btn.active{background:var(--orange);border-color:var(--orange);color:#1a1208;font-weight:600}
+.mode-btn:hover:not(.active){border-color:var(--orange);color:var(--orange)}
 
 /* ---- Layer list ---- */
 .layer-item{display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;
@@ -94,60 +73,328 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .layer-item.bg-ctrl{border-left:2px solid var(--line)}
 .layer-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
 .layer-idc{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;margin-left:auto;white-space:nowrap}
-.layer-del{margin-left:4px;background:none;border:none;color:#556;cursor:pointer;font-size:11px;padding:0 2px;border-radius:3px}
-.layer-del:hover{color:var(--danger)}
-.layer-del:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
-.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px}
+.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.layer-hdr{padding:4px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#39414b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(57,65,75,.3)}
+
+/* ---- Canvas area ---- */
+.canvas-toolbar{padding:8px 12px;border-bottom:1px solid var(--line);background:#101317;
+  display:flex;align-items:center;gap:10px;flex:0 0 auto;flex-wrap:wrap}
+.canvas-toolbar label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;cursor:pointer}
+.canvas-toolbar input[type=checkbox]{accent-color:var(--orange)}
+.canvas-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;
+  padding:32px;background:#0a0c0f;position:relative}
+.canvas-center{margin:auto;position:relative}
+
+/* The 16:9 game frame */
+.stage{position:relative;flex:0 0 auto;user-select:none;overflow:hidden;
+  background:#0d0f12;
+  box-shadow:0 0 0 1px #39414b, 0 4px 40px rgba(0,0,0,.7)}
+
+/* Resolution/backdrop labels */
+.stage-label{position:absolute;top:-22px;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;color:#39414b;pointer-events:none;white-space:nowrap}
+.stage-label-side{position:absolute;top:0;left:-44px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:'JetBrains Mono',monospace;font-size:10px;color:#39414b;pointer-events:none;white-space:nowrap;height:100%;display:flex;align-items:center;justify-content:center}
+
+/* ---- WYSIWYG Control rendering ---- */
+.ctrl{position:absolute;overflow:hidden;cursor:move;box-sizing:border-box}
+
+/* Edit mode affordances */
+.ctrl.edit-mode::after{
+  content:'';position:absolute;inset:0;
+  border:1px solid rgba(75,184,200,.35);
+  pointer-events:none;z-index:1;
+}
+.ctrl.selected.edit-mode::after{
+  border:2px solid var(--orange)!important;
+}
+.ctrl.selected{z-index:9999!important}
+
+/* Resize handle (edit mode only) */
+.ctrl .rh{position:absolute;right:-4px;bottom:-4px;width:9px;height:9px;
+  background:var(--orange);cursor:se-resize;z-index:10;border-radius:1px;display:none}
+.edit-mode .rh{display:block}
+
+/* ---- Per-type style bases ---- */
+
+/* CT_STATIC / RscText — styled text */
+.wt-rsctext{
+  display:flex;align-items:center;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:0 2px;
+}
+
+/* IGUIBack — translucent panel */
+.wt-iguiback{
+  background:rgba(0,0,0,.6);
+}
+
+/* RscFrame — border only */
+.wt-rscframe{
+  background:transparent;
+  border:1px solid rgba(255,255,255,.85)!important;
+}
+
+/* RscButton (olive) */
+.wt-rscbutton{
+  display:flex;align-items:center;justify-content:center;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  font-weight:600;letter-spacing:.3px;
+  text-align:center;overflow:hidden;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 1px 3px rgba(0,0,0,.4);
+}
+
+/* RscButton_Main (WASP blue) */
+.wt-rscbutton-main{
+  background:rgba(66,182,255,.7)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 0 8px rgba(66,182,255,.25);
+}
+
+/* RscButton_Exit (red) */
+.wt-rscbutton-exit{
+  background:rgba(128,0,0,1)!important;
+}
+
+/* RscShortcutButtonMain — big WASP hub tile */
+.wt-shortcutbuttonmain{
+  display:flex;align-items:center;
+  background:transparent!important;
+  border:2px solid rgba(66,182,255,.85)!important;
+  box-shadow:inset 0 0 20px rgba(66,182,255,.08), 0 0 8px rgba(66,182,255,.2);
+  padding:0;overflow:hidden;cursor:pointer;
+}
+.wt-shortcutbuttonmain .sb-icon{
+  flex:0 0 auto;width:18%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  border-right:1px solid rgba(66,182,255,.35);
+  background:rgba(66,182,255,.08);
+  font-size:70%;color:rgba(66,182,255,.7);
+}
+.wt-shortcutbuttonmain .sb-label{
+  flex:1;padding:0 6%;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  font-weight:600;color:rgba(229,229,229,1);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-align:left;
+  text-shadow:0 0 8px rgba(66,182,255,.5);
+}
+
+/* RscShortcutButton — smaller tile */
+.wt-shortcutbutton{
+  display:flex;align-items:center;
+  background:transparent!important;
+  border:1px solid rgba(138,146,102,.8)!important;
+  box-shadow:inset 0 0 10px rgba(138,146,102,.06);
+  padding:0;overflow:hidden;cursor:pointer;
+}
+.wt-shortcutbutton .sb-icon{
+  flex:0 0 auto;width:22%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  border-right:1px solid rgba(138,146,102,.3);
+  background:rgba(138,146,102,.08);
+  font-size:70%;color:rgba(138,146,102,.8);
+}
+.wt-shortcutbutton .sb-label{
+  flex:1;padding:0 5%;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  font-size:85%;color:rgba(229,229,229,.9);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-align:left;
+}
+
+/* RscListBox / RscListnBox */
+.wt-listbox{
+  background:rgba(0,0,0,.95)!important;
+  border:1px solid rgba(66,182,255,.5)!important;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.wt-listbox .lb-header{
+  flex:0 0 auto;
+  background:rgba(66,182,255,.15);
+  border-bottom:1px solid rgba(66,182,255,.3);
+  padding:0 4px;
+  display:flex;align-items:center;
+  font-family:Inter,sans-serif;font-weight:600;
+  color:rgba(66,182,255,.9);
+  font-size:80%;
+  min-height:20%;
+}
+.wt-listbox .lb-rows{
+  flex:1;overflow:hidden;padding:2px 0;
+}
+.wt-listbox .lb-row{
+  padding:1px 4px;
+  font-family:Inter,sans-serif;
+  color:rgba(255,255,255,.75);
+  font-size:75%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.wt-listbox .lb-row.sel{
+  background:rgba(66,182,255,.25);
+  color:rgba(66,182,255,1);
+}
+.wt-listbox .lb-scrollbar{
+  position:absolute;right:0;top:0;width:5px;height:100%;
+  background:rgba(255,255,255,.08);
+}
+.wt-listbox .lb-scrollbar-thumb{
+  width:100%;height:40%;
+  background:rgba(255,255,255,.35);border-radius:2px;
+}
+
+/* RscCombo */
+.wt-combo{
+  background:rgba(0,0,0,.75)!important;
+  border:1px solid rgba(66,182,255,.4)!important;
+  display:flex;align-items:center;overflow:hidden;
+}
+.wt-combo .combo-text{
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:Inter,sans-serif;color:rgba(255,255,255,.75);
+  padding:0 4px;font-size:80%;
+}
+.wt-combo .combo-arrow{
+  flex:0 0 auto;width:18%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  border-left:1px solid rgba(66,182,255,.25);
+  background:rgba(66,182,255,.1);
+  color:rgba(66,182,255,.9);
+  font-size:80%;
+}
+
+/* RscEdit */
+.wt-edit{
+  background:rgba(0,0,0,.6)!important;
+  border:1px solid rgba(255,255,255,.3)!important;
+  display:flex;align-items:center;overflow:hidden;
+}
+.wt-edit .edit-inner{
+  flex:1;padding:0 5px;
+  font-family:Inter,sans-serif;color:rgba(255,255,255,.75);font-size:80%;
+  white-space:nowrap;overflow:hidden;
+}
+.wt-edit::after{
+  content:'|';color:rgba(66,182,255,.8);
+  position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  animation:blink 1s step-end infinite;
+  pointer-events:none;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* RscStructuredText */
+.wt-structuredtext{
+  display:flex;align-items:flex-start;overflow:hidden;
+  font-family:Inter,sans-serif;color:rgba(238,229,139,1);
+  padding:1px 3px;
+}
+
+/* RscPicture / RscClickableText — icon placeholder */
+.wt-picture{
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.2)!important;
+  overflow:hidden;
+}
+.wt-picture .pic-icon{
+  font-size:40%;opacity:.6;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+
+/* RscMapControl */
+.wt-mapcontrol{
+  background:rgba(60,75,55,.85)!important;
+  border:1px solid rgba(100,120,80,.6)!important;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.wt-mapcontrol .map-label{
+  font-family:Inter,sans-serif;font-size:80%;font-weight:600;
+  color:rgba(150,180,120,.8);letter-spacing:2px;text-transform:uppercase;
+  text-shadow:0 1px 4px rgba(0,0,0,.8);
+}
+
+/* RscXSliderH */
+.wt-slider{
+  display:flex;align-items:center;padding:0 4px;overflow:hidden;
+  background:rgba(0,0,0,.2)!important;
+}
+.wt-slider .sl-track{
+  flex:1;height:3px;background:rgba(255,255,255,.15);border-radius:2px;position:relative;margin:0 4px;
+}
+.wt-slider .sl-fill{
+  position:absolute;left:0;top:0;width:40%;height:100%;
+  background:rgba(255,255,255,.5);border-radius:2px;
+}
+.wt-slider .sl-thumb{
+  position:absolute;left:38%;top:50%;transform:translate(-50%,-50%);
+  width:6px;height:100%;min-height:10px;
+  background:rgba(255,255,255,.85);border-radius:1px;
+}
+.wt-slider .sl-arr{font-size:70%;color:rgba(255,255,255,.5)}
+
+/* RscControlsGroup */
+.wt-ctrlgroup{
+  background:rgba(50,50,80,.1)!important;
+  border:1px dashed rgba(68,68,170,.5)!important;
+}
+
+/* CT_STATIC background panel (IGUIBack-style) */
+.wt-bg-panel{
+  background:rgba(0,0,0,.7)!important;
+}
 
 /* ---- Inspector ---- */
 .inspector{padding:10px 12px}
 .inspector h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad;margin-bottom:8px}
-.field-row{margin-bottom:8px}
+.field-row{margin-bottom:7px}
 .field-row label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
 .field-row input,.field-row select{width:100%;background:var(--gunmetal);border:1px solid var(--line);
   color:var(--bone);border-radius:4px;padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
 .field-row input:focus,.field-row select:focus{border-color:var(--orange)}
-.field-row input:focus-visible,.field-row select:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .inspector-placeholder{font-size:11px;color:#556;font-family:'JetBrains Mono',monospace;
   padding:20px 12px;text-align:center;line-height:1.6}
+
+/* Resolved prop display */
+.resolved-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;
+  background:rgba(66,182,255,.1);border:1px solid rgba(66,182,255,.25);color:rgba(66,182,255,.9);
+  border-radius:3px;padding:1px 5px;margin-bottom:4px}
+.prop-grid{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;margin-bottom:8px}
+.prop-k{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;white-space:nowrap}
+.prop-v{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--bone);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.color-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid rgba(255,255,255,.2);vertical-align:middle;margin-right:3px}
 
 /* ---- Export / load panel ---- */
 .export-panel{border-top:1px solid var(--line);flex:0 0 auto}
 .export-panel-hdr{padding:8px 12px;border-bottom:1px solid var(--line);background:var(--gunmetal);cursor:pointer;
   display:flex;align-items:center;justify-content:space-between;user-select:none}
-.export-panel-hdr:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
 .export-panel-hdr h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad}
 .export-panel-hdr .tog{font-size:10px;color:#556}
 .export-body{padding:8px 12px;display:none}
 .export-body.open{display:block}
 .export-body textarea{width:100%;background:var(--gunmetal);border:1px solid var(--line);
   color:#a8d890;font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:4px;
-  padding:6px;resize:vertical;outline:none;min-height:100px}
+  padding:6px;resize:vertical;outline:none;min-height:80px}
 .export-body textarea:focus{border-color:var(--orange)}
-.export-body textarea:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
 .btnbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 button{cursor:pointer;background:var(--steel2);color:var(--bone);border:1px solid var(--line);
   border-radius:4px;padding:5px 10px;font-family:Inter,sans-serif;font-size:11px}
 button:hover{border-color:var(--orange)}
-button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 button.primary{background:var(--orange);border-color:var(--orange);color:#1a1208;font-weight:600}
 button.primary:hover{background:var(--orange-deep);border-color:var(--orange-deep)}
 button.sm{font-size:10px;padding:4px 8px}
 button.flash{animation:btn-flash .4s ease}
 @keyframes btn-flash{0%{background:var(--olive);border-color:var(--olive);color:#fff}100%{}}
-.snap-label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace}
 
-/* ---- Status / live region ---- */
+/* ---- Status ---- */
 #status-msg{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;min-height:14px;margin-top:4px}
 #status-msg.ok{color:var(--olive)}
 #status-msg.err{color:var(--danger)}
 
-/* ---- Cross-link chip ---- */
+/* ---- Cross-link ---- */
 .xlink-btn{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;
   color:#8b939c;border:1px solid var(--line);border-radius:10px;padding:3px 9px;background:#0d1014;
   text-decoration:none;cursor:pointer;transition:border-color .12s,color .12s}
-.xlink-btn:hover,.xlink-btn:focus-visible{border-color:var(--orange);color:var(--orange);outline:none}
+.xlink-btn:hover{border-color:var(--orange);color:var(--orange)}
 .xlink-dot{width:6px;height:6px;border-radius:50%;background:#884488;flex:0 0 6px}
 
 /* ---- Scrollbars ---- */
@@ -173,9 +420,9 @@ button.flash{animation:btn-flash .4s ease}
   <div class="spacer"></div>
   <div class="brand-actions">
     <span class="chip" id="ctrl-count-chip" aria-live="polite" aria-atomic="true"><b>0</b> controls</span>
-    <span class="chip" id="dialog-chip">WF_Menu · idd 11000</span>
-    <a class="xlink-btn" id="garrison-link" href="https://rayswaynl.github.io/garrison-editor/" target="_blank" rel="noopener"
-       title="Open Garrison Editor — shares current layout via localStorage" aria-label="Open Garrison Editor">
+    <span class="chip" id="dialog-chip">—</span>
+    <a class="xlink-btn" href="https://rayswaynl.github.io/garrison-editor/" target="_blank" rel="noopener"
+       title="Open Garrison Editor" aria-label="Open Garrison Editor">
       <span class="xlink-dot" aria-hidden="true"></span>Garrison Editor ↗
     </a>
   </div>
@@ -184,42 +431,21 @@ button.flash{animation:btn-flash .4s ease}
 <!-- Main 3-column layout -->
 <div class="layout" role="main">
 
-  <!-- Left: Palette + Layer list -->
-  <div class="panel panel-left" role="region" aria-label="Control palette and layers">
-    <div class="panel-hdr"><h2 id="palette-heading">Add control</h2></div>
-    <div style="padding:8px;flex:0 0 auto;border-bottom:1px solid var(--line)" role="group" aria-labelledby="palette-heading">
-      <div class="palette-label" aria-hidden="true">background</div>
-      <button class="type-btn" data-type="CT_STATIC" data-bg="1" title="Background/frame (CT_STATIC)" aria-label="Add CT_STATIC background/frame">
-        <span class="type-dot" style="background:#39414b" aria-hidden="true"></span>CT_STATIC
-      </button>
-      <div class="palette-divider" role="separator"></div>
-      <div class="palette-label" aria-hidden="true">controls</div>
-      <button class="type-btn" data-type="CT_BUTTON" title="Button (CT_BUTTON)" aria-label="Add CT_BUTTON">
-        <span class="type-dot" style="background:#2a5a8c" aria-hidden="true"></span>CT_BUTTON
-      </button>
-      <button class="type-btn" data-type="RscShortcutButton" title="Shortcut button (main menu style)" aria-label="Add RscShortcutButton">
-        <span class="type-dot" style="background:#4bb8c8" aria-hidden="true"></span>ShortcutBtn
-      </button>
-      <button class="type-btn" data-type="CT_CLICKABLETEXT" title="Clickable text / icon (CT_CLICKABLETEXT)" aria-label="Add CT_CLICKABLETEXT">
-        <span class="type-dot" style="background:#7a8a38" aria-hidden="true"></span>ClickText
-      </button>
-      <button class="type-btn" data-type="CT_LISTBOX" title="List box (CT_LISTBOX)" aria-label="Add CT_LISTBOX">
-        <span class="type-dot" style="background:#884488" aria-hidden="true"></span>CT_LISTBOX
-      </button>
-      <button class="type-btn" data-type="CT_COMBO" title="Combo / dropdown (CT_COMBO)" aria-label="Add CT_COMBO dropdown">
-        <span class="type-dot" style="background:#b88820" aria-hidden="true"></span>CT_COMBO
-      </button>
-      <button class="type-btn" data-type="CT_EDIT" title="Text edit (CT_EDIT)" aria-label="Add CT_EDIT text input">
-        <span class="type-dot" style="background:#a04040" aria-hidden="true"></span>CT_EDIT
-      </button>
-      <button class="type-btn" data-type="CT_STRUCTUREDTEXT" title="Structured text (CT_STRUCTUREDTEXT)" aria-label="Add CT_STRUCTUREDTEXT">
-        <span class="type-dot" style="background:#6a9040" aria-hidden="true"></span>StructText
-      </button>
-      <button class="type-btn" data-type="CT_CONTROLS_GROUP" title="Controls group (CT_CONTROLS_GROUP)" aria-label="Add CT_CONTROLS_GROUP">
-        <span class="type-dot" style="background:#4444aa" aria-hidden="true"></span>CtrlGroup
-      </button>
+  <!-- Left: Display picker + layer list -->
+  <div class="panel panel-left" role="region" aria-label="Display picker and layers">
+    <div class="display-picker-wrap">
+      <label for="display-picker">Display</label>
+      <select id="display-picker" aria-label="Select display to load">
+        <option value="">— loading —</option>
+      </select>
     </div>
-    <div class="panel-hdr" style="margin-top:0"><h2 id="layers-heading">Layers</h2></div>
+
+    <div class="mode-toggle" role="group" aria-label="Edit or preview mode">
+      <button class="mode-btn active" id="btn-preview" title="Preview mode — clean render">Preview</button>
+      <button class="mode-btn" id="btn-edit" title="Edit mode — selection handles + drag/resize">Edit</button>
+    </div>
+
+    <div class="panel-hdr"><h2 id="layers-heading">Layers</h2></div>
     <div class="scroll" id="layer-list" role="list" aria-labelledby="layers-heading" aria-live="polite"></div>
   </div>
 
@@ -230,22 +456,32 @@ button.flash{animation:btn-flash .4s ease}
         <input type="checkbox" id="snap-chk" aria-label="Enable grid snap">
         Grid snap
       </label>
-      <label for="snap-size" class="snap-label">Grid:</label>
+      <label for="snap-size">Grid:</label>
       <select id="snap-size" aria-label="Grid snap size" style="width:58px;background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:3px;padding:3px 5px;font-size:10px;font-family:'JetBrains Mono',monospace">
         <option value="0.01">1%</option>
         <option value="0.005">0.5%</option>
         <option value="0.02">2%</option>
       </select>
+      <label for="stage-res">Screen:</label>
+      <select id="stage-res" aria-label="Stage resolution" style="background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:3px;padding:3px 5px;font-size:10px;font-family:'JetBrains Mono',monospace">
+        <option value="1920,1080">1920×1080</option>
+        <option value="1280,720">1280×720</option>
+        <option value="2560,1440">2560×1440</option>
+      </select>
       <div style="flex:1"></div>
       <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#556" id="cursor-pos" aria-live="off">x:0 y:0</span>
       <button class="sm" id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;min-width:36px;text-align:center" id="zoom-label" aria-live="polite" aria-atomic="true">100%</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;min-width:36px;text-align:center" id="zoom-label" aria-live="polite">100%</span>
       <button class="sm" id="zoom-in" title="Zoom in" aria-label="Zoom in">+</button>
       <button class="sm" id="zoom-fit" title="Fit canvas to view" aria-label="Fit canvas to view">fit</button>
     </div>
     <div class="canvas-wrap" id="canvas-wrap">
-      <div class="stage" id="stage" role="application" aria-label="Dialog layout canvas — drag controls to reposition, use Escape to deselect">
-        <!-- controls rendered here -->
+      <div class="canvas-center" id="canvas-center">
+        <div class="stage-label" id="stage-label">1920 × 1080</div>
+        <div class="stage-label-side">GAME FRAME</div>
+        <div class="stage" id="stage" role="application" aria-label="Dialog canvas — click to select, drag to move">
+          <!-- controls rendered here by JS -->
+        </div>
       </div>
     </div>
   </div>
@@ -254,97 +490,66 @@ button.flash{animation:btn-flash .4s ease}
   <div class="panel panel-right" role="region" aria-label="Inspector and export">
     <div class="panel-hdr"><h2>Inspector</h2></div>
     <div class="scroll" id="inspector-wrap">
-      <div class="inspector-placeholder" id="inspector-placeholder">Select a control<br>to edit its properties</div>
-      <div class="inspector" id="inspector" style="display:none" role="form" aria-label="Selected control properties">
-        <div class="field-row">
-          <label for="f-name">Name</label>
-          <input type="text" id="f-name" placeholder="ControlName" autocomplete="off">
-        </div>
+      <div class="inspector-placeholder" id="inspector-placeholder">Select a control<br>to inspect its properties</div>
+      <div class="inspector" id="inspector" style="display:none">
+        <div id="insp-name" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--bone);margin-bottom:4px;font-weight:600"></div>
+        <div id="insp-baseclass" class="resolved-badge" style="margin-bottom:8px"></div>
+
         <div class="field-row">
           <label for="f-idc">IDC</label>
-          <input type="number" id="f-idc" placeholder="-2">
+          <input type="number" id="f-idc" readonly style="opacity:.7">
         </div>
         <div class="field-row">
-          <label for="f-type">Type</label>
-          <select id="f-type">
-            <option value="CT_STATIC">CT_STATIC (0)</option>
-            <option value="CT_BUTTON">CT_BUTTON (1)</option>
-            <option value="CT_EDIT">CT_EDIT (2)</option>
-            <option value="CT_COMBO">CT_COMBO (4)</option>
-            <option value="CT_LISTBOX">CT_LISTBOX (5)</option>
-            <option value="CT_CLICKABLETEXT">CT_CLICKABLETEXT (11)</option>
-            <option value="CT_STRUCTUREDTEXT">CT_STRUCTUREDTEXT (13)</option>
-            <option value="CT_CONTROLS_GROUP">CT_CONTROLS_GROUP (15)</option>
-            <option value="RscShortcutButton">RscShortcutButton (16)</option>
-          </select>
+          <label for="f-text">Text</label>
+          <input type="text" id="f-text" placeholder="(none)" readonly style="opacity:.7">
         </div>
-        <div class="field-row">
-          <label for="f-text">Text / Tooltip</label>
-          <input type="text" id="f-text" placeholder="">
-        </div>
-        <div class="field-row">
-          <label for="f-parent">Parent class</label>
-          <input type="text" id="f-parent" placeholder="RscText" autocomplete="off">
-        </div>
-        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
-        <div class="field-row">
-          <label>Position &amp; Size (0–1 fractions)</label>
-          <div class="grid-2">
-            <div>
-              <label for="f-x" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">x</label>
-              <input type="number" id="f-x" step="0.001" min="0" max="1" aria-label="X position">
-            </div>
-            <div>
-              <label for="f-y" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">y</label>
-              <input type="number" id="f-y" step="0.001" min="0" max="1" aria-label="Y position">
-            </div>
-            <div>
-              <label for="f-w" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">w</label>
-              <input type="number" id="f-w" step="0.001" min="0.001" max="1" aria-label="Width">
-            </div>
-            <div>
-              <label for="f-h" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">h</label>
-              <input type="number" id="f-h" step="0.001" min="0.001" max="1" aria-label="Height">
-            </div>
+
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Geometry</div>
+        <div class="grid-2" style="margin-bottom:8px">
+          <div>
+            <div class="prop-k">x</div>
+            <div class="prop-v" id="insp-x">—</div>
+          </div>
+          <div>
+            <div class="prop-k">y</div>
+            <div class="prop-v" id="insp-y">—</div>
+          </div>
+          <div>
+            <div class="prop-k">w</div>
+            <div class="prop-v" id="insp-w">—</div>
+          </div>
+          <div>
+            <div class="prop-k">h</div>
+            <div class="prop-v" id="insp-h">—</div>
           </div>
         </div>
-        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
-        <div class="field-row">
-          <label for="f-section">Section</label>
-          <select id="f-section">
-            <option value="controls">controls</option>
-            <option value="controlsBackground">controlsBackground</option>
-          </select>
-        </div>
-        <div class="btnbar">
-          <button id="apply-btn" class="primary sm">Apply</button>
-          <button id="delete-btn" class="sm" style="border-color:var(--danger);color:#e88" aria-label="Delete selected control">Delete</button>
-        </div>
+
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Resolved Props</div>
+        <div class="prop-grid" id="insp-resolved"></div>
+
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:6px">Overrides (delta)</div>
+        <div class="prop-grid" id="insp-overrides"></div>
       </div>
     </div>
 
     <!-- Export panel -->
-    <div class="export-panel" role="region" aria-label="Export and load">
+    <div class="export-panel" role="region" aria-label="Export">
       <div class="export-panel-hdr" id="export-toggle" role="button" tabindex="0"
-           aria-expanded="true" aria-controls="export-body">
-        <h2>Export / Load .hpp</h2>
-        <span class="tog" id="export-tog-label" aria-hidden="true">▲</span>
+           aria-expanded="false" aria-controls="export-body">
+        <h2>Export .hpp</h2>
+        <span class="tog" id="export-tog-label" aria-hidden="true">▼</span>
       </div>
-      <div class="export-body open" id="export-body">
-        <label for="export-out" style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px">Generated .hpp</label>
-        <textarea id="export-out" readonly placeholder="Click Export to generate…" rows="8" aria-label="Exported HPP code" aria-live="polite"></textarea>
+      <div class="export-body" id="export-body">
+        <textarea id="export-out" readonly placeholder="Click Export to generate…" rows="6" aria-label="Exported HPP code"></textarea>
         <div class="btnbar">
-          <button class="sm primary" id="export-btn" aria-label="Generate HPP export">Export</button>
-          <button class="sm" id="copy-btn" aria-label="Copy HPP to clipboard">Copy</button>
-          <button class="sm" id="download-btn" aria-label="Download as WF_Menu.hpp">Save .hpp</button>
+          <button class="sm primary" id="export-btn">Export</button>
+          <button class="sm" id="copy-btn">Copy</button>
+          <button class="sm" id="download-btn">Save .hpp</button>
         </div>
-        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
-        <label for="load-in" style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px">Load .hpp (paste class controls {...})</label>
-        <textarea id="load-in" placeholder="Paste class controls { ... }; here" rows="5" aria-label="Paste HPP source to import"></textarea>
-        <div class="btnbar">
-          <button class="sm" id="load-btn" aria-label="Load HPP from textarea">Load</button>
-        </div>
-        <div id="status-msg" role="status" aria-live="polite" aria-atomic="true"></div>
+        <div id="status-msg" role="status" aria-live="polite"></div>
       </div>
     </div>
   </div>
@@ -352,237 +557,854 @@ button.flash{animation:btn-flash .4s ease}
 
 <script>
 // ============================================================
-// Model
+// Constants
 // ============================================================
-const TYPE_NUM = {
-  CT_STATIC:0, CT_BUTTON:1, CT_EDIT:2, CT_COMBO:4,
-  CT_LISTBOX:5, CT_CLICKABLETEXT:11, CT_STRUCTUREDTEXT:13,
-  CT_CONTROLS_GROUP:15, RscShortcutButton:16,
-  CT_LISTNBOX:102, RscXSliderH:43, RscMapControl:101
-};
-const TYPE_NAME = Object.fromEntries(Object.entries(TYPE_NUM).map(([k,v])=>[v,k]));
 
-const TYPE_DOT_COLOR = {
-  CT_STATIC:'#39414b', CT_BUTTON:'#2a5a8c', RscShortcutButton:'#4bb8c8',
-  CT_CLICKABLETEXT:'#7a8a38', CT_LISTBOX:'#884488', CT_COMBO:'#b88820',
-  CT_STRUCTUREDTEXT:'#6a9040', CT_EDIT:'#a04040', CT_CONTROLS_GROUP:'#4444aa',
-  CT_LISTNBOX:'#a06070', RscXSliderH:'#609060', RscMapControl:'#208060'
-};
+// Default 16:9 stage size (logical pixels at 100% zoom)
+let STAGE_W = 960;  // logical display width; maps to 1920px at 2x, etc.
+let STAGE_H = 540;  // 16:9
+let SCREEN_W = 1920;
+let SCREEN_H = 1080;
 
-// Arma dialog SafeZone: 16:9 unit-square -> pixel mapping
-// Dialog coords: 0..1 = full screen. We render at STAGE_W x STAGE_H.
-const STAGE_W = 800;
-const STAGE_H = 450; // 16:9
+// SafeZone constants (16:9 preview)
+const SZ = { X: 0.07, Y: 0.07, W: 0.86, H: 0.86 };
 
-let model = { controls: [], controlsBackground: [] };
-let nextIdcBase = 20000;
-let selectedId = null;
+// ============================================================
+// State
+// ============================================================
+let uiData = null;           // parsed ui.json
+let currentDisplay = null;   // name of loaded display
+let displayData = null;      // display object from uiData.displays
+let selectedCtrl = null;     // selected control object (from display.background or .controls)
 let zoom = 1.0;
-let idCounter = 0;
+let editMode = false;
+let dragging = null;
 
-function genId() { return ++idCounter; }
+// ============================================================
+// Helpers
+// ============================================================
 
-function makeCtrl(overrides) {
-  const type_name = overrides.type_name || overrides.type_key || 'CT_STATIC';
-  const n = {
-    _id: genId(),
-    name: overrides.name || (type_name + '_' + (idCounter)),
-    parent: overrides.parent || '',
-    idc: overrides.idc !== undefined ? overrides.idc : -2,
-    type: overrides.type !== undefined ? overrides.type : (TYPE_NUM[type_name] || 0),
-    type_name: type_name,
-    x: overrides.x !== undefined ? overrides.x : 0.3,
-    y: overrides.y !== undefined ? overrides.y : 0.3,
-    w: overrides.w !== undefined ? overrides.w : 0.2,
-    h: overrides.h !== undefined ? overrides.h : 0.06,
-    text: overrides.text || '',
-    tooltip: overrides.tooltip || '',
-    action: overrides.action || '',
-    section: overrides.section || 'controls'
-  };
-  return n;
+function rgba(arr, alpha) {
+  if (!Array.isArray(arr) || arr.length < 3) return 'rgba(0,0,0,0)';
+  const r = Math.round(arr[0] * 255);
+  const g = Math.round(arr[1] * 255);
+  const b = Math.round(arr[2] * 255);
+  const a = alpha !== undefined ? alpha : (arr[3] !== undefined ? arr[3] : 1);
+  return `rgba(${r},${g},${b},${a})`;
 }
 
-// ============================================================
-// Load dialogs.json on boot
-// ============================================================
-async function loadJson() {
+function px(frac, dim) {
+  // Convert 0..1 fraction to logical pixel for current stage
+  return frac * dim;
+}
+
+/**
+ * Evaluate a SafeZone position expression.
+ * Handles strings like "0.882604 * safezoneW + safezoneX"
+ * and plain numbers.
+ */
+function evalSZ(val) {
+  if (typeof val === 'number') return val;
+  if (typeof val !== 'string') return 0;
+
+  const expr = val
+    .replace(/safezoneX/g, SZ.X)
+    .replace(/safezoneY/g, SZ.Y)
+    .replace(/safezoneW/g, SZ.W)
+    .replace(/safezoneH/g, SZ.H)
+    .replace(/SafeZoneX/g, SZ.X)
+    .replace(/SafeZoneY/g, SZ.Y)
+    .replace(/SafeZoneW/g, SZ.W)
+    .replace(/SafeZoneH/g, SZ.H);
+
   try {
-    const r = await fetch('assets/data/dialogs.json');
-    const data = await r.json();
-    const wfMenu = data.WF_Menu;
-    if (!wfMenu) { console.warn('WF_Menu not in JSON'); return; }
-
-    model.controlsBackground = (wfMenu.controlsBackground || []).map(c => makeCtrl({
-      ...c,
-      type_name: c.type_name || TYPE_NAME[c.type] || 'CT_STATIC',
-      section: 'controlsBackground'
-    }));
-
-    model.controls = (wfMenu.controls || []).map(c => makeCtrl({
-      ...c,
-      type_name: c.type_name || TYPE_NAME[c.type] || 'CT_STATIC',
-      section: 'controls'
-    }));
-
-    render();
-    // Auto-generate export on boot so the textarea isn't empty
-    document.getElementById('export-out').value = exportHpp();
+    // eslint-disable-next-line no-new-func
+    return Function('"use strict"; return (' + expr + ')')();
   } catch(e) {
-    console.error('Failed to load dialogs.json', e);
+    return parseFloat(val) || 0;
+  }
+}
+
+/**
+ * Clean a display text string:
+ * "$STR_WF_MAIN_Purchase_Units" => "Purchase Units"
+ * "$STR_RUBHUD_Money" => "Money"
+ */
+function cleanText(t) {
+  if (!t || typeof t !== 'string') return '';
+  if (!t.startsWith('$')) return t;
+  return t
+    .replace(/^\$STR_WF_MAIN_/, '')
+    .replace(/^\$STR_WF_/, '')
+    .replace(/^\$STR_RUBHUD_/, '')
+    .replace(/^\$STR_/, '')
+    .replace(/_/g, ' ')
+    .trim();
+}
+
+/**
+ * Get a WYSIWYG class from baseClass + resolved props.
+ * Returns {wClass, subType} where wClass is the CSS class and subType is for further refinement.
+ */
+function getWClass(ctrl) {
+  const base = (ctrl.baseClass || ctrl.rscBase || '').toLowerCase();
+  const r = ctrl.resolved || {};
+
+  if (base.includes('shortcutbuttonmain') || base === 'rscshotcutbuttonmain') return 'shortcutbuttonmain';
+  if (base.includes('shortcutbutton')) return 'shortcutbutton';
+  if (base.includes('button_exit') || base === 'rscbutton_exit') return 'button-exit';
+  if (base.includes('button_back')) return 'button-main'; // treat << like main
+  if (base.includes('button_main') || base === 'rscbutton_main') return 'button-main';
+  if (base.includes('button')) return 'button';
+  if (base === 'iguiback') return 'iguiback';
+  if (base === 'rscframe') return 'rscframe';
+  if (base.includes('mapcontrol') || base.includes('rscmapcontrol')) return 'mapcontrol';
+  if (base.includes('listnbox') || base.includes('listboxa') || base === 'rsclistnbox') return 'listbox';
+  if (base.includes('listbox')) return 'listbox';
+  if (base.includes('combo')) return 'combo';
+  if (base.includes('edit')) return 'edit';
+  if (base.includes('clickabletext')) return 'picture';
+  if (base.includes('picture') || base.includes('picturekeeper')) return 'picture';
+  if (base.includes('structuredtext')) return 'structuredtext';
+  if (base.includes('xsliderh')) return 'slider';
+  if (base.includes('controlsgroup') || base.includes('rsccontrolsgroup')) return 'ctrlgroup';
+
+  // Fallback by type number
+  const type = r.type !== undefined ? r.type : (ctrl.props && ctrl.props.type);
+  switch(type) {
+    case 1: return 'button';
+    case 2: return 'edit';
+    case 4: return 'combo';
+    case 5: return 'listbox';
+    case 11: return 'picture';
+    case 13: return 'structuredtext';
+    case 15: return 'ctrlgroup';
+    case 16: return 'shortcutbutton';
+    case 43: return 'slider';
+    case 101: return 'mapcontrol';
+    case 102: return 'listbox';
+    default: return 'rsctext';
+  }
+}
+
+// Determine if a control is a background control (section)
+function isBgCtrl(ctrl, display) {
+  return (display.background || []).includes(ctrl) ||
+    (ctrl._section === 'background');
+}
+
+// ============================================================
+// Load ui.json
+// ============================================================
+async function loadUiJson() {
+  try {
+    const r = await fetch('assets/data/ui.json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    uiData = await r.json();
+    buildDisplayPicker();
+    // Auto-load WF_Menu
+    loadDisplay('WF_Menu');
+  } catch(e) {
+    console.error('Failed to load ui.json:', e);
+    setStatus('Failed to load ui.json: ' + e.message, 'err');
   }
 }
 
 // ============================================================
-// Stage + zoom
+// Display picker
 // ============================================================
-const stage = document.getElementById('stage');
-const zoomLabel = document.getElementById('zoom-label');
+function buildDisplayPicker() {
+  const sel = document.getElementById('display-picker');
+  sel.innerHTML = '';
 
-function setZoom(z) {
-  zoom = Math.max(0.3, Math.min(3, z));
-  stage.style.width = (STAGE_W * zoom) + 'px';
-  stage.style.height = (STAGE_H * zoom) + 'px';
-  zoomLabel.textContent = Math.round(zoom * 100) + '%';
-  renderControls();
-}
+  const categories = {};
+  for (const [name, d] of Object.entries(uiData.displays)) {
+    const cat = d.category || 'dialog';
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(name);
+  }
 
-document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.15));
-document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.15));
-document.getElementById('zoom-fit').addEventListener('click', () => {
-  const wrap = document.getElementById('canvas-wrap');
-  const wz = (wrap.clientWidth - 48) / STAGE_W;
-  const hz = (wrap.clientHeight - 48) / STAGE_H;
-  setZoom(Math.min(wz, hz));
-});
-
-// Keyboard: Escape deselects, +/- zoom
-document.addEventListener('keydown', e => {
-  // Only act if not focused on a text input / textarea
-  const tag = document.activeElement && document.activeElement.tagName;
-  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-
-  if (e.key === 'Escape') {
-    if (selectedId !== null) {
-      selectCtrl(null);
-      e.preventDefault();
+  const catOrder = ['dialog', 'hud'];
+  for (const cat of catOrder) {
+    if (!categories[cat]) continue;
+    const grp = document.createElement('optgroup');
+    grp.label = cat.toUpperCase() + 'S';
+    for (const name of categories[cat]) {
+      const d = uiData.displays[name];
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name + ' (idd ' + d.idd + ')';
+      grp.appendChild(opt);
     }
+    sel.appendChild(grp);
   }
-  if (!inInput) {
-    if (e.key === '+' || e.key === '=') { setZoom(zoom + 0.15); e.preventDefault(); }
-    if (e.key === '-') { setZoom(zoom - 0.15); e.preventDefault(); }
-    if (e.key === 'Delete' || e.key === 'Backspace') {
-      if (selectedId !== null) {
-        const ctrl = getCtrlById(selectedId);
-        if (ctrl) {
-          model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
-          selectedId = null;
-          render();
-          e.preventDefault();
-        }
+
+  sel.addEventListener('change', () => {
+    if (sel.value) loadDisplay(sel.value);
+  });
+}
+
+// ============================================================
+// Load a display
+// ============================================================
+function loadDisplay(name) {
+  if (!uiData || !uiData.displays[name]) return;
+  currentDisplay = name;
+  displayData = uiData.displays[name];
+  selectedCtrl = null;
+
+  // Tag controls with section
+  for (const c of (displayData.background || [])) c._section = 'background';
+  for (const c of (displayData.controls || [])) c._section = 'controls';
+
+  // Update picker
+  const sel = document.getElementById('display-picker');
+  sel.value = name;
+
+  // Update chip
+  const total = (displayData.background || []).length + (displayData.controls || []).length;
+  document.getElementById('ctrl-count-chip').innerHTML = '<b>' + total + '</b> controls';
+  document.getElementById('dialog-chip').textContent = name + ' · idd ' + displayData.idd;
+
+  renderAll();
+}
+
+// ============================================================
+// Coordinate conversion
+// ============================================================
+function ctrlPx(ctrl) {
+  // Returns {left, top, width, height} in logical stage pixels
+  const r = ctrl.resolved || ctrl.props || {};
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+
+  let xf, yf, wf, hf;
+  if (posSystem === 'safezone') {
+    xf = evalSZ(r.x !== undefined ? r.x : (ctrl.props && ctrl.props.x) || 0);
+    yf = evalSZ(r.y !== undefined ? r.y : (ctrl.props && ctrl.props.y) || 0);
+    wf = evalSZ(r.w !== undefined ? r.w : (ctrl.props && ctrl.props.w) || 0.1);
+    hf = evalSZ(r.h !== undefined ? r.h : (ctrl.props && ctrl.props.h) || 0.04);
+  } else {
+    xf = parseFloat(r.x !== undefined ? r.x : (ctrl.props && ctrl.props.x) || 0);
+    yf = parseFloat(r.y !== undefined ? r.y : (ctrl.props && ctrl.props.y) || 0);
+    wf = parseFloat(r.w !== undefined ? r.w : (ctrl.props && ctrl.props.w) || 0.1);
+    hf = parseFloat(r.h !== undefined ? r.h : (ctrl.props && ctrl.props.h) || 0.04);
+  }
+
+  return {
+    left: xf * STAGE_W,
+    top: yf * STAGE_H,
+    width: Math.max(2, wf * STAGE_W),
+    height: Math.max(2, hf * STAGE_H)
+  };
+}
+
+// ============================================================
+// WYSIWYG Control rendering
+// ============================================================
+function buildControlEl(ctrl, zIndex) {
+  const r = ctrl.resolved || ctrl.props || {};
+  const p = ctrl.props || {};
+  const wclass = getWClass(ctrl);
+  const geo = ctrlPx(ctrl);
+  const isSelected = ctrl === selectedCtrl;
+
+  const el = document.createElement('div');
+  el.className = 'ctrl' + (editMode ? ' edit-mode' : '') + (isSelected ? ' selected' : '');
+  el.dataset.name = ctrl.name || '';
+
+  // Base geometry
+  el.style.left = (geo.left * zoom) + 'px';
+  el.style.top = (geo.top * zoom) + 'px';
+  el.style.width = (geo.width * zoom) + 'px';
+  el.style.height = (geo.height * zoom) + 'px';
+  el.style.zIndex = zIndex;
+
+  // Font size from sizeEx: sizeEx is fraction of screen height
+  const sizeEx = r.sizeEx !== undefined ? r.sizeEx : 0.03;
+  const fontPx = sizeEx * STAGE_H * zoom;
+
+  // Apply WYSIWYG style based on type
+  switch (wclass) {
+    case 'iguiback': {
+      el.classList.add('wt-iguiback');
+      const bg = r.colorBackground || p.colorBackground;
+      if (Array.isArray(bg)) el.style.background = rgba(bg);
+      break;
+    }
+
+    case 'rscframe': {
+      el.classList.add('wt-rscframe');
+      const ct = r.colorText || p.colorText || [1,1,1,1];
+      el.style.borderColor = rgba(ct);
+      break;
+    }
+
+    case 'mapcontrol': {
+      el.classList.add('wt-mapcontrol');
+      const inner = document.createElement('div');
+      inner.className = 'map-label';
+      inner.textContent = 'MAP';
+      inner.style.fontSize = Math.max(8, fontPx * 0.8) + 'px';
+      el.appendChild(inner);
+      break;
+    }
+
+    case 'shortcutbuttonmain': {
+      el.classList.add('wt-shortcutbuttonmain');
+      const color = r.color || p.color || [0.2588, 0.7137, 1, 1];
+      el.style.borderColor = rgba(color);
+      el.style.boxShadow = `inset 0 0 ${geo.width*zoom*0.1}px ${rgba(color, 0.08)}, 0 0 ${geo.width*zoom*0.05}px ${rgba(color, 0.25)}`;
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'sb-icon';
+      iconDiv.style.fontSize = Math.max(7, fontPx * 0.9) + 'px';
+      iconDiv.style.color = rgba(color, 0.7);
+      iconDiv.style.borderRightColor = rgba(color, 0.35);
+      iconDiv.style.background = rgba(color, 0.1);
+      iconDiv.innerHTML = '&#9632;'; // placeholder icon
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'sb-label';
+      const txt = cleanText(r.text || p.text || ctrl.name || '');
+      labelDiv.textContent = txt;
+      labelDiv.style.fontSize = Math.max(7, fontPx * 0.95) + 'px';
+
+      el.appendChild(iconDiv);
+      el.appendChild(labelDiv);
+      break;
+    }
+
+    case 'shortcutbutton': {
+      el.classList.add('wt-shortcutbutton');
+      const color = r.color || p.color || [0.543, 0.574, 0.41, 1];
+      el.style.borderColor = rgba(color);
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'sb-icon';
+      iconDiv.style.fontSize = Math.max(6, fontPx * 0.8) + 'px';
+      iconDiv.style.color = rgba(color, 0.8);
+      iconDiv.style.borderRightColor = rgba(color, 0.3);
+      iconDiv.style.background = rgba(color, 0.08);
+      iconDiv.innerHTML = '&#9632;';
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'sb-label';
+      labelDiv.textContent = cleanText(r.text || p.text || ctrl.name || '');
+      labelDiv.style.fontSize = Math.max(6, fontPx * 0.85) + 'px';
+
+      el.appendChild(iconDiv);
+      el.appendChild(labelDiv);
+      break;
+    }
+
+    case 'button':
+    case 'button-main':
+    case 'button-exit': {
+      el.classList.add('wt-rscbutton');
+      const bg = r.colorBackground || p.colorBackground;
+      const ct = r.colorText || p.colorText || [1,1,1,0.8];
+
+      if (wclass === 'button-main') {
+        el.classList.add('wt-rscbutton-main');
+      } else if (wclass === 'button-exit') {
+        el.classList.add('wt-rscbutton-exit');
+      } else if (Array.isArray(bg)) {
+        el.style.background = rgba(bg);
       }
+
+      el.style.color = rgba(ct);
+      el.style.fontSize = Math.max(7, fontPx) + 'px';
+
+      const txt = cleanText(r.text || p.text || ctrl.name || '');
+      el.textContent = txt;
+      break;
+    }
+
+    case 'listbox': {
+      el.classList.add('wt-listbox');
+      const bg = r.colorBackground || p.colorBackground || [0,0,0,1];
+      if (Array.isArray(bg)) el.style.background = rgba(bg);
+
+      const header = document.createElement('div');
+      header.className = 'lb-header';
+      header.textContent = cleanText(ctrl.name || '');
+      header.style.fontSize = Math.max(6, fontPx * 0.75) + 'px';
+
+      const rows = document.createElement('div');
+      rows.className = 'lb-rows';
+      // Render a few sample rows
+      const sampleRows = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];
+      sampleRows.forEach((txt, i) => {
+        const row = document.createElement('div');
+        row.className = 'lb-row' + (i === 0 ? ' sel' : '');
+        row.textContent = txt;
+        row.style.fontSize = Math.max(5, fontPx * 0.7) + 'px';
+        rows.appendChild(row);
+      });
+
+      el.appendChild(header);
+      el.appendChild(rows);
+      break;
+    }
+
+    case 'combo': {
+      el.classList.add('wt-combo');
+      const ct = r.colorText || p.colorText || [1,1,1,0.75];
+      const color = r.color || p.color || [0.2588, 0.7137, 1, 1];
+
+      const textEl = document.createElement('div');
+      textEl.className = 'combo-text';
+      textEl.textContent = cleanText(r.text || p.text || ctrl.name || '') || '---';
+      textEl.style.fontSize = Math.max(6, fontPx * 0.8) + 'px';
+      textEl.style.color = rgba(ct);
+
+      const arrowEl = document.createElement('div');
+      arrowEl.className = 'combo-arrow';
+      arrowEl.innerHTML = '&#9660;';
+      arrowEl.style.color = rgba(color);
+      arrowEl.style.fontSize = Math.max(6, fontPx * 0.7) + 'px';
+
+      el.appendChild(textEl);
+      el.appendChild(arrowEl);
+      break;
+    }
+
+    case 'edit': {
+      el.classList.add('wt-edit');
+      // The ::after pseudo-element handles the cursor
+      const inner = document.createElement('div');
+      inner.className = 'edit-inner';
+      inner.textContent = cleanText(r.text || p.text || '') || '';
+      inner.style.fontSize = Math.max(6, fontPx * 0.8) + 'px';
+      el.appendChild(inner);
+      // Remove cursor in preview if text has content
+      if (inner.textContent) el.style.setProperty('--edit-cursor-opacity', '0');
+      break;
+    }
+
+    case 'picture': {
+      el.classList.add('wt-picture');
+      const ct = r.color || r.colorText || p.colorText || [0.75, 0.75, 0.75, 1];
+      const colorVal = rgba(ct);
+      el.style.borderColor = rgba(ct, 0.3);
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'pic-icon';
+      iconDiv.style.color = colorVal;
+
+      // Icon placeholder square
+      const sq = document.createElement('div');
+      sq.style.cssText = `width:${Math.max(8, geo.width*zoom*0.35)}px;height:${Math.max(8, geo.height*zoom*0.6)}px;border:1px solid currentColor;opacity:.5;border-radius:2px`;
+      iconDiv.appendChild(sq);
+
+      const lbl = document.createElement('div');
+      lbl.style.cssText = `font-size:${Math.max(5, fontPx*0.55)}px;opacity:.6;margin-top:1px;overflow:hidden;max-width:${geo.width*zoom*0.9}px;text-align:center;white-space:nowrap;text-overflow:ellipsis`;
+      lbl.textContent = cleanText(r.text || p.text || ctrl.name || '');
+      iconDiv.appendChild(lbl);
+
+      el.appendChild(iconDiv);
+      break;
+    }
+
+    case 'structuredtext': {
+      el.classList.add('wt-structuredtext');
+      const ct = r.colorText || p.colorText || [1, 1, 0.7, 1];
+      el.style.color = rgba(ct);
+      el.style.fontSize = Math.max(6, fontPx * 0.85) + 'px';
+      el.textContent = cleanText(r.text || p.text || ctrl.name || '');
+      break;
+    }
+
+    case 'slider': {
+      el.classList.add('wt-slider');
+      const color = r.color || p.color || [1,1,1,0.4];
+
+      const arrLeft = document.createElement('span');
+      arrLeft.className = 'sl-arr';
+      arrLeft.innerHTML = '&#9664;';
+
+      const track = document.createElement('div');
+      track.className = 'sl-track';
+      const fill = document.createElement('div');
+      fill.className = 'sl-fill';
+      const thumb = document.createElement('div');
+      thumb.className = 'sl-thumb';
+      track.appendChild(fill);
+      track.appendChild(thumb);
+
+      const arrRight = document.createElement('span');
+      arrRight.className = 'sl-arr';
+      arrRight.innerHTML = '&#9654;';
+
+      el.appendChild(arrLeft);
+      el.appendChild(track);
+      el.appendChild(arrRight);
+      break;
+    }
+
+    case 'ctrlgroup': {
+      el.classList.add('wt-ctrlgroup');
+      // Render name label in edit mode
+      if (editMode) {
+        const lbl = document.createElement('div');
+        lbl.style.cssText = `font-family:'JetBrains Mono',monospace;font-size:${Math.max(6, fontPx*0.6)}px;color:rgba(100,100,200,.7);padding:2px;`;
+        lbl.textContent = ctrl.name;
+        el.appendChild(lbl);
+      }
+      break;
+    }
+
+    default: // rsctext
+    case 'rsctext': {
+      el.classList.add('wt-rsctext');
+
+      const ct = r.colorText || p.colorText;
+      const bg = r.colorBackground || p.colorBackground;
+
+      if (Array.isArray(ct)) el.style.color = rgba(ct);
+      if (Array.isArray(bg) && (bg[3] || 0) > 0.01) {
+        el.style.background = rgba(bg);
+      } else {
+        el.style.background = 'transparent';
+      }
+
+      el.style.fontSize = Math.max(6, fontPx) + 'px';
+
+      // Apply text shadow
+      const shadow = r.shadow !== undefined ? r.shadow : 2;
+      if (shadow === 2) {
+        el.style.textShadow = '1px 1px 2px rgba(0,0,0,.9)';
+      } else if (shadow === 1) {
+        el.style.textShadow = '0 0 3px rgba(0,0,0,.9),-1px -1px 0 rgba(0,0,0,.6),1px 1px 0 rgba(0,0,0,.6)';
+      }
+
+      const txt = r.text !== undefined ? r.text : p.text;
+      el.textContent = cleanText(txt || ctrl.name || '');
+      break;
     }
   }
-});
 
-// Export toggle: also keyboard-activatable (space/enter on the header div)
-document.getElementById('export-toggle').addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    document.getElementById('export-toggle').click();
-  }
-});
+  // Resize handle (edit mode)
+  const rh = document.createElement('div');
+  rh.className = 'rh';
+  rh.dataset.resize = '1';
+  rh.setAttribute('aria-hidden', 'true');
+  el.appendChild(rh);
 
-// ============================================================
-// Render
-// ============================================================
-function allControls() {
-  return [...model.controlsBackground, ...model.controls];
+  // Events
+  el.addEventListener('mousedown', (e) => onCtrlMouseDown(e, ctrl));
+  el.title = ctrl.name + (ctrl.idc !== undefined && ctrl.idc >= 0 ? ' (idc ' + ctrl.idc + ')' : '');
+
+  return el;
 }
 
-function getCtrlById(id) {
-  return allControls().find(c => c._id === id);
-}
-
-function render() {
+// ============================================================
+// Render all
+// ============================================================
+function renderAll() {
   renderControls();
   renderLayers();
   renderInspector();
-  updateChip();
-}
-
-function updateChip() {
-  const total = model.controls.length + model.controlsBackground.length;
-  document.getElementById('ctrl-count-chip').innerHTML = '<b>' + total + '</b> controls';
-}
-
-function typeClass(type_name) {
-  if (type_name === 'RscShortcutButton' || type_name === 'RscShortcutButtonMain') return 't-RscShortcutButton';
-  return 't-' + (type_name || 'CT_STATIC');
-}
-
-function ctrlLabel(c) {
-  const txt = c.text ? c.text.replace(/^\$STR_WF_/, '').replace(/^\$STR_WF_MAIN_/, '') : '';
-  return txt || c.name;
 }
 
 function renderControls() {
-  // Remove all ctrl-box children
-  [...stage.querySelectorAll('.ctrl-box')].forEach(el => el.remove());
+  const stage = document.getElementById('stage');
+  // Clear
+  stage.innerHTML = '';
 
-  const all = allControls();
-  all.forEach((c, i) => {
-    const el = document.createElement('div');
-    el.className = 'ctrl-box ' + typeClass(c.type_name);
-    if (c._id === selectedId) el.classList.add('selected');
+  if (!displayData) return;
 
-    const px = Math.round(c.x * STAGE_W * zoom);
-    const py = Math.round(c.y * STAGE_H * zoom);
-    const pw = Math.max(6, Math.round(c.w * STAGE_W * zoom));
-    const ph = Math.max(4, Math.round(c.h * STAGE_H * zoom));
-
-    el.style.left = px + 'px';
-    el.style.top = py + 'px';
-    el.style.width = pw + 'px';
-    el.style.height = ph + 'px';
-    el.style.zIndex = i + 1;
-    el.dataset.id = c._id;
-    el.title = c.name + (c.tooltip ? '\n' + c.tooltip : '');
-    el.setAttribute('role', 'button');
-    el.setAttribute('aria-label', c.name + ' (' + c.type_name + ')' + (c._id === selectedId ? ', selected' : ''));
-    el.setAttribute('tabindex', '0');
-
-    // Label
-    const lbl = document.createElement('span');
-    lbl.textContent = ctrlLabel(c);
-    lbl.style.pointerEvents = 'none';
-    lbl.setAttribute('aria-hidden', 'true');
-    el.appendChild(lbl);
-
-    // Resize handle
-    const rh = document.createElement('div');
-    rh.className = 'resize-handle';
-    rh.dataset.resize = '1';
-    rh.setAttribute('aria-hidden', 'true');
-    el.appendChild(rh);
-
-    // Events
-    el.addEventListener('mousedown', onCtrlMouseDown);
-    el.addEventListener('keydown', ev => {
-      if (ev.key === 'Enter' || ev.key === ' ') {
-        selectCtrl(c._id);
-        ev.preventDefault();
-      }
-    });
-
+  const all = [...(displayData.background || []), ...(displayData.controls || [])];
+  all.forEach((ctrl, i) => {
+    const el = buildControlEl(ctrl, i + 1);
     stage.appendChild(el);
   });
 }
 
 // ============================================================
-// Drag + Resize
+// Layer list
 // ============================================================
-let dragging = null; // {_id, mode:'move'|'resize', startMx, startMy, startX, startY, startW, startH}
+function renderLayers() {
+  const el = document.getElementById('layer-list');
+  el.innerHTML = '';
+
+  if (!displayData) return;
+
+  function addSection(arr, label, isBg) {
+    if (!arr || arr.length === 0) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'layer-hdr';
+    hdr.textContent = label;
+    el.appendChild(hdr);
+
+    arr.forEach(ctrl => {
+      const row = document.createElement('div');
+      row.className = 'layer-item' + (ctrl === selectedCtrl ? ' selected' : '') + (isBg ? ' bg-ctrl' : '');
+      row.setAttribute('role', 'listitem');
+      row.setAttribute('tabindex', '0');
+
+      const dot = document.createElement('span');
+      dot.className = 'layer-dot';
+      dot.style.background = getWClassColor(getWClass(ctrl));
+      dot.setAttribute('aria-hidden', 'true');
+      row.appendChild(dot);
+
+      const name = document.createElement('span');
+      name.className = 'layer-name';
+      name.textContent = ctrl.name;
+      name.title = ctrl.name;
+      row.appendChild(name);
+
+      const idc = document.createElement('span');
+      idc.className = 'layer-idc';
+      idc.textContent = ctrl.idc !== undefined && ctrl.idc >= 0 ? ctrl.idc : '';
+      row.appendChild(idc);
+
+      row.addEventListener('click', () => selectCtrl(ctrl));
+      row.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ') { selectCtrl(ctrl); ev.preventDefault(); }
+      });
+      el.appendChild(row);
+    });
+  }
+
+  addSection(displayData.background, 'controlsBackground', true);
+  addSection(displayData.controls, 'controls', false);
+}
+
+function getWClassColor(wclass) {
+  const map = {
+    'shortcutbuttonmain': '#42b6ff',
+    'shortcutbutton': '#8a9266',
+    'button-main': '#2a80cc',
+    'button': '#5c6536',
+    'button-exit': '#802020',
+    'iguiback': '#39414b',
+    'rscframe': '#666',
+    'mapcontrol': '#406030',
+    'listbox': '#884488',
+    'combo': '#b88820',
+    'edit': '#804040',
+    'picture': '#6a9040',
+    'structuredtext': '#7a7020',
+    'slider': '#609060',
+    'ctrlgroup': '#4444aa',
+    'rsctext': '#6a6050',
+  };
+  return map[wclass] || '#39414b';
+}
+
+// ============================================================
+// Inspector
+// ============================================================
+function renderInspector() {
+  const ctrl = selectedCtrl;
+  const placeholder = document.getElementById('inspector-placeholder');
+  const insp = document.getElementById('inspector');
+
+  if (!ctrl) {
+    placeholder.style.display = '';
+    insp.style.display = 'none';
+    return;
+  }
+
+  placeholder.style.display = 'none';
+  insp.style.display = '';
+
+  document.getElementById('insp-name').textContent = ctrl.name;
+  document.getElementById('insp-baseclass').textContent = ctrl.baseClass || ctrl.rscBase || '—';
+
+  document.getElementById('f-idc').value = ctrl.idc !== undefined ? ctrl.idc : -2;
+
+  const r = ctrl.resolved || ctrl.props || {};
+  const p = ctrl.props || {};
+
+  document.getElementById('f-text').value = cleanText(r.text !== undefined ? r.text : (p.text || ''));
+
+  // Geometry
+  document.getElementById('insp-x').textContent = fmtVal(r.x !== undefined ? r.x : p.x);
+  document.getElementById('insp-y').textContent = fmtVal(r.y !== undefined ? r.y : p.y);
+  document.getElementById('insp-w').textContent = fmtVal(r.w !== undefined ? r.w : p.w);
+  document.getElementById('insp-h').textContent = fmtVal(r.h !== undefined ? r.h : p.h);
+
+  // Resolved props (skip geometry + giant arrays of textures)
+  const resolvedEl = document.getElementById('insp-resolved');
+  resolvedEl.innerHTML = '';
+  const skipKeys = new Set(['x','y','w','h','idc','text','type','type_name',
+    'animTextureNormal','animTextureDisabled','animTextureOver','animTextureFocused',
+    'animTexturePressed','animTextureDefault','soundEnter','soundPush','soundClick','soundEscape',
+    'period','periodFocus','periodOver','default','textureNoShortcut',
+    'columns','maxHistoryDelay','autoScrollSpeed','autoScrollDelay','autoScrollRewind',
+    'soundSelect','soundExpand','soundCollapse','soundDoubleClick','soundPush']);
+
+  const colorKeys = new Set(['colorText','colorBackground','colorBackgroundActive','colorFocused',
+    'colorShadow','colorBorder','colorDisabled','colorBackgroundDisabled','colorSelectBackground',
+    'color','color2','colorBackground2','colorSelect','colorActive','colorOutside']);
+
+  const importantKeys = ['colorText','colorBackground','colorFocused','color','sizeEx','shadow','font','style'];
+  const resolvedEntries = Object.entries(ctrl.resolved || ctrl.props || {})
+    .filter(([k]) => !skipKeys.has(k))
+    .sort(([a],[b]) => {
+      const ai = importantKeys.indexOf(a);
+      const bi = importantKeys.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+
+  for (const [k, v] of resolvedEntries.slice(0, 20)) {
+    const kEl = document.createElement('div');
+    kEl.className = 'prop-k';
+    kEl.textContent = k;
+    resolvedEl.appendChild(kEl);
+
+    const vEl = document.createElement('div');
+    vEl.className = 'prop-v';
+
+    if (colorKeys.has(k) && Array.isArray(v)) {
+      const swatch = document.createElement('span');
+      swatch.className = 'color-swatch';
+      swatch.style.background = rgba(v);
+      vEl.appendChild(swatch);
+      vEl.appendChild(document.createTextNode(rgba(v)));
+    } else {
+      vEl.textContent = fmtVal(v);
+    }
+    resolvedEl.appendChild(vEl);
+  }
+
+  // Override props (delta)
+  const overEl = document.getElementById('insp-overrides');
+  overEl.innerHTML = '';
+  for (const [k, v] of Object.entries(ctrl.props || {})) {
+    if (skipKeys.has(k)) continue;
+    const kEl = document.createElement('div');
+    kEl.className = 'prop-k';
+    kEl.style.color = 'var(--orange)';
+    kEl.textContent = k;
+    overEl.appendChild(kEl);
+
+    const vEl = document.createElement('div');
+    vEl.className = 'prop-v';
+    if (colorKeys.has(k) && Array.isArray(v)) {
+      const swatch = document.createElement('span');
+      swatch.className = 'color-swatch';
+      swatch.style.background = rgba(v);
+      vEl.appendChild(swatch);
+      vEl.appendChild(document.createTextNode(rgba(v)));
+    } else {
+      vEl.textContent = fmtVal(v);
+    }
+    overEl.appendChild(vEl);
+  }
+
+  if (overEl.children.length === 0) {
+    const note = document.createElement('div');
+    note.className = 'prop-k';
+    note.style.gridColumn = '1/-1';
+    note.textContent = '(no overrides — all inherited)';
+    overEl.appendChild(note);
+  }
+}
+
+function fmtVal(v) {
+  if (v === null || v === undefined) return '—';
+  if (Array.isArray(v)) {
+    if (v.length <= 4 && v.every(x => typeof x === 'number')) {
+      return '[' + v.map(x => parseFloat(x.toFixed(3))).join(', ') + ']';
+    }
+    return '[…]';
+  }
+  if (typeof v === 'number') return parseFloat(v.toFixed(6)).toString();
+  return String(v);
+}
+
+// ============================================================
+// Selection
+// ============================================================
+function selectCtrl(ctrl) {
+  selectedCtrl = ctrl;
+  renderControls();
+  renderLayers();
+  renderInspector();
+}
+
+// Click on empty stage
+document.getElementById('stage').addEventListener('mousedown', e => {
+  if (e.target === document.getElementById('stage')) selectCtrl(null);
+});
+
+// ============================================================
+// Drag + Resize (edit mode only)
+// ============================================================
+function onCtrlMouseDown(e, ctrl) {
+  selectCtrl(ctrl);
+  if (!editMode) return;
+
+  const isResize = e.target.dataset.resize === '1';
+  const geo = ctrlPx(ctrl);
+  const r = ctrl.resolved || ctrl.props || {};
+  const p = ctrl.props || {};
+
+  // Get current fractional coords
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+  const getF = (key) => {
+    const raw = r[key] !== undefined ? r[key] : p[key];
+    return posSystem === 'safezone' ? evalSZ(raw) : parseFloat(raw) || 0;
+  };
+
+  dragging = {
+    ctrl, isResize,
+    startMx: e.clientX, startMy: e.clientY,
+    startX: getF('x'), startY: getF('y'),
+    startW: getF('w'), startH: getF('h'),
+    posSystem
+  };
+
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+document.addEventListener('mousemove', e => {
+  // Update cursor readout
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) / zoom;
+  const my = (e.clientY - rect.top) / zoom;
+  const fxc = (mx / STAGE_W).toFixed(3);
+  const fyc = (my / STAGE_H).toFixed(3);
+  document.getElementById('cursor-pos').textContent = 'x:' + fxc + ' y:' + fyc;
+
+  if (!dragging || !editMode) return;
+
+  const dx = (e.clientX - dragging.startMx) / (STAGE_W * zoom);
+  const dy = (e.clientY - dragging.startMy) / (STAGE_H * zoom);
+  const ctrl = dragging.ctrl;
+  const p = ctrl.props;
+
+  if (dragging.isResize) {
+    p.w = snapVal(Math.max(0.005, dragging.startW + dx));
+    p.h = snapVal(Math.max(0.002, dragging.startH + dy));
+  } else {
+    p.x = snapVal(Math.max(0, dragging.startX + dx));
+    p.y = snapVal(Math.max(0, dragging.startY + dy));
+  }
+
+  // Sync to resolved
+  if (ctrl.resolved) {
+    if (dragging.isResize) { ctrl.resolved.w = p.w; ctrl.resolved.h = p.h; }
+    else { ctrl.resolved.x = p.x; ctrl.resolved.y = p.y; }
+  }
+
+  renderControls();
+  document.getElementById('insp-x').textContent = fmtVal(p.x);
+  document.getElementById('insp-y').textContent = fmtVal(p.y);
+  document.getElementById('insp-w').textContent = fmtVal(p.w);
+  document.getElementById('insp-h').textContent = fmtVal(p.h);
+});
+
+document.addEventListener('mouseup', () => { dragging = null; });
 
 function snapVal(v) {
   if (!document.getElementById('snap-chk').checked) return v;
@@ -590,489 +1412,156 @@ function snapVal(v) {
   return Math.round(v / step) * step;
 }
 
-function onCtrlMouseDown(e) {
-  const id = parseInt(e.currentTarget.dataset.id);
-  selectCtrl(id);
+// ============================================================
+// Zoom + Stage size
+// ============================================================
+const stage = document.getElementById('stage');
+const zoomLabel = document.getElementById('zoom-label');
 
-  const ctrl = getCtrlById(id);
-  if (!ctrl) return;
-
-  const isResize = e.target.dataset.resize === '1';
-  dragging = {
-    _id: id,
-    mode: isResize ? 'resize' : 'move',
-    startMx: e.clientX,
-    startMy: e.clientY,
-    startX: ctrl.x,
-    startY: ctrl.y,
-    startW: ctrl.w,
-    startH: ctrl.h
-  };
-  e.stopPropagation();
-  e.preventDefault();
-}
-
-document.addEventListener('mousemove', e => {
-  if (!dragging) {
-    // Update cursor position display
-    const stageRect = stage.getBoundingClientRect();
-    const mx = e.clientX - stageRect.left;
-    const my = e.clientY - stageRect.top;
-    const fx = mx / (STAGE_W * zoom);
-    const fy = my / (STAGE_H * zoom);
-    if (fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1) {
-      document.getElementById('cursor-pos').textContent =
-        'x:' + fx.toFixed(3) + ' y:' + fy.toFixed(3);
-    }
-    return;
-  }
-
-  const dx = (e.clientX - dragging.startMx) / (STAGE_W * zoom);
-  const dy = (e.clientY - dragging.startMy) / (STAGE_H * zoom);
-  const ctrl = getCtrlById(dragging._id);
-  if (!ctrl) return;
-
-  if (dragging.mode === 'move') {
-    ctrl.x = snapVal(Math.max(0, Math.min(1 - ctrl.w, dragging.startX + dx)));
-    ctrl.y = snapVal(Math.max(0, Math.min(1 - ctrl.h, dragging.startY + dy)));
-  } else {
-    ctrl.w = snapVal(Math.max(0.01, Math.min(1 - ctrl.x, dragging.startW + dx)));
-    ctrl.h = snapVal(Math.max(0.005, Math.min(1 - ctrl.y, dragging.startH + dy)));
-  }
-
+function setZoom(z) {
+  zoom = Math.max(0.2, Math.min(4, z));
+  stage.style.width = (STAGE_W * zoom) + 'px';
+  stage.style.height = (STAGE_H * zoom) + 'px';
+  zoomLabel.textContent = Math.round(zoom * 100) + '%';
   renderControls();
-  if (ctrl._id === selectedId) syncInspectorPos(ctrl);
-});
-
-document.addEventListener('mouseup', () => {
-  if (dragging) {
-    dragging = null;
-    renderLayers();
-  }
-});
-
-// Click on empty stage to deselect
-stage.addEventListener('mousedown', e => {
-  if (e.target === stage) { selectCtrl(null); }
-});
-
-// ============================================================
-// Selection
-// ============================================================
-function selectCtrl(id) {
-  selectedId = id;
-  render();
-  // Return focus to the selected element if set programmatically
-  if (id !== null) {
-    requestAnimationFrame(() => {
-      const el = stage.querySelector('[data-id="' + id + '"]');
-      if (el) el.focus({ preventScroll: true });
-    });
-  }
 }
 
-// ============================================================
-// Inspector
-// ============================================================
-function renderInspector() {
-  const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
-  if (!ctrl) {
-    document.getElementById('inspector-placeholder').style.display = '';
-    document.getElementById('inspector').style.display = 'none';
-    return;
+document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.1));
+document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.1));
+document.getElementById('zoom-fit').addEventListener('click', () => {
+  const wrap = document.getElementById('canvas-wrap');
+  const wz = (wrap.clientWidth - 80) / STAGE_W;
+  const hz = (wrap.clientHeight - 80) / STAGE_H;
+  setZoom(Math.min(wz, hz, 1.5));
+});
+
+// Mouse-wheel zoom
+document.getElementById('canvas-wrap').addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.1 : -0.1;
+  setZoom(zoom + delta);
+}, { passive: false });
+
+// Stage resolution picker
+document.getElementById('stage-res').addEventListener('change', e => {
+  const parts = e.target.value.split(',');
+  SCREEN_W = parseInt(parts[0]);
+  SCREEN_H = parseInt(parts[1]);
+  // Keep logical stage at half res (960x540 for 1920x1080, etc.)
+  STAGE_W = SCREEN_W / 2;
+  STAGE_H = SCREEN_H / 2;
+  document.getElementById('stage-label').textContent = SCREEN_W + ' × ' + SCREEN_H;
+  setZoom(zoom);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  if (inInput) return;
+
+  if (e.key === 'Escape') { selectCtrl(null); e.preventDefault(); }
+  if (e.key === '+' || e.key === '=') { setZoom(zoom + 0.1); e.preventDefault(); }
+  if (e.key === '-') { setZoom(zoom - 0.1); e.preventDefault(); }
+  if (e.key === 'f' || e.key === 'F') {
+    document.getElementById('zoom-fit').click(); e.preventDefault();
   }
-  document.getElementById('inspector-placeholder').style.display = 'none';
-  document.getElementById('inspector').style.display = '';
+});
 
-  document.getElementById('f-name').value = ctrl.name || '';
-  document.getElementById('f-idc').value = ctrl.idc !== undefined ? ctrl.idc : -2;
-  document.getElementById('f-type').value = ctrl.type_name || 'CT_STATIC';
-  document.getElementById('f-text').value = ctrl.text || '';
-  document.getElementById('f-parent').value = ctrl.parent || '';
-  document.getElementById('f-x').value = parseFloat(ctrl.x.toFixed(6));
-  document.getElementById('f-y').value = parseFloat(ctrl.y.toFixed(6));
-  document.getElementById('f-w').value = parseFloat(ctrl.w.toFixed(6));
-  document.getElementById('f-h').value = parseFloat(ctrl.h.toFixed(6));
-  document.getElementById('f-section').value = ctrl.section || 'controls';
-
-  // Update delete button label with control name
-  document.getElementById('delete-btn').setAttribute('aria-label', 'Delete ' + ctrl.name);
+// ============================================================
+// Edit / Preview mode toggle
+// ============================================================
+function setMode(isEdit) {
+  editMode = isEdit;
+  document.getElementById('btn-preview').classList.toggle('active', !isEdit);
+  document.getElementById('btn-edit').classList.toggle('active', isEdit);
+  renderControls();
 }
 
-function syncInspectorPos(ctrl) {
-  document.getElementById('f-x').value = parseFloat(ctrl.x.toFixed(6));
-  document.getElementById('f-y').value = parseFloat(ctrl.y.toFixed(6));
-  document.getElementById('f-w').value = parseFloat(ctrl.w.toFixed(6));
-  document.getElementById('f-h').value = parseFloat(ctrl.h.toFixed(6));
-}
-
-// Apply inspector -> model
-document.getElementById('apply-btn').addEventListener('click', () => {
-  const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
-  if (!ctrl) return;
-
-  const newName = document.getElementById('f-name').value.trim();
-  const newSection = document.getElementById('f-section').value;
-  const newTypeName = document.getElementById('f-type').value;
-
-  ctrl.name = newName || ctrl.name;
-  ctrl.idc = parseInt(document.getElementById('f-idc').value) || -2;
-  ctrl.text = document.getElementById('f-text').value;
-  ctrl.parent = document.getElementById('f-parent').value.trim();
-  ctrl.x = parseFloat(document.getElementById('f-x').value) || 0;
-  ctrl.y = parseFloat(document.getElementById('f-y').value) || 0;
-  ctrl.w = parseFloat(document.getElementById('f-w').value) || 0.1;
-  ctrl.h = parseFloat(document.getElementById('f-h').value) || 0.04;
-
-  // Handle type change
-  if (newTypeName !== ctrl.type_name) {
-    ctrl.type_name = newTypeName;
-    ctrl.type = TYPE_NUM[newTypeName] !== undefined ? TYPE_NUM[newTypeName] : ctrl.type;
-  }
-
-  // Handle section move
-  if (newSection !== ctrl.section) {
-    model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
-    ctrl.section = newSection;
-    model[newSection].push(ctrl);
-  }
-
-  render();
-});
-
-// Delete
-document.getElementById('delete-btn').addEventListener('click', () => {
-  if (selectedId === null) return;
-  const ctrl = getCtrlById(selectedId);
-  if (!ctrl) return;
-  model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
-  selectedId = null;
-  render();
-});
-
-// Live number input update (x/y/w/h) syncs canvas while typing
-['f-x','f-y','f-w','f-h'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
-    if (!ctrl) return;
-    const v = parseFloat(document.getElementById(id).value);
-    if (isNaN(v)) return;
-    const key = id.replace('f-', '');
-    ctrl[key] = v;
-    renderControls();
-  });
-});
+document.getElementById('btn-preview').addEventListener('click', () => setMode(false));
+document.getElementById('btn-edit').addEventListener('click', () => setMode(true));
 
 // ============================================================
-// Layers list
+// Export
 // ============================================================
-function renderLayers() {
-  const el = document.getElementById('layer-list');
-  el.innerHTML = '';
-
-  function addSection(arr, label, isBg) {
-    if (arr.length === 0) return;
-    const hdr = document.createElement('div');
-    hdr.style.cssText = 'padding:5px 10px;font-size:9px;font-family:JetBrains Mono,monospace;color:#39414b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(57,65,75,.3)';
-    hdr.textContent = label;
-    hdr.setAttribute('aria-hidden', 'true');
-    el.appendChild(hdr);
-
-    arr.forEach(c => {
-      const row = document.createElement('div');
-      row.className = 'layer-item' + (c._id === selectedId ? ' selected' : '') + (isBg ? ' bg-ctrl' : '');
-      row.dataset.id = c._id;
-      row.setAttribute('role', 'listitem');
-      row.setAttribute('tabindex', '0');
-      row.setAttribute('aria-label', c.name + ' (' + c.type_name + ')' + (c._id === selectedId ? ', selected' : ''));
-
-      const dot = document.createElement('span');
-      dot.className = 'layer-dot';
-      dot.style.background = TYPE_DOT_COLOR[c.type_name] || '#39414b';
-      dot.setAttribute('aria-hidden', 'true');
-      row.appendChild(dot);
-
-      const name = document.createElement('span');
-      name.className = 'layer-name';
-      name.textContent = c.name;
-      name.title = c.name;
-      row.appendChild(name);
-
-      const idc = document.createElement('span');
-      idc.className = 'layer-idc';
-      idc.textContent = c.idc !== undefined && c.idc !== -2 ? c.idc : '';
-      idc.setAttribute('aria-label', c.idc !== undefined && c.idc !== -2 ? 'IDC ' + c.idc : '');
-      row.appendChild(idc);
-
-      const del = document.createElement('button');
-      del.className = 'layer-del';
-      del.textContent = '×';
-      del.title = 'Delete ' + c.name;
-      del.setAttribute('aria-label', 'Delete ' + c.name);
-      del.addEventListener('click', ev => {
-        ev.stopPropagation();
-        model[c.section] = model[c.section].filter(x => x._id !== c._id);
-        if (selectedId === c._id) selectedId = null;
-        render();
-      });
-      row.appendChild(del);
-
-      row.addEventListener('click', () => selectCtrl(c._id));
-      row.addEventListener('keydown', ev => {
-        if (ev.key === 'Enter' || ev.key === ' ') { selectCtrl(c._id); ev.preventDefault(); }
-        if (ev.key === 'Delete') {
-          model[c.section] = model[c.section].filter(x => x._id !== c._id);
-          if (selectedId === c._id) selectedId = null;
-          render();
-          ev.preventDefault();
-        }
-      });
-      el.appendChild(row);
-    });
-  }
-
-  addSection(model.controlsBackground, 'controlsBackground', true);
-  addSection(model.controls, 'controls', false);
-}
-
-// ============================================================
-// Palette: Add control
-// ============================================================
-document.querySelectorAll('.type-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const typeName = btn.dataset.type;
-    const isBg = btn.dataset.bg === '1';
-    const idc = nextIdcBase++;
-    const ctrl = makeCtrl({
-      type_name: typeName,
-      type: TYPE_NUM[typeName] !== undefined ? TYPE_NUM[typeName] : 0,
-      idc: isBg ? -2 : idc,
-      name: typeName + '_' + idc,
-      section: isBg ? 'controlsBackground' : 'controls',
-      x: 0.25,
-      y: 0.3,
-      w: typeName === 'RscShortcutButton' ? 0.313727 : 0.2,
-      h: typeName === 'RscShortcutButton' ? 0.104575 : 0.04
-    });
-    model[ctrl.section].push(ctrl);
-    selectedId = ctrl._id;
-    render();
-  });
-});
-
-// ============================================================
-// Export: generate class controls { ... } block
-// ============================================================
-const TYPE_NUM_EXPORT = {
-  CT_STATIC:0, CT_BUTTON:1, CT_EDIT:2, CT_COMBO:4, CT_LISTBOX:5,
-  CT_CLICKABLETEXT:11, CT_STRUCTUREDTEXT:13, CT_CONTROLS_GROUP:15,
-  RscShortcutButton:16, CT_LISTNBOX:102, RscXSliderH:43, RscMapControl:101
-};
-
-function round6(v) { return parseFloat(v.toFixed(6)); }
-
 function exportHpp() {
+  if (!displayData) return '';
   const lines = [];
-  const allCtrl = [...model.controlsBackground, ...model.controls];
+  const name = currentDisplay || 'WF_Menu';
 
-  // Emit full dialog class
-  lines.push('class WF_Menu {');
-  lines.push('\tidd = 11000;');
-  lines.push('\tmovingEnable = 1;');
+  lines.push('class ' + name + ' {');
+  lines.push('\tidd = ' + (displayData.idd || -1) + ';');
+  if (displayData.movingEnable !== undefined) {
+    lines.push('\tmovingEnable = ' + (displayData.movingEnable ? 1 : 0) + ';');
+  }
   lines.push('');
 
-  // controlsBackground
-  lines.push('\tclass controlsBackground {');
-  model.controlsBackground.forEach(c => {
-    lines.push('\t\tclass ' + c.name + (c.parent ? ' : ' + c.parent : '') + ' {');
-    if (c.idc !== undefined && c.idc !== -2) lines.push('\t\t\tidc = ' + c.idc + ';');
-    if (c.type !== undefined) lines.push('\t\t\ttype = ' + (TYPE_NUM_EXPORT[c.type_name] !== undefined ? TYPE_NUM_EXPORT[c.type_name] : c.type) + ';');
-    lines.push('\t\t\tx = ' + round6(c.x) + ';');
-    lines.push('\t\t\ty = ' + round6(c.y) + ';');
-    lines.push('\t\t\tw = ' + round6(c.w) + ';');
-    lines.push('\t\t\th = ' + round6(c.h) + ';');
-    if (c.moving) lines.push('\t\t\tmoving = ' + c.moving + ';');
-    if (c.text) lines.push('\t\t\ttext = "' + c.text + '";');
-    lines.push('\t\t};');
-  });
-  lines.push('\t};');
-  lines.push('');
+  function emitSection(arr, sectionName) {
+    lines.push('\tclass ' + sectionName + ' {');
+    (arr || []).forEach(ctrl => {
+      const base = ctrl.baseClass || ctrl.rscBase || '';
+      lines.push('\t\tclass ' + ctrl.name + (base ? ' : ' + base : '') + ' {');
+      const p = ctrl.props || {};
+      for (const [k, v] of Object.entries(p)) {
+        if (Array.isArray(v)) {
+          lines.push('\t\t\t' + k + '[] = {' + v.map(x => typeof x === 'number' ? parseFloat(x.toFixed(6)) : x).join(', ') + '};');
+        } else if (typeof v === 'string') {
+          if (k === 'text' || k === 'tooltip' || k === 'action' || k === 'onButtonClick') {
+            lines.push('\t\t\t' + k + ' = "' + v + '";');
+          } else {
+            lines.push('\t\t\t' + k + ' = ' + v + ';');
+          }
+        } else if (v !== null && v !== undefined) {
+          lines.push('\t\t\t' + k + ' = ' + v + ';');
+        }
+      }
+      lines.push('\t\t};');
+    });
+    lines.push('\t};');
+  }
 
-  // controls
-  lines.push('\tclass controls {');
-  model.controls.forEach(c => {
-    lines.push('\t\tclass ' + c.name + (c.parent ? ' : ' + c.parent : '') + ' {');
-    if (c.idc !== undefined && c.idc !== -2) lines.push('\t\t\tidc = ' + c.idc + ';');
-    const typeNum = TYPE_NUM_EXPORT[c.type_name];
-    if (typeNum !== undefined) lines.push('\t\t\ttype = ' + typeNum + ';');
-    lines.push('\t\t\tx = ' + round6(c.x) + ';');
-    lines.push('\t\t\ty = ' + round6(c.y) + ';');
-    lines.push('\t\t\tw = ' + round6(c.w) + ';');
-    lines.push('\t\t\th = ' + round6(c.h) + ';');
-    if (c.text) lines.push('\t\t\ttext = "' + c.text + '";');
-    if (c.action) lines.push('\t\t\taction = "' + c.action + '";');
-    if (c.tooltip) lines.push('\t\t\ttooltip = "' + c.tooltip + '";');
-    if (c.onButtonClick) lines.push('\t\t\tonButtonClick = "' + c.onButtonClick + '";');
-    lines.push('\t\t};');
-  });
-  lines.push('\t};');
+  emitSection(displayData.background, 'controlsBackground');
+  lines.push('');
+  emitSection(displayData.controls, 'controls');
+
+  if (displayData.titlesArray) {
+    lines.push('');
+    lines.push('\tcontrols[] = {' + displayData.titlesArray.map(n => '"' + n + '"').join(', ') + '};');
+  }
+
   lines.push('};');
-
   return lines.join('\n');
 }
 
 document.getElementById('export-btn').addEventListener('click', () => {
-  const hpp = exportHpp();
-  document.getElementById('export-out').value = hpp;
-  // Push to localStorage for cross-tool handoff
-  try { localStorage.setItem('wfmenu_export', hpp); } catch(_) {}
+  document.getElementById('export-out').value = exportHpp();
+  const body = document.getElementById('export-body');
+  if (!body.classList.contains('open')) {
+    body.classList.add('open');
+    document.getElementById('export-tog-label').textContent = '▲';
+    document.getElementById('export-toggle').setAttribute('aria-expanded', 'true');
+  }
 });
 
-// Copy with flash feedback (WDDM pattern)
 document.getElementById('copy-btn').addEventListener('click', () => {
   const txt = document.getElementById('export-out').value;
-  if (!txt) { setStatus('Nothing to copy — click Export first.', 'err'); return; }
-  const btn = document.getElementById('copy-btn');
+  if (!txt) { setStatus('Nothing to copy.', 'err'); return; }
   navigator.clipboard.writeText(txt).then(() => {
-    btn.textContent = 'Copied!';
-    btn.classList.add('flash');
-    setStatus('Copied to clipboard.', 'ok');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('flash'); }, 1400);
-  }).catch(() => {
-    // Fallback
-    document.getElementById('export-out').select();
-    try { document.execCommand('copy'); } catch(_) {}
+    const btn = document.getElementById('copy-btn');
     btn.textContent = 'Copied!';
     btn.classList.add('flash');
     setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('flash'); }, 1400);
+    setStatus('Copied.', 'ok');
   });
 });
 
 document.getElementById('download-btn').addEventListener('click', () => {
   const txt = document.getElementById('export-out').value;
-  if (!txt) { setStatus('Nothing to download — click Export first.', 'err'); return; }
+  if (!txt) { setStatus('Nothing to download.', 'err'); return; }
   const a = document.createElement('a');
   a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
-  a.download = 'WF_Menu.hpp';
+  a.download = (currentDisplay || 'WF_Menu') + '.hpp';
   a.click();
-});
-
-// ============================================================
-// Status message helper
-// ============================================================
-function setStatus(msg, type) {
-  const el = document.getElementById('status-msg');
-  el.textContent = msg;
-  el.className = type || '';
-}
-
-// ============================================================
-// Load .hpp (JS port of extractor: minimal subset)
-// ============================================================
-function parseHppControls(src) {
-  const controls = [];
-  const controlsBg = [];
-  const errors = [];
-
-  function extractSectionBody(text, sectionName) {
-    const re = new RegExp('class\\s+' + sectionName + '\\s*\\{');
-    const m = re.exec(text);
-    if (!m) return null;
-    let depth = 0, start = m.index + m[0].length - 1;
-    for (let i = start; i < text.length; i++) {
-      if (text[i] === '{') depth++;
-      else if (text[i] === '}') { depth--; if (depth === 0) return text.slice(start, i + 1); }
-    }
-    return null;
-  }
-
-  function parseSection(body, sectionName) {
-    if (!body) return [];
-    const result = [];
-    const innerRe = /class\s+(\w+)\s*(?::\s*(\w+)\s*)?\{/g;
-    let m;
-    while ((m = innerRe.exec(body)) !== null) {
-      const name = m[1], parent = m[2] || '';
-      const start = m.index + m[0].length - 1;
-      let depth = 0, end = start;
-      for (let i = start; i < body.length; i++) {
-        if (body[i] === '{') depth++;
-        else if (body[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
-      }
-      const cb = body.slice(start, end + 1);
-      const props = {};
-      const propRe = /^\s*(\w+)\s*(?:\[\])?\s*=\s*(.+?)\s*;/gm;
-      let pm;
-      while ((pm = propRe.exec(cb)) !== null) {
-        const k = pm[1], rv = pm[2].trim();
-        if (rv.startsWith('{')) {
-          const nums = rv.match(/[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?/g);
-          props[k] = nums ? nums.map(Number) : [];
-        } else {
-          const n = parseFloat(rv);
-          props[k] = isNaN(n) ? rv.replace(/^"|"$/g,'') : n;
-        }
-      }
-
-      const TYPE_FROM_PARENT = {
-        RscText:0, RscText_Title:0, RscText_SubTitle:0, RscText_Small:0, RscFrame:0, IGUIBack:0,
-        RscButton:1, RscButton_Main:1, RscButton_Back:1, RscButton_Exit:1,
-        RscEdit:2, RscCombo:4, RscListBox:5,
-        RscClickableText:11, RscStructuredText:13, RscControlsGroup:15,
-        RscShortcutButton:16, RscShortcutButtonMain:16, RscIGUIShortcutButton:16,
-        RscListnBox:102, RscListBoxA:102
-      };
-      const typeNum = props.type !== undefined ? parseInt(props.type) : (TYPE_FROM_PARENT[parent] !== undefined ? TYPE_FROM_PARENT[parent] : 0);
-      const typeName = TYPE_NAME[typeNum] || (parent.startsWith('RscShortcut') ? 'RscShortcutButton' : 'CT_STATIC');
-
-      result.push(makeCtrl({
-        name, parent,
-        idc: props.idc !== undefined ? parseInt(props.idc) : -2,
-        type: typeNum,
-        type_name: typeName,
-        x: parseFloat(props.x) || 0,
-        y: parseFloat(props.y) || 0,
-        w: parseFloat(props.w) || 0.1,
-        h: parseFloat(props.h) || 0.04,
-        text: props.text || '',
-        action: props.action || '',
-        tooltip: props.tooltip || '',
-        section: sectionName === 'controlsBackground' ? 'controlsBackground' : 'controls'
-      }));
-    }
-    return result;
-  }
-
-  const bgBody = extractSectionBody(src, 'controlsBackground');
-  const ctrlBody = extractSectionBody(src, 'controls');
-
-  if (!bgBody && !ctrlBody) {
-    errors.push('No controlsBackground or controls sections found.');
-  }
-
-  return {
-    controlsBackground: parseSection(bgBody, 'controlsBackground'),
-    controls: parseSection(ctrlBody, 'controls'),
-    errors
-  };
-}
-
-document.getElementById('load-btn').addEventListener('click', () => {
-  const src = document.getElementById('load-in').value.trim();
-  if (!src) { setStatus('Nothing to load.', 'err'); return; }
-  const {controlsBackground, controls, errors} = parseHppControls(src);
-  if (errors.length) {
-    setStatus('Error: ' + errors.join(' '), 'err');
-    return;
-  }
-  model.controlsBackground = controlsBackground;
-  model.controls = controls;
-  selectedId = null;
-  render();
-  const total = controlsBackground.length + controls.length;
-  setStatus('Loaded ' + total + ' controls (' + controlsBackground.length + ' bg + ' + controls.length + ' ctrl).', 'ok');
-  // Auto-regenerate export after load
-  document.getElementById('export-out').value = exportHpp();
 });
 
 // ============================================================
@@ -1083,35 +1572,29 @@ document.getElementById('export-toggle').addEventListener('click', () => {
   const lbl = document.getElementById('export-tog-label');
   const hdr = document.getElementById('export-toggle');
   const isOpen = body.classList.contains('open');
-  if (isOpen) {
-    body.classList.remove('open');
-    lbl.textContent = '▼';
-    hdr.setAttribute('aria-expanded', 'false');
-  } else {
-    body.classList.add('open');
-    lbl.textContent = '▲';
-    hdr.setAttribute('aria-expanded', 'true');
-  }
+  body.classList.toggle('open', !isOpen);
+  lbl.textContent = isOpen ? '▼' : '▲';
+  hdr.setAttribute('aria-expanded', String(!isOpen));
+});
+
+document.getElementById('export-toggle').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('export-toggle').click(); }
 });
 
 // ============================================================
-// Cross-link: Garrison Editor — push current layout to localStorage
-// so the garrison editor can offer to load the control list
+// Status
 // ============================================================
-document.getElementById('garrison-link').addEventListener('click', e => {
-  // Write the current HPP to localStorage before navigating
-  try {
-    const hpp = exportHpp();
-    localStorage.setItem('wfmenu_export', hpp);
-  } catch(_) {}
-  // Let the default href open in a new tab
-});
+function setStatus(msg, type) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = type || '';
+}
 
 // ============================================================
 // Boot
 // ============================================================
-setZoom(1.0);
-loadJson();
+setZoom(0.75); // default zoom so 1920x1080 frame fits in viewport
+loadUiJson();
 </script>
 </body>
 </html>
