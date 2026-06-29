@@ -66,15 +66,35 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .mode-btn:hover:not(.active){border-color:var(--orange);color:var(--orange)}
 
 /* ---- Layer list ---- */
-.layer-item{display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;
+.layer-item{display:flex;align-items:center;gap:4px;padding:4px 8px;cursor:pointer;
   border-bottom:1px solid rgba(57,65,75,.4);font-size:11px;transition:background .08s}
 .layer-item:hover{background:rgba(255,255,255,.04)}
 .layer-item.selected{background:rgba(217,118,60,.12);border-left:2px solid var(--orange)}
+.layer-item.multi-selected{background:rgba(217,118,60,.07);border-left:2px solid rgba(217,118,60,.5)}
 .layer-item.bg-ctrl{border-left:2px solid var(--line)}
+.layer-item.locked{opacity:.55}
+.layer-item.hidden-ctrl{opacity:.35}
 .layer-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
 .layer-idc{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;margin-left:auto;white-space:nowrap}
-.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
 .layer-hdr{padding:4px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#39414b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(57,65,75,.3)}
+.layer-action{flex:0 0 auto;width:16px;height:16px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;border-radius:2px;border:none;background:transparent;color:#39414b;cursor:pointer;padding:0;line-height:1}
+.layer-action:hover{background:rgba(255,255,255,.1);color:var(--bone)}
+.layer-action.active{color:var(--orange)}
+
+/* ---- Pro editing toolbar ---- */
+.edit-toolbar{padding:5px 10px;border-bottom:1px solid var(--line);background:#0d1014;
+  display:none;align-items:center;gap:4px;flex:0 0 auto;flex-wrap:wrap}
+.edit-toolbar.visible{display:flex}
+.et-sep{width:1px;height:16px;background:var(--line);margin:0 2px;flex:0 0 auto}
+.et-btn{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 6px;border-radius:3px;
+  border:1px solid var(--line);background:transparent;color:#9aa3ad;cursor:pointer;
+  white-space:nowrap;transition:all .1s}
+.et-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange)}
+.et-btn:disabled{opacity:.3;cursor:default}
+.et-group{display:flex;gap:2px;align-items:center}
+.et-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#39414b;padding:0 2px}
 
 /* ---- Canvas area ---- */
 .canvas-toolbar{padding:8px 12px;border-bottom:1px solid var(--line);background:#101317;
@@ -96,6 +116,39 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .stage-label{position:absolute;top:-22px;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;color:#39414b;pointer-events:none;white-space:nowrap}
 .stage-label-side{position:absolute;top:0;left:-44px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:'JetBrains Mono',monospace;font-size:10px;color:#39414b;pointer-events:none;white-space:nowrap;height:100%;display:flex;align-items:center;justify-content:center}
 
+/* ---- Marquee selection ---- */
+#marquee{position:absolute;border:1px dashed rgba(217,118,60,.8);background:rgba(217,118,60,.06);
+  pointer-events:none;display:none;z-index:99998}
+
+/* ---- Snap guide lines ---- */
+.snap-guide{position:absolute;pointer-events:none;z-index:99997;opacity:.9}
+.snap-guide.h{left:0;right:0;height:0;border-top:1px solid rgba(255,0,200,.7)}
+.snap-guide.v{top:0;bottom:0;width:0;border-left:1px solid rgba(255,0,200,.7)}
+
+/* ---- Group border ---- */
+.ctrl.grouped::before{content:'';position:absolute;inset:-2px;
+  border:1px dashed rgba(100,180,255,.4);pointer-events:none;z-index:1}
+
+/* ---- Add Control palette modal ---- */
+#palette-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100000;
+  display:none;align-items:center;justify-content:center}
+#palette-modal.open{display:flex}
+#palette-box{background:var(--steel);border:1px solid var(--line);border-radius:6px;
+  width:360px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+#palette-box h3{font-size:13px;padding:12px 14px;border-bottom:1px solid var(--line);
+  color:var(--bone);letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center}
+#palette-box h3 button{background:transparent;border:none;color:#9aa3ad;font-size:14px;
+  cursor:pointer;padding:0 4px;line-height:1}
+#palette-box h3 button:hover{color:var(--bone)}
+#palette-fields{padding:12px 14px;display:grid;gap:8px}
+#palette-fields label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;
+  text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+#palette-fields input,#palette-fields select{width:100%;background:var(--gunmetal);
+  border:1px solid var(--line);color:var(--bone);border-radius:4px;
+  padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
+#palette-fields input:focus,#palette-fields select:focus{border-color:var(--orange)}
+#palette-footer{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+
 /* ---- WYSIWYG Control rendering ---- */
 .ctrl{position:absolute;overflow:hidden;cursor:move;box-sizing:border-box}
 
@@ -108,12 +161,27 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .ctrl.selected.edit-mode::after{
   border:2px solid var(--orange)!important;
 }
+.ctrl.multi-sel.edit-mode::after{
+  border:2px solid rgba(255,200,60,.9)!important;
+}
 .ctrl.selected{z-index:9999!important}
+.ctrl.multi-sel{z-index:9998!important}
+.ctrl.ctrl-locked{cursor:not-allowed!important;opacity:.7}
+.ctrl.ctrl-hidden{display:none!important}
 
 /* Resize handle (edit mode only) */
 .ctrl .rh{position:absolute;right:-4px;bottom:-4px;width:9px;height:9px;
   background:var(--orange);cursor:se-resize;z-index:10;border-radius:1px;display:none}
 .edit-mode .rh{display:block}
+
+/* Corner handles for multi-select bounding box */
+.ctrl.selected .rh-tl,.ctrl.selected .rh-tr,.ctrl.selected .rh-bl{
+  position:absolute;width:7px;height:7px;background:var(--orange);
+  z-index:10;border-radius:1px;display:none}
+.edit-mode .rh-tl,.edit-mode .rh-tr,.edit-mode .rh-bl{display:block}
+.rh-tl{left:-3px;top:-3px;cursor:nw-resize}
+.rh-tr{right:-3px;top:-3px;cursor:ne-resize}
+.rh-bl{left:-3px;bottom:-3px;cursor:sw-resize}
 
 /* ---- Per-type style bases ---- */
 
@@ -453,6 +521,60 @@ button.flash{animation:btn-flash .4s ease}
 
   <!-- Center: Canvas -->
   <div class="panel panel-center" role="region" aria-label="Canvas">
+
+    <!-- Pro editing toolbar (edit mode only) -->
+    <div class="edit-toolbar" id="edit-toolbar" role="toolbar" aria-label="Pro editing tools">
+      <!-- Undo/Redo -->
+      <div class="et-group">
+        <button class="et-btn" id="et-undo" title="Undo (Ctrl+Z)" aria-label="Undo">↩ Undo</button>
+        <button class="et-btn" id="et-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" aria-label="Redo">↪ Redo</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Clipboard -->
+      <div class="et-group">
+        <button class="et-btn" id="et-copy" title="Copy (Ctrl+C)" aria-label="Copy">Copy</button>
+        <button class="et-btn" id="et-paste" title="Paste (Ctrl+V)" aria-label="Paste">Paste</button>
+        <button class="et-btn" id="et-dupe" title="Duplicate (Ctrl+D)" aria-label="Duplicate">Dupe</button>
+        <button class="et-btn" id="et-del" title="Delete (Del)" aria-label="Delete">Del</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Align -->
+      <span class="et-label">Align:</span>
+      <div class="et-group">
+        <button class="et-btn" id="et-al-l"  title="Align left edges"    aria-label="Align left">⇤L</button>
+        <button class="et-btn" id="et-al-r"  title="Align right edges"   aria-label="Align right">R⇥</button>
+        <button class="et-btn" id="et-al-t"  title="Align top edges"     aria-label="Align top">⇡T</button>
+        <button class="et-btn" id="et-al-b"  title="Align bottom edges"  aria-label="Align bottom">B⇣</button>
+        <button class="et-btn" id="et-al-hc" title="Center horizontally" aria-label="Center H">⇔H</button>
+        <button class="et-btn" id="et-al-vc" title="Center vertically"   aria-label="Center V">⇕V</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Distribute -->
+      <span class="et-label">Dist:</span>
+      <div class="et-group">
+        <button class="et-btn" id="et-dist-h" title="Distribute horizontally" aria-label="Distribute H">↔</button>
+        <button class="et-btn" id="et-dist-v" title="Distribute vertically"   aria-label="Distribute V">↕</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Z-order -->
+      <span class="et-label">Z:</span>
+      <div class="et-group">
+        <button class="et-btn" id="et-z-front" title="Bring to front" aria-label="Bring to front">▲▲</button>
+        <button class="et-btn" id="et-z-up"    title="Raise one"      aria-label="Raise">▲</button>
+        <button class="et-btn" id="et-z-down"  title="Lower one"      aria-label="Lower">▼</button>
+        <button class="et-btn" id="et-z-back"  title="Send to back"   aria-label="Send to back">▼▼</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Group -->
+      <div class="et-group">
+        <button class="et-btn" id="et-group"   title="Group selection (Ctrl+G)"   aria-label="Group">Group</button>
+        <button class="et-btn" id="et-ungroup" title="Ungroup (Ctrl+Shift+G)"     aria-label="Ungroup">Ungrp</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Add control -->
+      <button class="et-btn" id="et-add" title="Add control (A)" aria-label="Add control">+ Add</button>
+    </div>
+
     <div class="canvas-toolbar" role="toolbar" aria-label="Canvas controls">
       <label>
         <input type="checkbox" id="snap-chk" aria-label="Enable grid snap">
@@ -483,6 +605,7 @@ button.flash{animation:btn-flash .4s ease}
         <div class="stage-label-side">GAME FRAME</div>
         <div class="stage" id="stage" role="application" aria-label="Dialog canvas — click to select, drag to move">
           <!-- controls rendered here by JS -->
+          <div id="marquee" aria-hidden="true"></div>
         </div>
       </div>
     </div>
@@ -557,6 +680,41 @@ button.flash{animation:btn-flash .4s ease}
   </div>
 </div>
 
+<!-- Add Control palette modal -->
+<div id="palette-modal" role="dialog" aria-modal="true" aria-labelledby="palette-title">
+  <div id="palette-box">
+    <h3>
+      <span id="palette-title">Add Control</span>
+      <button id="palette-close" aria-label="Close">✕</button>
+    </h3>
+    <div id="palette-fields">
+      <div>
+        <label for="pal-name">Name</label>
+        <input type="text" id="pal-name" placeholder="MyControl" autocomplete="off">
+      </div>
+      <div>
+        <label for="pal-base">Base Class</label>
+        <select id="pal-base"></select>
+      </div>
+      <div>
+        <label for="pal-idc">IDC</label>
+        <input type="number" id="pal-idc" placeholder="auto">
+      </div>
+      <div>
+        <label for="pal-section">Section</label>
+        <select id="pal-section">
+          <option value="controls">controls</option>
+          <option value="background">controlsBackground</option>
+        </select>
+      </div>
+    </div>
+    <div id="palette-footer">
+      <button class="sm" id="palette-cancel">Cancel</button>
+      <button class="sm primary" id="palette-add">Add</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // Constants
@@ -577,10 +735,90 @@ const SZ = { X: 0.07, Y: 0.07, W: 0.86, H: 0.86 };
 let uiData = null;           // parsed ui.json
 let currentDisplay = null;   // name of loaded display
 let displayData = null;      // display object from uiData.displays
-let selectedCtrl = null;     // selected control object (from display.background or .controls)
+let selectedCtrl = null;     // primary selected control
+let selectedSet = new Set(); // multi-select set of ctrl objects
 let zoom = 1.0;
 let editMode = false;
 let dragging = null;
+
+// Pro editing state
+let undoStack = [];          // array of {background:[], controls:[]} snapshots
+let redoStack = [];
+let clipboard = [];          // copied control snapshots
+let ctrlMeta = new WeakMap();// ctrl → {locked, hidden, groupId}
+let groupCounter = 0;
+let marqueeState = null;     // {startX,startY} in stage px during marquee drag
+let snapGuides = [];         // active guide elements
+let altCycleStack = [];      // for alt-click overlap cycling
+let altCyclePos = 0;
+
+// ---- Undo/redo helpers ----
+function snapshotState() {
+  return {
+    background: JSON.parse(JSON.stringify(displayData.background || [])),
+    controls: JSON.parse(JSON.stringify(displayData.controls || [])),
+  };
+}
+
+function pushUndo() {
+  undoStack.push(snapshotState());
+  if (undoStack.length > 100) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+
+function applySnapshot(snap) {
+  // Restore props in-place so WeakMap meta is preserved where possible
+  displayData.background = snap.background;
+  displayData.controls = snap.controls;
+  // Re-tag sections
+  for (const c of (displayData.background || [])) c._section = 'background';
+  for (const c of (displayData.controls || [])) c._section = 'controls';
+  selectedCtrl = null;
+  selectedSet.clear();
+  renderAll();
+}
+
+function undoAction() {
+  if (!undoStack.length) return;
+  redoStack.push(snapshotState());
+  applySnapshot(undoStack.pop());
+  updateUndoButtons();
+}
+
+function redoAction() {
+  if (!redoStack.length) return;
+  undoStack.push(snapshotState());
+  applySnapshot(redoStack.pop());
+  updateUndoButtons();
+}
+
+function updateUndoButtons() {
+  const u = document.getElementById('et-undo');
+  const r = document.getElementById('et-redo');
+  if (u) u.disabled = !undoStack.length;
+  if (r) r.disabled = !redoStack.length;
+}
+
+// ---- Meta helpers ----
+function getMeta(ctrl) {
+  if (!ctrlMeta.has(ctrl)) ctrlMeta.set(ctrl, {locked: false, hidden: false, groupId: null});
+  return ctrlMeta.get(ctrl);
+}
+
+// ---- All controls flat ----
+function allCtrls() {
+  if (!displayData) return [];
+  return [...(displayData.background || []), ...(displayData.controls || [])];
+}
+
+// ---- Next free IDC ----
+function nextIdc() {
+  const used = new Set(allCtrls().map(c => c.idc).filter(v => v !== undefined && v >= 0));
+  let id = 1000;
+  while (used.has(id)) id++;
+  return id;
+}
 
 // ============================================================
 // Helpers
@@ -756,6 +994,11 @@ function loadDisplay(name) {
   currentDisplay = name;
   displayData = uiData.displays[name];
   selectedCtrl = null;
+  selectedSet.clear();
+  undoStack = [];
+  redoStack = [];
+  ctrlMeta = new WeakMap();
+  updateUndoButtons();
 
   // Tag controls with section
   for (const c of (displayData.background || [])) c._section = 'background';
@@ -856,10 +1099,20 @@ function buildControlEl(ctrl, zIndex) {
   const wclass = getWClass(ctrl);
   const geo = ctrlPx(ctrl);
   const isSelected = ctrl === selectedCtrl;
+  const isMulti = selectedSet.has(ctrl) && ctrl !== selectedCtrl;
+  const meta = getMeta(ctrl);
 
   const el = document.createElement('div');
-  el.className = 'ctrl' + (editMode ? ' edit-mode' : '') + (isSelected ? ' selected' : '');
+  let cls = 'ctrl';
+  if (editMode) cls += ' edit-mode';
+  if (isSelected) cls += ' selected';
+  else if (selectedSet.has(ctrl)) cls += ' multi-sel';
+  if (meta.locked) cls += ' ctrl-locked';
+  if (meta.hidden) cls += ' ctrl-hidden';
+  if (meta.groupId !== null) cls += ' grouped';
+  el.className = cls;
   el.dataset.name = ctrl.name || '';
+  el.dataset.ctrlIdx = allCtrls().indexOf(ctrl);
 
   // Base geometry
   el.style.left = (geo.left * zoom) + 'px';
@@ -1183,7 +1436,8 @@ function buildControlEl(ctrl, zIndex) {
 
   // Events
   el.addEventListener('mousedown', (e) => onCtrlMouseDown(e, ctrl));
-  el.title = ctrl.name + (ctrl.idc !== undefined && ctrl.idc >= 0 ? ' (idc ' + ctrl.idc + ')' : '');
+  el.title = ctrl.name + (ctrl.idc !== undefined && ctrl.idc >= 0 ? ' (idc ' + ctrl.idc + ')' : '')
+    + (getMeta(ctrl).locked ? ' [LOCKED]' : '') + (getMeta(ctrl).hidden ? ' [HIDDEN]' : '');
 
   return el;
 }
@@ -1228,8 +1482,18 @@ function renderLayers() {
     el.appendChild(hdr);
 
     arr.forEach(ctrl => {
+      const meta = getMeta(ctrl);
+      const isPrimary = ctrl === selectedCtrl;
+      const isInSet = selectedSet.has(ctrl);
+      let rowCls = 'layer-item';
+      if (isPrimary) rowCls += ' selected';
+      else if (isInSet) rowCls += ' multi-selected';
+      if (isBg) rowCls += ' bg-ctrl';
+      if (meta.locked) rowCls += ' locked';
+      if (meta.hidden) rowCls += ' hidden-ctrl';
+
       const row = document.createElement('div');
-      row.className = 'layer-item' + (ctrl === selectedCtrl ? ' selected' : '') + (isBg ? ' bg-ctrl' : '');
+      row.className = rowCls;
       row.setAttribute('role', 'listitem');
       row.setAttribute('tabindex', '0');
 
@@ -1250,7 +1514,53 @@ function renderLayers() {
       idc.textContent = ctrl.idc !== undefined && ctrl.idc >= 0 ? ctrl.idc : '';
       row.appendChild(idc);
 
-      row.addEventListener('click', () => selectCtrl(ctrl));
+      // Hide toggle
+      const hideBtn = document.createElement('button');
+      hideBtn.className = 'layer-action' + (meta.hidden ? ' active' : '');
+      hideBtn.title = meta.hidden ? 'Show' : 'Hide';
+      hideBtn.setAttribute('aria-label', (meta.hidden ? 'Show' : 'Hide') + ' ' + ctrl.name);
+      hideBtn.textContent = meta.hidden ? '○' : '●';
+      hideBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        meta.hidden = !meta.hidden;
+        renderAll();
+      });
+      row.appendChild(hideBtn);
+
+      // Lock toggle
+      const lockBtn = document.createElement('button');
+      lockBtn.className = 'layer-action' + (meta.locked ? ' active' : '');
+      lockBtn.title = meta.locked ? 'Unlock' : 'Lock';
+      lockBtn.setAttribute('aria-label', (meta.locked ? 'Unlock' : 'Lock') + ' ' + ctrl.name);
+      lockBtn.textContent = meta.locked ? '🔒' : '🔓';
+      lockBtn.style.fontSize = '9px';
+      lockBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        meta.locked = !meta.locked;
+        renderAll();
+      });
+      row.appendChild(lockBtn);
+
+      row.addEventListener('click', e => {
+        if (e.target === hideBtn || e.target === lockBtn) return;
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+          // Add/remove from multi-select
+          if (selectedSet.has(ctrl)) {
+            selectedSet.delete(ctrl);
+            if (ctrl === selectedCtrl) {
+              selectedCtrl = selectedSet.size ? [...selectedSet][0] : null;
+            }
+          } else {
+            selectedSet.add(ctrl);
+            selectedCtrl = ctrl;
+          }
+          renderControls();
+          renderLayers();
+          renderInspector();
+        } else {
+          selectCtrl(ctrl);
+        }
+      });
       row.addEventListener('keydown', ev => {
         if (ev.key === 'Enter' || ev.key === ' ') { selectCtrl(ctrl); ev.preventDefault(); }
       });
@@ -1415,45 +1725,217 @@ function fmtVal(v) {
 // ============================================================
 function selectCtrl(ctrl) {
   selectedCtrl = ctrl;
+  selectedSet.clear();
+  if (ctrl) selectedSet.add(ctrl);
   renderControls();
   renderLayers();
   renderInspector();
 }
 
-// Click on empty stage
+function selectMulti(ctrls) {
+  selectedSet = new Set(ctrls);
+  selectedCtrl = ctrls.length ? ctrls[ctrls.length - 1] : null;
+  renderControls();
+  renderLayers();
+  renderInspector();
+}
+
+// Get bounding box (in fractional coords) of the current selection
+function selectionBounds() {
+  const ctrls = [...selectedSet];
+  if (!ctrls.length) return null;
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const c of ctrls) {
+    const xf = resolveGeo(c, 'x', posSystem);
+    const yf = resolveGeo(c, 'y', posSystem);
+    const wf = resolveGeo(c, 'w', posSystem);
+    const hf = resolveGeo(c, 'h', posSystem);
+    minX = Math.min(minX, xf);
+    minY = Math.min(minY, yf);
+    maxX = Math.max(maxX, xf + wf);
+    maxY = Math.max(maxY, yf + hf);
+  }
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+// Click on empty stage — start marquee or deselect
 document.getElementById('stage').addEventListener('mousedown', e => {
-  if (e.target === document.getElementById('stage')) selectCtrl(null);
+  if (e.target !== document.getElementById('stage') &&
+      e.target !== document.getElementById('marquee')) return;
+  if (!editMode) { selectCtrl(null); return; }
+
+  // Start marquee
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  const sx = (e.clientX - rect.left) / zoom;
+  const sy = (e.clientY - rect.top) / zoom;
+  marqueeState = { startX: sx, startY: sy };
+  const mq = document.getElementById('marquee');
+  mq.style.display = 'block';
+  mq.style.left = sx + 'px';
+  mq.style.top = sy + 'px';
+  mq.style.width = '0px';
+  mq.style.height = '0px';
+
+  if (!e.shiftKey && !e.ctrlKey && !e.metaKey) {
+    selectCtrl(null);
+  }
+  e.preventDefault();
 });
 
 // ============================================================
 // Drag + Resize (edit mode only)
 // ============================================================
 function onCtrlMouseDown(e, ctrl) {
-  selectCtrl(ctrl);
-  if (!editMode) return;
+  if (!editMode) { selectCtrl(ctrl); return; }
+
+  const meta = getMeta(ctrl);
+  if (meta.locked) return; // locked — don't start drag
+
+  // Alt-click: cycle through overlapping controls at this point
+  if (e.altKey) {
+    e.stopPropagation();
+    e.preventDefault();
+    altCycleAt(e);
+    return;
+  }
+
+  // Shift/Ctrl: add/toggle in multi-select
+  if (e.shiftKey || e.ctrlKey || e.metaKey) {
+    e.stopPropagation();
+    if (selectedSet.has(ctrl)) {
+      selectedSet.delete(ctrl);
+      if (ctrl === selectedCtrl) selectedCtrl = selectedSet.size ? [...selectedSet][selectedSet.size-1] : null;
+    } else {
+      selectedSet.add(ctrl);
+      selectedCtrl = ctrl;
+    }
+    renderControls();
+    renderLayers();
+    renderInspector();
+    return;
+  }
+
+  // If clicking a control not in the current selection, select it (respecting groups)
+  if (!selectedSet.has(ctrl)) maybeSelectGroup(ctrl);
 
   const isResize = e.target.dataset.resize === '1';
-  const geo = ctrlPx(ctrl);
-  const r = ctrl.resolved || ctrl.props || {};
-  const p = ctrl.props || {};
-
-  // Get current fractional coords
   const posSystem = (displayData && displayData.posSystem) || 'unit_square';
-  const getF = (key) => {
+
+  const getF = (c, key) => {
+    const r = c.resolved || c.props || {};
+    const p = c.props || {};
     const raw = r[key] !== undefined ? r[key] : p[key];
     return posSystem === 'safezone' ? evalSZ(raw) : parseFloat(raw) || 0;
   };
 
+  // Capture starting positions of ALL selected controls
+  const startPositions = [...selectedSet].map(c => ({
+    ctrl: c,
+    x: getF(c, 'x'), y: getF(c, 'y'),
+    w: getF(c, 'w'), h: getF(c, 'h'),
+  }));
+
   dragging = {
     ctrl, isResize,
     startMx: e.clientX, startMy: e.clientY,
-    startX: getF('x'), startY: getF('y'),
-    startW: getF('w'), startH: getF('h'),
-    posSystem
+    startPositions,
+    posSystem,
+    moved: false,
   };
 
   e.stopPropagation();
   e.preventDefault();
+}
+
+// Alt-click: cycle overlapping controls
+function altCycleAt(e) {
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / zoom;
+  const py = (e.clientY - rect.top) / zoom;
+
+  // Find all controls whose pixel rect contains this point
+  const hits = allCtrls().filter(c => {
+    if (getMeta(c).hidden) return false;
+    const g = ctrlPx(c);
+    return px >= g.left && px <= g.left + g.width && py >= g.top && py <= g.top + g.height;
+  });
+  if (!hits.length) { selectCtrl(null); return; }
+
+  // If same hit set as last cycle, advance; else start fresh
+  const key = hits.map(c => c.name).join('|');
+  if (altCycleStack.join('|') !== key) {
+    altCycleStack = hits.map(c => c.name);
+    // Start from the currently selected one if it's in hits
+    const curIdx = hits.indexOf(selectedCtrl);
+    altCyclePos = curIdx >= 0 ? (curIdx + 1) % hits.length : 0;
+  } else {
+    altCyclePos = (altCyclePos + 1) % hits.length;
+  }
+  selectCtrl(hits[altCyclePos]);
+}
+
+// Clear snap guides
+function clearGuides() {
+  snapGuides.forEach(g => g.remove());
+  snapGuides = [];
+}
+
+// Draw a snap guide line on the stage
+function addGuide(isHoriz, fracPos) {
+  const stage = document.getElementById('stage');
+  const g = document.createElement('div');
+  g.className = 'snap-guide ' + (isHoriz ? 'h' : 'v');
+  if (isHoriz) {
+    g.style.top = (fracPos * STAGE_H * zoom) + 'px';
+  } else {
+    g.style.left = (fracPos * STAGE_W * zoom) + 'px';
+  }
+  stage.appendChild(g);
+  snapGuides.push(g);
+}
+
+// Smart snap: returns snapped value and optionally adds guides
+function smartSnap(v, dim, isX, movingCtrls) {
+  const snapEnabled = document.getElementById('snap-chk').checked;
+  const gridStep = parseFloat(document.getElementById('snap-size').value) || 0.01;
+  const THRESHOLD = 0.008; // fraction units
+
+  let best = v;
+  let bestDist = Infinity;
+  let guidePos = null;
+
+  if (snapEnabled) {
+    // Grid snap
+    const gridSnapped = Math.round(v / gridStep) * gridStep;
+    const dist = Math.abs(v - gridSnapped);
+    if (dist < bestDist) { best = gridSnapped; bestDist = dist; guidePos = null; }
+  }
+
+  // Snap to other controls' edges and centers
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+  const others = allCtrls().filter(c => !movingCtrls.has(c) && !getMeta(c).hidden);
+  for (const o of others) {
+    const ox = resolveGeo(o, 'x', posSystem);
+    const oy = resolveGeo(o, 'y', posSystem);
+    const ow = resolveGeo(o, 'w', posSystem);
+    const oh = resolveGeo(o, 'h', posSystem);
+    const candidates = isX
+      ? [ox, ox + ow, ox + ow / 2]
+      : [oy, oy + oh, oy + oh / 2];
+    for (const c of candidates) {
+      const dist = Math.abs(v - c);
+      if (dist < THRESHOLD && dist < bestDist) {
+        bestDist = dist;
+        best = c;
+        guidePos = { isHoriz: !isX, pos: c };
+      }
+    }
+  }
+
+  return { val: best, guide: guidePos };
 }
 
 document.addEventListener('mousemove', e => {
@@ -1466,35 +1948,115 @@ document.addEventListener('mousemove', e => {
   const fyc = (my / STAGE_H).toFixed(3);
   document.getElementById('cursor-pos').textContent = 'x:' + fxc + ' y:' + fyc;
 
-  if (!dragging || !editMode) return;
-
-  const dx = (e.clientX - dragging.startMx) / (STAGE_W * zoom);
-  const dy = (e.clientY - dragging.startMy) / (STAGE_H * zoom);
-  const ctrl = dragging.ctrl;
-  const p = ctrl.props;
-
-  if (dragging.isResize) {
-    p.w = snapVal(Math.max(0.005, dragging.startW + dx));
-    p.h = snapVal(Math.max(0.002, dragging.startH + dy));
-  } else {
-    p.x = snapVal(Math.max(0, dragging.startX + dx));
-    p.y = snapVal(Math.max(0, dragging.startY + dy));
+  // Marquee update
+  if (marqueeState && editMode) {
+    const sx = marqueeState.startX;
+    const sy = marqueeState.startY;
+    const ex = mx, ey = my;
+    const left = Math.min(sx, ex), top = Math.min(sy, ey);
+    const w = Math.abs(ex - sx), h = Math.abs(ey - sy);
+    const mq = document.getElementById('marquee');
+    mq.style.left = (left * zoom) + 'px';
+    mq.style.top = (top * zoom) + 'px';
+    mq.style.width = (w * zoom) + 'px';
+    mq.style.height = (h * zoom) + 'px';
+    return;
   }
 
-  // Sync to resolved
-  if (ctrl.resolved) {
-    if (dragging.isResize) { ctrl.resolved.w = p.w; ctrl.resolved.h = p.h; }
-    else { ctrl.resolved.x = p.x; ctrl.resolved.y = p.y; }
+  if (!dragging || !editMode) return;
+
+  dragging.moved = true;
+  const dx = (e.clientX - dragging.startMx) / (STAGE_W * zoom);
+  const dy = (e.clientY - dragging.startMy) / (STAGE_H * zoom);
+  const movingSet = new Set(dragging.startPositions.map(s => s.ctrl));
+
+  clearGuides();
+
+  if (dragging.isResize) {
+    // Resize primary only
+    const sp = dragging.startPositions.find(s => s.ctrl === dragging.ctrl);
+    if (sp) {
+      const newW = Math.max(0.005, sp.w + dx);
+      const newH = Math.max(0.002, sp.h + dy);
+      const snapW = smartSnap(newW, STAGE_W, true, movingSet);
+      const snapH = smartSnap(newH, STAGE_H, false, movingSet);
+      sp.ctrl.props.w = snapW.val;
+      sp.ctrl.props.h = snapH.val;
+      if (sp.ctrl.resolved) { sp.ctrl.resolved.w = snapW.val; sp.ctrl.resolved.h = snapH.val; }
+      if (snapW.guide) addGuide(snapW.guide.isHoriz, snapW.guide.pos);
+      if (snapH.guide) addGuide(snapH.guide.isHoriz, snapH.guide.pos);
+    }
+  } else {
+    // Move all selected
+    for (const sp of dragging.startPositions) {
+      const newX = Math.max(0, sp.x + dx);
+      const newY = Math.max(0, sp.y + dy);
+      const snapX = smartSnap(newX, STAGE_W, true, movingSet);
+      const snapY = smartSnap(newY, STAGE_H, false, movingSet);
+      sp.ctrl.props.x = snapX.val;
+      sp.ctrl.props.y = snapY.val;
+      if (sp.ctrl.resolved) { sp.ctrl.resolved.x = snapX.val; sp.ctrl.resolved.y = snapY.val; }
+      // Only show guides for primary
+      if (sp.ctrl === dragging.ctrl) {
+        if (snapX.guide) addGuide(snapX.guide.isHoriz, snapX.guide.pos);
+        if (snapY.guide) addGuide(snapY.guide.isHoriz, snapY.guide.pos);
+      }
+    }
   }
 
   renderControls();
-  document.getElementById('insp-x').textContent = fmtVal(p.x);
-  document.getElementById('insp-y').textContent = fmtVal(p.y);
-  document.getElementById('insp-w').textContent = fmtVal(p.w);
-  document.getElementById('insp-h').textContent = fmtVal(p.h);
+  const p = dragging.ctrl.props;
+  const rinsp = el => document.getElementById(el);
+  if (rinsp('insp-x')) {
+    rinsp('insp-x').textContent = fmtVal(p.x);
+    rinsp('insp-y').textContent = fmtVal(p.y);
+    rinsp('insp-w').textContent = fmtVal(p.w);
+    rinsp('insp-h').textContent = fmtVal(p.h);
+  }
 });
 
-document.addEventListener('mouseup', () => { dragging = null; });
+document.addEventListener('mouseup', e => {
+  // Finish marquee
+  if (marqueeState && editMode) {
+    const stage = document.getElementById('stage');
+    const rect = stage.getBoundingClientRect();
+    const ex = (e.clientX - rect.left) / zoom;
+    const ey = (e.clientY - rect.top) / zoom;
+    const left = Math.min(marqueeState.startX, ex) / STAGE_W;
+    const right = Math.max(marqueeState.startX, ex) / STAGE_W;
+    const top = Math.min(marqueeState.startY, ey) / STAGE_H;
+    const bottom = Math.max(marqueeState.startY, ey) / STAGE_H;
+
+    const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+    const hits = allCtrls().filter(c => {
+      if (getMeta(c).hidden || getMeta(c).locked) return false;
+      const cx = resolveGeo(c, 'x', posSystem);
+      const cy = resolveGeo(c, 'y', posSystem);
+      const cw = resolveGeo(c, 'w', posSystem);
+      const ch = resolveGeo(c, 'h', posSystem);
+      return cx < right && cx + cw > left && cy < bottom && cy + ch > top;
+    });
+
+    document.getElementById('marquee').style.display = 'none';
+    marqueeState = null;
+
+    if (hits.length) {
+      if (e.shiftKey || e.ctrlKey || e.metaKey) {
+        hits.forEach(c => selectedSet.add(c));
+        selectedCtrl = hits[hits.length - 1];
+      } else {
+        selectMulti(hits);
+      }
+    }
+    return;
+  }
+
+  if (dragging && dragging.moved) {
+    pushUndo();
+  }
+  dragging = null;
+  clearGuides();
+});
 
 function snapVal(v) {
   if (!document.getElementById('snap-chk').checked) return v;
@@ -1550,11 +2112,57 @@ document.addEventListener('keydown', e => {
   const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
   if (inInput) return;
 
-  if (e.key === 'Escape') { selectCtrl(null); e.preventDefault(); }
-  if (e.key === '+' || e.key === '=') { setZoom(zoom + 0.1); e.preventDefault(); }
-  if (e.key === '-') { setZoom(zoom - 0.1); e.preventDefault(); }
-  if (e.key === 'f' || e.key === 'F') {
-    document.getElementById('zoom-fit').click(); e.preventDefault();
+  if (e.key === 'Escape') {
+    selectCtrl(null);
+    document.getElementById('palette-modal').classList.remove('open');
+    e.preventDefault();
+    return;
+  }
+  if (e.key === '+' || e.key === '=') { setZoom(zoom + 0.1); e.preventDefault(); return; }
+  if (e.key === '-') { setZoom(zoom - 0.1); e.preventDefault(); return; }
+  if (e.key === 'f' || e.key === 'F') { document.getElementById('zoom-fit').click(); e.preventDefault(); return; }
+
+  // Undo / Redo
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { undoAction(); e.preventDefault(); return; }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { redoAction(); e.preventDefault(); return; }
+
+  // Copy / Paste / Duplicate / Delete (edit mode)
+  if (editMode) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'c') { copySelection(); e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v') { pasteSelection(); e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd') { duplicateSelection(); e.preventDefault(); return; }
+    if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelection(); e.preventDefault(); return; }
+
+    // Group / Ungroup
+    if ((e.ctrlKey || e.metaKey) && e.key === 'g' && !e.shiftKey) { groupSelection(); e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'g' && e.shiftKey) { ungroupSelection(); e.preventDefault(); return; }
+
+    // Add control palette
+    if (e.key === 'a' || e.key === 'A') { openPalette(); e.preventDefault(); return; }
+
+    // Arrow nudge (fractional units)
+    const arrows = { ArrowLeft: [-1,0], ArrowRight: [1,0], ArrowUp: [0,-1], ArrowDown: [0,1] };
+    if (arrows[e.key] && selectedSet.size) {
+      const nudgeStep = 0.001; // 0.1% of screen
+      const mult = e.shiftKey ? 10 : 1;
+      const [ndx, ndy] = arrows[e.key].map(v => v * nudgeStep * mult);
+      pushUndo();
+      for (const c of selectedSet) {
+        if (getMeta(c).locked) continue;
+        const r = c.resolved || c.props || {};
+        const p = c.props || {};
+        const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+        const cx = resolveGeo(c, 'x', posSystem);
+        const cy = resolveGeo(c, 'y', posSystem);
+        p.x = Math.max(0, cx + ndx);
+        p.y = Math.max(0, cy + ndy);
+        if (c.resolved) { c.resolved.x = p.x; c.resolved.y = p.y; }
+      }
+      renderControls();
+      renderInspector();
+      e.preventDefault();
+      return;
+    }
   }
 });
 
@@ -1565,11 +2173,294 @@ function setMode(isEdit) {
   editMode = isEdit;
   document.getElementById('btn-preview').classList.toggle('active', !isEdit);
   document.getElementById('btn-edit').classList.toggle('active', isEdit);
+  document.getElementById('edit-toolbar').classList.toggle('visible', isEdit);
   renderControls();
+  updateUndoButtons();
 }
 
 document.getElementById('btn-preview').addEventListener('click', () => setMode(false));
 document.getElementById('btn-edit').addEventListener('click', () => setMode(true));
+
+// ============================================================
+// Pro editing: Copy / Paste / Duplicate / Delete
+// ============================================================
+function copySelection() {
+  if (!selectedSet.size) return;
+  clipboard = [...selectedSet].map(c => JSON.parse(JSON.stringify(c)));
+  setStatus('Copied ' + clipboard.length + ' control(s).', 'ok');
+}
+
+function pasteSelection() {
+  if (!clipboard.length || !displayData) return;
+  pushUndo();
+  const offset = 0.02;
+  const newCtrls = clipboard.map(snap => {
+    const c = JSON.parse(JSON.stringify(snap));
+    c.name = uniqueName(c.name);
+    c.idc = nextIdc();
+    if (c.props) { c.props.x = (parseFloat(c.props.x) || 0) + offset; c.props.y = (parseFloat(c.props.y) || 0) + offset; }
+    if (c.resolved) { c.resolved.x = (parseFloat(c.resolved.x) || 0) + offset; c.resolved.y = (parseFloat(c.resolved.y) || 0) + offset; }
+    c._section = snap._section || 'controls';
+    return c;
+  });
+  newCtrls.forEach(c => {
+    if (c._section === 'background') (displayData.background = displayData.background || []).push(c);
+    else (displayData.controls = displayData.controls || []).push(c);
+  });
+  selectMulti(newCtrls);
+  renderAll();
+  setStatus('Pasted ' + newCtrls.length + ' control(s).', 'ok');
+}
+
+function duplicateSelection() {
+  copySelection();
+  pasteSelection();
+}
+
+function deleteSelection() {
+  if (!selectedSet.size) return;
+  pushUndo();
+  const toDelete = new Set(selectedSet);
+  displayData.background = (displayData.background || []).filter(c => !toDelete.has(c));
+  displayData.controls = (displayData.controls || []).filter(c => !toDelete.has(c));
+  selectedSet.clear();
+  selectedCtrl = null;
+  renderAll();
+  setStatus('Deleted ' + toDelete.size + ' control(s).', 'ok');
+}
+
+function uniqueName(base) {
+  const existing = new Set(allCtrls().map(c => c.name));
+  if (!existing.has(base)) return base;
+  let i = 2;
+  while (existing.has(base + '_' + i)) i++;
+  return base + '_' + i;
+}
+
+// ============================================================
+// Pro editing: Align + Distribute
+// ============================================================
+function alignSelection(mode) {
+  const ctrls = [...selectedSet].filter(c => !getMeta(c).locked);
+  if (ctrls.length < 2) return;
+  pushUndo();
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+
+  const geos = ctrls.map(c => ({
+    c,
+    x: resolveGeo(c, 'x', posSystem), y: resolveGeo(c, 'y', posSystem),
+    w: resolveGeo(c, 'w', posSystem), h: resolveGeo(c, 'h', posSystem),
+  }));
+
+  let ref;
+  switch (mode) {
+    case 'left':   ref = Math.min(...geos.map(g => g.x)); geos.forEach(g => setGeo(g.c,'x',ref)); break;
+    case 'right':  ref = Math.max(...geos.map(g => g.x + g.w)); geos.forEach(g => setGeo(g.c,'x',ref - g.w)); break;
+    case 'top':    ref = Math.min(...geos.map(g => g.y)); geos.forEach(g => setGeo(g.c,'y',ref)); break;
+    case 'bottom': ref = Math.max(...geos.map(g => g.y + g.h)); geos.forEach(g => setGeo(g.c,'y',ref - g.h)); break;
+    case 'hcenter': ref = (Math.min(...geos.map(g=>g.x)) + Math.max(...geos.map(g=>g.x+g.w))) / 2;
+      geos.forEach(g => setGeo(g.c,'x',ref - g.w/2)); break;
+    case 'vcenter': ref = (Math.min(...geos.map(g=>g.y)) + Math.max(...geos.map(g=>g.y+g.h))) / 2;
+      geos.forEach(g => setGeo(g.c,'y',ref - g.h/2)); break;
+  }
+  renderControls();
+  renderInspector();
+}
+
+function distributeSelection(axis) {
+  const ctrls = [...selectedSet].filter(c => !getMeta(c).locked);
+  if (ctrls.length < 3) return;
+  pushUndo();
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+  if (axis === 'h') {
+    const sorted = [...ctrls].sort((a,b) => resolveGeo(a,'x',posSystem) - resolveGeo(b,'x',posSystem));
+    const first = resolveGeo(sorted[0],'x',posSystem);
+    const last = resolveGeo(sorted[sorted.length-1],'x',posSystem) + resolveGeo(sorted[sorted.length-1],'w',posSystem);
+    const totalW = sorted.reduce((s,c) => s + resolveGeo(c,'w',posSystem), 0);
+    const gap = (last - first - totalW) / (sorted.length - 1);
+    let cx = first;
+    sorted.forEach(c => { setGeo(c,'x',cx); cx += resolveGeo(c,'w',posSystem) + gap; });
+  } else {
+    const sorted = [...ctrls].sort((a,b) => resolveGeo(a,'y',posSystem) - resolveGeo(b,'y',posSystem));
+    const first = resolveGeo(sorted[0],'y',posSystem);
+    const last = resolveGeo(sorted[sorted.length-1],'y',posSystem) + resolveGeo(sorted[sorted.length-1],'h',posSystem);
+    const totalH = sorted.reduce((s,c) => s + resolveGeo(c,'h',posSystem), 0);
+    const gap = (last - first - totalH) / (sorted.length - 1);
+    let cy = first;
+    sorted.forEach(c => { setGeo(c,'y',cy); cy += resolveGeo(c,'h',posSystem) + gap; });
+  }
+  renderControls();
+}
+
+function setGeo(ctrl, key, val) {
+  if (!ctrl.props) ctrl.props = {};
+  ctrl.props[key] = val;
+  if (ctrl.resolved) ctrl.resolved[key] = val;
+}
+
+// ============================================================
+// Pro editing: Z-order
+// ============================================================
+function zOrder(action) {
+  if (!selectedCtrl || !displayData) return;
+  pushUndo();
+  const ctrl = selectedCtrl;
+  // Operate within the correct section array
+  const arr = ctrl._section === 'background' ? displayData.background : displayData.controls;
+  if (!arr) return;
+  const idx = arr.indexOf(ctrl);
+  if (idx < 0) return;
+  switch (action) {
+    case 'front': arr.splice(idx,1); arr.push(ctrl); break;
+    case 'back':  arr.splice(idx,1); arr.unshift(ctrl); break;
+    case 'up':    if (idx < arr.length-1) { [arr[idx],arr[idx+1]] = [arr[idx+1],arr[idx]]; } break;
+    case 'down':  if (idx > 0) { [arr[idx],arr[idx-1]] = [arr[idx-1],arr[idx]]; } break;
+  }
+  renderAll();
+}
+
+// ============================================================
+// Pro editing: Group / Ungroup
+// ============================================================
+function groupSelection() {
+  const ctrls = [...selectedSet];
+  if (ctrls.length < 2) return;
+  pushUndo();
+  groupCounter++;
+  const gid = groupCounter;
+  ctrls.forEach(c => getMeta(c).groupId = gid);
+  renderAll();
+  setStatus('Grouped ' + ctrls.length + ' controls (group ' + gid + ').', 'ok');
+}
+
+function ungroupSelection() {
+  const ctrls = [...selectedSet];
+  if (!ctrls.length) return;
+  pushUndo();
+  // Collect all group IDs in selection
+  const gids = new Set(ctrls.map(c => getMeta(c).groupId).filter(g => g !== null));
+  // Ungroup ALL controls in those groups
+  allCtrls().forEach(c => { if (gids.has(getMeta(c).groupId)) getMeta(c).groupId = null; });
+  renderAll();
+  setStatus('Ungrouped ' + gids.size + ' group(s).', 'ok');
+}
+
+// Clicking a grouped control selects entire group
+function maybeSelectGroup(ctrl) {
+  const meta = getMeta(ctrl);
+  if (meta.groupId === null) { selectCtrl(ctrl); return; }
+  const group = allCtrls().filter(c => getMeta(c).groupId === meta.groupId);
+  selectMulti(group);
+}
+
+// ============================================================
+// Pro editing: Add Control Palette
+// ============================================================
+function openPalette() {
+  if (!uiData) return;
+  const modal = document.getElementById('palette-modal');
+  const baseSelect = document.getElementById('pal-base');
+  baseSelect.innerHTML = '';
+  const baseClasses = Object.keys(uiData.baseClasses || {});
+  const common = ['RscText','RscButton','RscButton_Main','RscButton_Exit',
+    'RscShortcutButton','RscShortcutButtonMain','RscListBox','RscCombo',
+    'RscEdit','RscStructuredText','RscPicture','RscFrame','IGUIBack','RscMapControl','RscXSliderH'];
+  const sorted = [...new Set([...common, ...baseClasses])];
+  sorted.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    baseSelect.appendChild(opt);
+  });
+  document.getElementById('pal-name').value = '';
+  document.getElementById('pal-idc').value = '';
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('pal-name').focus(), 50);
+}
+
+function closePalette() {
+  document.getElementById('palette-modal').classList.remove('open');
+}
+
+function addControlFromPalette() {
+  const nameEl = document.getElementById('pal-name');
+  const baseEl = document.getElementById('pal-base');
+  const idcEl = document.getElementById('pal-idc');
+  const secEl = document.getElementById('pal-section');
+
+  let name = nameEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  name = uniqueName(name);
+
+  const baseClass = baseEl.value;
+  const idc = idcEl.value ? parseInt(idcEl.value) : nextIdc();
+  const section = secEl.value;
+
+  pushUndo();
+
+  // Build a new control with sensible defaults
+  const resolved = uiData.baseClasses && uiData.baseClasses[baseClass]
+    ? Object.assign({}, uiData.baseClasses[baseClass].props || {})
+    : {};
+
+  const newCtrl = {
+    name,
+    baseClass,
+    idc,
+    props: { x: 0.1, y: 0.1, w: 0.15, h: 0.05 },
+    resolved: Object.assign({ x: 0.1, y: 0.1, w: 0.15, h: 0.05 }, resolved),
+    _section: section,
+  };
+
+  if (section === 'background') {
+    if (!displayData.background) displayData.background = [];
+    displayData.background.push(newCtrl);
+  } else {
+    if (!displayData.controls) displayData.controls = [];
+    displayData.controls.push(newCtrl);
+  }
+
+  closePalette();
+  selectCtrl(newCtrl);
+  renderAll();
+  setStatus('Added ' + name + ' (' + baseClass + ', idc ' + idc + ').', 'ok');
+}
+
+// Palette modal events
+document.getElementById('palette-close').addEventListener('click', closePalette);
+document.getElementById('palette-cancel').addEventListener('click', closePalette);
+document.getElementById('palette-add').addEventListener('click', addControlFromPalette);
+document.getElementById('palette-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('palette-modal')) closePalette();
+});
+document.getElementById('pal-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { addControlFromPalette(); e.preventDefault(); }
+});
+
+// ============================================================
+// Pro editing toolbar button wiring
+// ============================================================
+document.getElementById('et-undo').addEventListener('click', undoAction);
+document.getElementById('et-redo').addEventListener('click', redoAction);
+document.getElementById('et-copy').addEventListener('click', copySelection);
+document.getElementById('et-paste').addEventListener('click', pasteSelection);
+document.getElementById('et-dupe').addEventListener('click', duplicateSelection);
+document.getElementById('et-del').addEventListener('click', deleteSelection);
+document.getElementById('et-al-l').addEventListener('click', () => alignSelection('left'));
+document.getElementById('et-al-r').addEventListener('click', () => alignSelection('right'));
+document.getElementById('et-al-t').addEventListener('click', () => alignSelection('top'));
+document.getElementById('et-al-b').addEventListener('click', () => alignSelection('bottom'));
+document.getElementById('et-al-hc').addEventListener('click', () => alignSelection('hcenter'));
+document.getElementById('et-al-vc').addEventListener('click', () => alignSelection('vcenter'));
+document.getElementById('et-dist-h').addEventListener('click', () => distributeSelection('h'));
+document.getElementById('et-dist-v').addEventListener('click', () => distributeSelection('v'));
+document.getElementById('et-z-front').addEventListener('click', () => zOrder('front'));
+document.getElementById('et-z-up').addEventListener('click', () => zOrder('up'));
+document.getElementById('et-z-down').addEventListener('click', () => zOrder('down'));
+document.getElementById('et-z-back').addEventListener('click', () => zOrder('back'));
+document.getElementById('et-group').addEventListener('click', groupSelection);
+document.getElementById('et-ungroup').addEventListener('click', ungroupSelection);
+document.getElementById('et-add').addEventListener('click', openPalette);
 
 // ============================================================
 // Export
