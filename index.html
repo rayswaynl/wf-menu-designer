@@ -83,10 +83,12 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .canvas-toolbar input[type=checkbox]{accent-color:var(--orange)}
 .canvas-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;
   padding:32px;background:#0a0c0f;position:relative}
-.canvas-center{margin:auto;position:relative}
+/* canvas-center uses inline-block so the wrap scrolls to reach controls
+   that extend beyond the stage boundary (HUD displays, right-edge icons). */
+.canvas-center{display:inline-block;position:relative;margin:0}
 
 /* The 16:9 game frame */
-.stage{position:relative;flex:0 0 auto;user-select:none;overflow:hidden;
+.stage{position:relative;flex:0 0 auto;user-select:none;overflow:visible;
   background:#0d0f12;
   box-shadow:0 0 0 1px #39414b, 0 4px 40px rgba(0,0,0,.7)}
 
@@ -600,22 +602,24 @@ function px(frac, dim) {
 
 /**
  * Evaluate a SafeZone position expression.
- * Handles strings like "0.882604 * safezoneW + safezoneX"
- * and plain numbers.
+ * Handles strings like "0.882604 * safezoneW + safezoneX",
+ * "(SafeZoneW + SafeZoneX) - 0.0392157", "SafezoneX + 0.01 + \t0.3",
+ * min/max calls, parentheses, and plain numbers.
+ * Case-insensitive for all safezone[X|Y|W|H] variants.
  */
 function evalSZ(val) {
   if (typeof val === 'number') return val;
+  if (typeof val == null || val === undefined) return 0;
   if (typeof val !== 'string') return 0;
 
+  // Replace all case variants of safezone[XYWH] with numeric constants.
+  // Uses a single case-insensitive regex so SafezoneX, SAFEZONEW, safezoneH etc. all match.
   const expr = val
-    .replace(/safezoneX/g, SZ.X)
-    .replace(/safezoneY/g, SZ.Y)
-    .replace(/safezoneW/g, SZ.W)
-    .replace(/safezoneH/g, SZ.H)
-    .replace(/SafeZoneX/g, SZ.X)
-    .replace(/SafeZoneY/g, SZ.Y)
-    .replace(/SafeZoneW/g, SZ.W)
-    .replace(/SafeZoneH/g, SZ.H);
+    .replace(/\t/g, ' ')
+    .replace(/[Ss]afe[Zz]one[Xx]/gi, SZ.X)
+    .replace(/[Ss]afe[Zz]one[Yy]/gi, SZ.Y)
+    .replace(/[Ss]afe[Zz]one[Ww]/gi, SZ.W)
+    .replace(/[Ss]afe[Zz]one[Hh]/gi, SZ.H);
 
   try {
     // eslint-disable-next-line no-new-func
@@ -772,23 +776,68 @@ function loadDisplay(name) {
 // ============================================================
 // Coordinate conversion
 // ============================================================
+/**
+ * Look up a geometry value (x/y/w/h) for a control, with sibling-inheritance
+ * fallback for SafeZone displays.  In Arma SQF, controls in the same controls[]
+ * block can omit x/w/h and inherit them from the nearest preceding sibling that
+ * shares the same baseClass.  The generator preserves this faithfully (null in
+ * props means "inherited"), so we replicate the lookup here.
+ */
+function resolveGeo(ctrl, key, posSystem) {
+  // Try resolved first, then props
+  const r = ctrl.resolved || {};
+  const p = ctrl.props || {};
+
+  let raw = r[key] !== undefined ? r[key] : p[key];
+
+  // If still null/undefined, apply in-array class inheritance.
+  // In Arma SQF, a control can declare baseClass = "AnotherControlName" where
+  // that other control is a sibling in the same controls[] block (not a global
+  // baseClass). Walk the inheritance chain: if ctrl.baseClass matches another
+  // control's NAME in the same display, recurse into that control for the value.
+  if ((raw === null || raw === undefined) && displayData) {
+    const all = [...(displayData.background || []), ...(displayData.controls || [])];
+    const myBase = ctrl.baseClass || '';
+
+    // First: check if baseClass names a sibling control (in-array inheritance)
+    const namedParent = myBase ? all.find(c => c.name === myBase) : null;
+    if (namedParent) {
+      const pr = namedParent.resolved || {};
+      const pp = namedParent.props || {};
+      raw = pr[key] !== undefined ? pr[key] : pp[key];
+    }
+
+    // If still missing, fall back to nearest preceding sibling with same baseClass
+    if (raw === null || raw === undefined) {
+      const myIdx = all.indexOf(ctrl);
+      const myBaseLow = myBase.toLowerCase();
+      for (let i = myIdx - 1; i >= 0; i--) {
+        const sib = all[i];
+        if ((sib.baseClass || '').toLowerCase() !== myBaseLow) continue;
+        const sr = sib.resolved || {};
+        const sp = sib.props || {};
+        const sibRaw = sr[key] !== undefined ? sr[key] : sp[key];
+        if (sibRaw !== null && sibRaw !== undefined) { raw = sibRaw; break; }
+      }
+    }
+  }
+
+  if (raw === null || raw === undefined) {
+    // Sensible defaults: x/y → 0, w → 0.1, h → 0.04
+    raw = (key === 'w') ? 0.1 : (key === 'h') ? 0.04 : 0;
+  }
+
+  return posSystem === 'safezone' ? evalSZ(raw) : (parseFloat(raw) || 0);
+}
+
 function ctrlPx(ctrl) {
   // Returns {left, top, width, height} in logical stage pixels
-  const r = ctrl.resolved || ctrl.props || {};
   const posSystem = (displayData && displayData.posSystem) || 'unit_square';
 
-  let xf, yf, wf, hf;
-  if (posSystem === 'safezone') {
-    xf = evalSZ(r.x !== undefined ? r.x : (ctrl.props && ctrl.props.x) || 0);
-    yf = evalSZ(r.y !== undefined ? r.y : (ctrl.props && ctrl.props.y) || 0);
-    wf = evalSZ(r.w !== undefined ? r.w : (ctrl.props && ctrl.props.w) || 0.1);
-    hf = evalSZ(r.h !== undefined ? r.h : (ctrl.props && ctrl.props.h) || 0.04);
-  } else {
-    xf = parseFloat(r.x !== undefined ? r.x : (ctrl.props && ctrl.props.x) || 0);
-    yf = parseFloat(r.y !== undefined ? r.y : (ctrl.props && ctrl.props.y) || 0);
-    wf = parseFloat(r.w !== undefined ? r.w : (ctrl.props && ctrl.props.w) || 0.1);
-    hf = parseFloat(r.h !== undefined ? r.h : (ctrl.props && ctrl.props.h) || 0.04);
-  }
+  const xf = resolveGeo(ctrl, 'x', posSystem);
+  const yf = resolveGeo(ctrl, 'y', posSystem);
+  const wf = resolveGeo(ctrl, 'w', posSystem);
+  const hf = resolveGeo(ctrl, 'h', posSystem);
 
   return {
     left: xf * STAGE_W,
@@ -865,7 +914,9 @@ function buildControlEl(ctrl, zIndex) {
 
       const labelDiv = document.createElement('div');
       labelDiv.className = 'sb-label';
-      const txt = cleanText(r.text || p.text || ctrl.name || '');
+      // In preview: show real text only. In edit: fall back to ctrl.name so tiles are identifiable.
+      const rawTxtSBM = r.text !== undefined ? r.text : p.text;
+      const txt = cleanText(rawTxtSBM || (editMode ? ctrl.name : '') || '');
       labelDiv.textContent = txt;
       labelDiv.style.fontSize = Math.max(7, fontPx * 0.95) + 'px';
 
@@ -889,7 +940,8 @@ function buildControlEl(ctrl, zIndex) {
 
       const labelDiv = document.createElement('div');
       labelDiv.className = 'sb-label';
-      labelDiv.textContent = cleanText(r.text || p.text || ctrl.name || '');
+      const rawTxtSB = r.text !== undefined ? r.text : p.text;
+      labelDiv.textContent = cleanText(rawTxtSB || (editMode ? ctrl.name : '') || '');
       labelDiv.style.fontSize = Math.max(6, fontPx * 0.85) + 'px';
 
       el.appendChild(iconDiv);
@@ -915,8 +967,8 @@ function buildControlEl(ctrl, zIndex) {
       el.style.color = rgba(ct);
       el.style.fontSize = Math.max(7, fontPx) + 'px';
 
-      const txt = cleanText(r.text || p.text || ctrl.name || '');
-      el.textContent = txt;
+      const rawTxtBtn = r.text !== undefined ? r.text : p.text;
+      el.textContent = cleanText(rawTxtBtn || (editMode ? ctrl.name : '') || '');
       break;
     }
 
@@ -927,7 +979,8 @@ function buildControlEl(ctrl, zIndex) {
 
       const header = document.createElement('div');
       header.className = 'lb-header';
-      header.textContent = cleanText(ctrl.name || '');
+      // Listboxes show their name in the header in both modes — it's a structural label, not text content
+      header.textContent = ctrl.name || '';
       header.style.fontSize = Math.max(6, fontPx * 0.75) + 'px';
 
       const rows = document.createElement('div');
@@ -954,7 +1007,8 @@ function buildControlEl(ctrl, zIndex) {
 
       const textEl = document.createElement('div');
       textEl.className = 'combo-text';
-      textEl.textContent = cleanText(r.text || p.text || ctrl.name || '') || '---';
+      const rawTxtCombo = r.text !== undefined ? r.text : p.text;
+      textEl.textContent = cleanText(rawTxtCombo || '') || '---';
       textEl.style.fontSize = Math.max(6, fontPx * 0.8) + 'px';
       textEl.style.color = rgba(ct);
 
@@ -999,7 +1053,8 @@ function buildControlEl(ctrl, zIndex) {
 
       const lbl = document.createElement('div');
       lbl.style.cssText = `font-size:${Math.max(5, fontPx*0.55)}px;opacity:.6;margin-top:1px;overflow:hidden;max-width:${geo.width*zoom*0.9}px;text-align:center;white-space:nowrap;text-overflow:ellipsis`;
-      lbl.textContent = cleanText(r.text || p.text || ctrl.name || '');
+      const rawTxtPic = r.text !== undefined ? r.text : p.text;
+      lbl.textContent = cleanText(rawTxtPic || '');
       iconDiv.appendChild(lbl);
 
       el.appendChild(iconDiv);
@@ -1011,7 +1066,8 @@ function buildControlEl(ctrl, zIndex) {
       const ct = r.colorText || p.colorText || [1, 1, 0.7, 1];
       el.style.color = rgba(ct);
       el.style.fontSize = Math.max(6, fontPx * 0.85) + 'px';
-      el.textContent = cleanText(r.text || p.text || ctrl.name || '');
+      const rawTxtST = r.text !== undefined ? r.text : p.text;
+      el.textContent = cleanText(rawTxtST || '');
       break;
     }
 
@@ -1078,10 +1134,44 @@ function buildControlEl(ctrl, zIndex) {
         el.style.textShadow = '0 0 3px rgba(0,0,0,.9),-1px -1px 0 rgba(0,0,0,.6),1px 1px 0 rgba(0,0,0,.6)';
       }
 
-      const txt = r.text !== undefined ? r.text : p.text;
-      el.textContent = cleanText(txt || ctrl.name || '');
+      // In preview mode: only render the actual text content — never fall back
+      // to ctrl.name (that would show "Background_M" etc. over decorative panels).
+      // In edit mode: show the name as an overlay tag (added below) but still
+      // use only real text for the control's own textContent.
+      const rawTxt = r.text !== undefined ? r.text : p.text;
+      const displayTxt = cleanText(rawTxt || '');
+      el.textContent = displayTxt;
       break;
     }
+  }
+
+  // Edit-mode name overlay tag — shows ctrl.name as a small label in the top-left
+  // corner so decorative controls (Background_M, IGUIBack, frames) are identifiable
+  // in edit mode without polluting their text content in preview.
+  if (editMode && ctrl.name) {
+    const nameTag = document.createElement('div');
+    nameTag.setAttribute('aria-hidden', 'true');
+    nameTag.dataset.nametag = '1';
+    nameTag.style.cssText = [
+      'position:absolute',
+      'top:1px',
+      'left:1px',
+      'font-family:"JetBrains Mono",monospace',
+      `font-size:${Math.max(6, Math.min(10, fontPx * 0.55))}px`,
+      'color:rgba(75,184,200,0.75)',
+      'background:rgba(0,0,0,0.55)',
+      'padding:0 2px',
+      'border-radius:2px',
+      'pointer-events:none',
+      'z-index:2',
+      'white-space:nowrap',
+      'overflow:hidden',
+      `max-width:${Math.max(20, geo.width * zoom - 4)}px`,
+      'text-overflow:ellipsis',
+      'line-height:1.4',
+    ].join(';');
+    nameTag.textContent = ctrl.name;
+    el.appendChild(nameTag);
   }
 
   // Resize handle (edit mode)
