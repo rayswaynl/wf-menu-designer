@@ -9,10 +9,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --gunmetal:#14171B;--steel:#2A2F36;--steel2:#343b44;
-  --olive:#5C6536;--bone:#E7E3D6;--orange:#D9763C;--orange-deep:#B85F2A;
-  --chalk:#F2EFE8;--line:#39414b;--danger:#c0392b;--cyan:#4BB8C8;
+/* ---- CSS Variables ---- */
+:root {
+  --gunmetal: #14171B;
+  --steel: #2A2F36;
+  --steel2: #343b44;
+  --olive: #5C6536;
+  --bone: #E7E3D6;
+  --orange: #D9763C;
+  --orange-deep: #B85F2A;
+  --chalk: #F2EFE8;
+  --line: #39414b;
+  --danger: #c0392b;
+  --cyan: #4BB8C8;
+  --wasp-blue: rgba(66,182,255,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:Inter,system-ui,'Segoe UI',Arial,sans-serif;background:var(--gunmetal);color:var(--bone);overflow:hidden}
@@ -33,121 +43,459 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 /* ---- Layout ---- */
 .layout{display:flex;height:calc(100vh - 50px);overflow:hidden}
 .panel{display:flex;flex-direction:column;min-height:0}
-.panel-left{width:180px;flex:0 0 180px;border-right:1px solid var(--line);background:var(--steel)}
+.panel-left{width:200px;flex:0 0 200px;border-right:1px solid var(--line);background:var(--steel)}
 .panel-center{flex:1;min-width:0;background:var(--gunmetal)}
-.panel-right{width:240px;flex:0 0 240px;border-left:1px solid var(--line);background:var(--steel)}
+.panel-right{width:260px;flex:0 0 260px;border-left:1px solid var(--line);background:var(--steel)}
 
 .panel-hdr{padding:9px 12px;border-bottom:1px solid var(--line);background:var(--gunmetal);flex:0 0 auto}
 .panel-hdr h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad}
 .scroll{overflow-y:auto;flex:1;min-height:0}
 
-/* ---- Palette ---- */
-.palette-list{padding:8px}
-.type-btn{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:none;
-  border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin-bottom:4px;
-  color:var(--bone);font-family:Inter,sans-serif;font-size:11px;cursor:pointer;transition:all .12s}
-.type-btn:hover{border-color:var(--orange);background:rgba(217,118,60,.08)}
-.type-btn:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
-.type-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
-.palette-divider{height:1px;background:var(--line);margin:6px 0}
-.palette-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;padding:3px 4px 5px;text-transform:uppercase;letter-spacing:.5px}
+/* ---- Display picker ---- */
+.display-picker-wrap{padding:8px;flex:0 0 auto;border-bottom:1px solid var(--line)}
+.display-picker-wrap label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+#display-picker{width:100%;background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:4px;padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:10px;outline:none;cursor:pointer}
+#display-picker:focus{border-color:var(--orange)}
+#display-picker optgroup{color:#9aa3ad;font-style:normal;font-size:9px}
+#display-picker option{color:var(--bone);background:var(--gunmetal)}
 
-/* ---- Canvas area ---- */
-.canvas-toolbar{padding:8px 12px;border-bottom:1px solid var(--line);background:#101317;
-  display:flex;align-items:center;gap:10px;flex:0 0 auto}
-.canvas-toolbar label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;cursor:pointer}
-.canvas-toolbar input[type=checkbox]{accent-color:var(--orange)}
-.canvas-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;
-  padding:24px;background:#0d1014}
-.stage{position:relative;background:#1a1e24;border:1px solid var(--line);
-  flex:0 0 auto;user-select:none;overflow:hidden}
-.stage-bg{position:absolute;inset:0;pointer-events:none}
-
-/* ---- Controls on canvas ---- */
-.ctrl-box{position:absolute;border:1px solid;cursor:move;display:flex;
-  align-items:center;justify-content:center;font-size:9px;font-family:'JetBrains Mono',monospace;
-  text-align:center;padding:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  line-height:1.2;transition:box-shadow .08s}
-.ctrl-box.selected{outline:2px solid var(--orange);outline-offset:1px;z-index:100!important}
-.ctrl-box .resize-handle{position:absolute;right:-4px;bottom:-4px;width:8px;height:8px;
-  background:var(--orange);cursor:se-resize;z-index:10;border-radius:1px}
-
-/* ---- Type colours ---- */
-.t-CT_STATIC      {background:rgba(42,47,54,.85);border-color:#39414b;color:#aab}
-.t-CT_BUTTON      {background:rgba(41,61,92,.8);border-color:#2a5a8c;color:#a8ccee}
-.t-RscShortcutButton{background:rgba(30,65,100,.85);border-color:#4bb8c8;color:#8de0ec}
-.t-CT_CLICKABLETEXT{background:rgba(92,101,54,.7);border-color:#7a8a38;color:#c8d88a}
-.t-CT_LISTBOX     {background:rgba(80,40,80,.8);border-color:#884488;color:#d4a0d4}
-.t-CT_COMBO       {background:rgba(80,60,20,.8);border-color:#b88820;color:#e8c860}
-.t-CT_STRUCTUREDTEXT{background:rgba(60,80,40,.8);border-color:#6a9040;color:#a8d870}
-.t-CT_EDIT        {background:rgba(80,30,30,.8);border-color:#a04040;color:#e88080}
-.t-CT_CONTROLS_GROUP{background:rgba(30,30,60,.8);border-color:#4444aa;color:#9090d8}
-.t-CT_LISTNBOX    {background:rgba(80,50,60,.8);border-color:#a06070;color:#e0b0c0}
-.t-RscXSliderH    {background:rgba(50,70,50,.8);border-color:#609060;color:#a0c0a0}
-.t-RscMapControl  {background:rgba(20,60,50,.8);border-color:#208060;color:#60c0a0}
+/* ---- Mode toggle ---- */
+.mode-toggle{display:flex;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line);flex:0 0 auto;align-items:center}
+.mode-btn{flex:1;font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 6px;border-radius:3px;border:1px solid var(--line);background:transparent;color:#9aa3ad;cursor:pointer;transition:all .12s;text-align:center}
+.mode-btn.active{background:var(--orange);border-color:var(--orange);color:#1a1208;font-weight:600}
+.mode-btn:hover:not(.active){border-color:var(--orange);color:var(--orange)}
 
 /* ---- Layer list ---- */
-.layer-item{display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;
+.layer-item{display:flex;align-items:center;gap:4px;padding:4px 8px;cursor:pointer;
   border-bottom:1px solid rgba(57,65,75,.4);font-size:11px;transition:background .08s}
 .layer-item:hover{background:rgba(255,255,255,.04)}
 .layer-item.selected{background:rgba(217,118,60,.12);border-left:2px solid var(--orange)}
+.layer-item.multi-selected{background:rgba(217,118,60,.07);border-left:2px solid rgba(217,118,60,.5)}
 .layer-item.bg-ctrl{border-left:2px solid var(--line)}
+.layer-item.locked{opacity:.55}
+.layer-item.hidden-ctrl{opacity:.35}
 .layer-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
 .layer-idc{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;margin-left:auto;white-space:nowrap}
-.layer-del{margin-left:4px;background:none;border:none;color:#556;cursor:pointer;font-size:11px;padding:0 2px;border-radius:3px}
-.layer-del:hover{color:var(--danger)}
-.layer-del:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
-.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px}
+.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
+.layer-hdr{padding:4px 10px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#39414b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(57,65,75,.3)}
+.layer-action{flex:0 0 auto;width:16px;height:16px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;border-radius:2px;border:none;background:transparent;color:#39414b;cursor:pointer;padding:0;line-height:1}
+.layer-action:hover{background:rgba(255,255,255,.1);color:var(--bone)}
+.layer-action.active{color:var(--orange)}
+
+/* ---- Pro editing toolbar ---- */
+.edit-toolbar{padding:5px 10px;border-bottom:1px solid var(--line);background:#0d1014;
+  display:none;align-items:center;gap:4px;flex:0 0 auto;flex-wrap:wrap}
+.edit-toolbar.visible{display:flex}
+.et-sep{width:1px;height:16px;background:var(--line);margin:0 2px;flex:0 0 auto}
+.et-btn{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 6px;border-radius:3px;
+  border:1px solid var(--line);background:transparent;color:#9aa3ad;cursor:pointer;
+  white-space:nowrap;transition:all .1s}
+.et-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange)}
+.et-btn:disabled{opacity:.3;cursor:default}
+.et-group{display:flex;gap:2px;align-items:center}
+.et-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#39414b;padding:0 2px}
+
+/* ---- Canvas area ---- */
+.canvas-toolbar{padding:8px 12px;border-bottom:1px solid var(--line);background:#101317;
+  display:flex;align-items:center;gap:10px;flex:0 0 auto;flex-wrap:wrap}
+.canvas-toolbar label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;cursor:pointer}
+.canvas-toolbar input[type=checkbox]{accent-color:var(--orange)}
+.canvas-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;
+  padding:32px;background:#0a0c0f;position:relative}
+/* canvas-center uses inline-block so the wrap scrolls to reach controls
+   that extend beyond the stage boundary (HUD displays, right-edge icons). */
+.canvas-center{display:inline-block;position:relative;margin:0}
+
+/* The 16:9 game frame */
+.stage{position:relative;flex:0 0 auto;user-select:none;overflow:visible;
+  background:#0d0f12;
+  box-shadow:0 0 0 1px #39414b, 0 4px 40px rgba(0,0,0,.7)}
+
+/* Resolution/backdrop labels */
+.stage-label{position:absolute;top:-22px;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;color:#39414b;pointer-events:none;white-space:nowrap}
+.stage-label-side{position:absolute;top:0;left:-44px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:'JetBrains Mono',monospace;font-size:10px;color:#39414b;pointer-events:none;white-space:nowrap;height:100%;display:flex;align-items:center;justify-content:center}
+
+/* ---- Marquee selection ---- */
+#marquee{position:absolute;border:1px dashed rgba(217,118,60,.8);background:rgba(217,118,60,.06);
+  pointer-events:none;display:none;z-index:99998}
+
+/* ---- Snap guide lines ---- */
+.snap-guide{position:absolute;pointer-events:none;z-index:99997;opacity:.9}
+.snap-guide.h{left:0;right:0;height:0;border-top:1px solid rgba(255,0,200,.7)}
+.snap-guide.v{top:0;bottom:0;width:0;border-left:1px solid rgba(255,0,200,.7)}
+
+/* ---- Group border ---- */
+.ctrl.grouped::before{content:'';position:absolute;inset:-2px;
+  border:1px dashed rgba(100,180,255,.4);pointer-events:none;z-index:1}
+
+/* ---- Add Control palette modal ---- */
+#palette-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100000;
+  display:none;align-items:center;justify-content:center}
+#palette-modal.open{display:flex}
+#palette-box{background:var(--steel);border:1px solid var(--line);border-radius:6px;
+  width:360px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+#palette-box h3{font-size:13px;padding:12px 14px;border-bottom:1px solid var(--line);
+  color:var(--bone);letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center}
+#palette-box h3 button{background:transparent;border:none;color:#9aa3ad;font-size:14px;
+  cursor:pointer;padding:0 4px;line-height:1}
+#palette-box h3 button:hover{color:var(--bone)}
+#palette-fields{padding:12px 14px;display:grid;gap:8px}
+#palette-fields label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;
+  text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+#palette-fields input,#palette-fields select{width:100%;background:var(--gunmetal);
+  border:1px solid var(--line);color:var(--bone);border-radius:4px;
+  padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
+#palette-fields input:focus,#palette-fields select:focus{border-color:var(--orange)}
+#palette-footer{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+
+/* ---- WYSIWYG Control rendering ---- */
+.ctrl{position:absolute;overflow:hidden;cursor:move;box-sizing:border-box}
+
+/* Edit mode affordances */
+.ctrl.edit-mode::after{
+  content:'';position:absolute;inset:0;
+  border:1px solid rgba(75,184,200,.35);
+  pointer-events:none;z-index:1;
+}
+.ctrl.selected.edit-mode::after{
+  border:2px solid var(--orange)!important;
+}
+.ctrl.multi-sel.edit-mode::after{
+  border:2px solid rgba(255,200,60,.9)!important;
+}
+.ctrl.selected{z-index:9999!important}
+.ctrl.multi-sel{z-index:9998!important}
+.ctrl.ctrl-locked{cursor:not-allowed!important;opacity:.7}
+.ctrl.ctrl-hidden{display:none!important}
+
+/* Resize handle (edit mode only) */
+.ctrl .rh{position:absolute;right:-4px;bottom:-4px;width:9px;height:9px;
+  background:var(--orange);cursor:se-resize;z-index:10;border-radius:1px;display:none}
+.edit-mode .rh{display:block}
+
+/* Corner handles for multi-select bounding box */
+.ctrl.selected .rh-tl,.ctrl.selected .rh-tr,.ctrl.selected .rh-bl{
+  position:absolute;width:7px;height:7px;background:var(--orange);
+  z-index:10;border-radius:1px;display:none}
+.edit-mode .rh-tl,.edit-mode .rh-tr,.edit-mode .rh-bl{display:block}
+.rh-tl{left:-3px;top:-3px;cursor:nw-resize}
+.rh-tr{right:-3px;top:-3px;cursor:ne-resize}
+.rh-bl{left:-3px;bottom:-3px;cursor:sw-resize}
+
+/* ---- Per-type style bases ---- */
+
+/* CT_STATIC / RscText — styled text */
+.wt-rsctext{
+  display:flex;align-items:center;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:0 2px;
+}
+
+/* IGUIBack — translucent panel */
+.wt-iguiback{
+  background:rgba(0,0,0,.6);
+}
+
+/* RscFrame — border only */
+.wt-rscframe{
+  background:transparent;
+  border:1px solid rgba(255,255,255,.85)!important;
+}
+
+/* RscButton (olive) */
+.wt-rscbutton{
+  display:flex;align-items:center;justify-content:center;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  font-weight:600;letter-spacing:.3px;
+  text-align:center;overflow:hidden;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 1px 3px rgba(0,0,0,.4);
+}
+
+/* RscButton_Main (WASP blue) */
+.wt-rscbutton-main{
+  background:rgba(66,182,255,.7)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 0 8px rgba(66,182,255,.25);
+}
+
+/* RscButton_Exit (red) */
+.wt-rscbutton-exit{
+  background:rgba(128,0,0,1)!important;
+}
+
+/* RscShortcutButtonMain — big WASP hub tile */
+.wt-shortcutbuttonmain{
+  display:flex;align-items:center;
+  background:transparent!important;
+  border:2px solid rgba(66,182,255,.85)!important;
+  box-shadow:inset 0 0 20px rgba(66,182,255,.08), 0 0 8px rgba(66,182,255,.2);
+  padding:0;overflow:hidden;cursor:pointer;
+}
+.wt-shortcutbuttonmain .sb-icon{
+  flex:0 0 auto;width:18%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  border-right:1px solid rgba(66,182,255,.35);
+  background:rgba(66,182,255,.08);
+  font-size:70%;color:rgba(66,182,255,.7);
+}
+.wt-shortcutbuttonmain .sb-label{
+  flex:1;padding:0 6%;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  font-weight:600;color:rgba(229,229,229,1);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-align:left;
+  text-shadow:0 0 8px rgba(66,182,255,.5);
+}
+
+/* RscShortcutButton — smaller tile */
+.wt-shortcutbutton{
+  display:flex;align-items:center;
+  background:transparent!important;
+  border:1px solid rgba(138,146,102,.8)!important;
+  box-shadow:inset 0 0 10px rgba(138,146,102,.06);
+  padding:0;overflow:hidden;cursor:pointer;
+}
+.wt-shortcutbutton .sb-icon{
+  flex:0 0 auto;width:22%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  border-right:1px solid rgba(138,146,102,.3);
+  background:rgba(138,146,102,.08);
+  font-size:70%;color:rgba(138,146,102,.8);
+}
+.wt-shortcutbutton .sb-label{
+  flex:1;padding:0 5%;
+  font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  font-size:85%;color:rgba(229,229,229,.9);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-align:left;
+}
+
+/* RscListBox / RscListnBox */
+.wt-listbox{
+  background:rgba(0,0,0,.95)!important;
+  border:1px solid rgba(66,182,255,.5)!important;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.wt-listbox .lb-header{
+  flex:0 0 auto;
+  background:rgba(66,182,255,.15);
+  border-bottom:1px solid rgba(66,182,255,.3);
+  padding:0 4px;
+  display:flex;align-items:center;
+  font-family:Inter,sans-serif;font-weight:600;
+  color:rgba(66,182,255,.9);
+  font-size:80%;
+  min-height:20%;
+}
+.wt-listbox .lb-rows{
+  flex:1;overflow:hidden;padding:2px 0;
+}
+.wt-listbox .lb-row{
+  padding:1px 4px;
+  font-family:Inter,sans-serif;
+  color:rgba(255,255,255,.75);
+  font-size:75%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.wt-listbox .lb-row.sel{
+  background:rgba(66,182,255,.25);
+  color:rgba(66,182,255,1);
+}
+.wt-listbox .lb-scrollbar{
+  position:absolute;right:0;top:0;width:5px;height:100%;
+  background:rgba(255,255,255,.08);
+}
+.wt-listbox .lb-scrollbar-thumb{
+  width:100%;height:40%;
+  background:rgba(255,255,255,.35);border-radius:2px;
+}
+
+/* RscCombo */
+.wt-combo{
+  background:rgba(0,0,0,.75)!important;
+  border:1px solid rgba(66,182,255,.4)!important;
+  display:flex;align-items:center;overflow:hidden;
+}
+.wt-combo .combo-text{
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:Inter,sans-serif;color:rgba(255,255,255,.75);
+  padding:0 4px;font-size:80%;
+}
+.wt-combo .combo-arrow{
+  flex:0 0 auto;width:18%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  border-left:1px solid rgba(66,182,255,.25);
+  background:rgba(66,182,255,.1);
+  color:rgba(66,182,255,.9);
+  font-size:80%;
+}
+
+/* RscEdit */
+.wt-edit{
+  background:rgba(0,0,0,.6)!important;
+  border:1px solid rgba(255,255,255,.3)!important;
+  display:flex;align-items:center;overflow:hidden;
+}
+.wt-edit .edit-inner{
+  flex:1;padding:0 5px;
+  font-family:Inter,sans-serif;color:rgba(255,255,255,.75);font-size:80%;
+  white-space:nowrap;overflow:hidden;
+}
+.wt-edit::after{
+  content:'|';color:rgba(66,182,255,.8);
+  position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  animation:blink 1s step-end infinite;
+  pointer-events:none;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* RscStructuredText */
+.wt-structuredtext{
+  display:flex;align-items:flex-start;overflow:hidden;
+  font-family:Inter,sans-serif;color:rgba(238,229,139,1);
+  padding:1px 3px;
+}
+
+/* RscPicture / RscClickableText — icon placeholder */
+.wt-picture{
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.2)!important;
+  overflow:hidden;
+}
+.wt-picture .pic-icon{
+  font-size:40%;opacity:.6;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+
+/* RscMapControl */
+.wt-mapcontrol{
+  background:rgba(60,75,55,.85)!important;
+  border:1px solid rgba(100,120,80,.6)!important;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.wt-mapcontrol .map-label{
+  font-family:Inter,sans-serif;font-size:80%;font-weight:600;
+  color:rgba(150,180,120,.8);letter-spacing:2px;text-transform:uppercase;
+  text-shadow:0 1px 4px rgba(0,0,0,.8);
+}
+
+/* RscXSliderH */
+.wt-slider{
+  display:flex;align-items:center;padding:0 4px;overflow:hidden;
+  background:rgba(0,0,0,.2)!important;
+}
+.wt-slider .sl-track{
+  flex:1;height:3px;background:rgba(255,255,255,.15);border-radius:2px;position:relative;margin:0 4px;
+}
+.wt-slider .sl-fill{
+  position:absolute;left:0;top:0;width:40%;height:100%;
+  background:rgba(255,255,255,.5);border-radius:2px;
+}
+.wt-slider .sl-thumb{
+  position:absolute;left:38%;top:50%;transform:translate(-50%,-50%);
+  width:6px;height:100%;min-height:10px;
+  background:rgba(255,255,255,.85);border-radius:1px;
+}
+.wt-slider .sl-arr{font-size:70%;color:rgba(255,255,255,.5)}
+
+/* RscControlsGroup */
+.wt-ctrlgroup{
+  background:rgba(50,50,80,.1)!important;
+  border:1px dashed rgba(68,68,170,.5)!important;
+}
+
+/* CT_STATIC background panel (IGUIBack-style) */
+.wt-bg-panel{
+  background:rgba(0,0,0,.7)!important;
+}
 
 /* ---- Inspector ---- */
-.inspector{padding:10px 12px}
-.inspector h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad;margin-bottom:8px}
-.field-row{margin-bottom:8px}
-.field-row label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
-.field-row input,.field-row select{width:100%;background:var(--gunmetal);border:1px solid var(--line);
-  color:var(--bone);border-radius:4px;padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
-.field-row input:focus,.field-row select:focus{border-color:var(--orange)}
-.field-row input:focus-visible,.field-row select:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.inspector{padding:8px 10px}
+.inspector h3{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad;margin-bottom:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.inspector h3:first-child{margin-top:0;padding-top:0;border-top:none}
+.field-row{margin-bottom:6px}
+.field-row label{display:flex;align-items:center;justify-content:space-between;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.field-row label .lbl-text{flex:1}
+.field-row label .override-badge{font-size:8px;background:rgba(217,118,60,.2);border:1px solid rgba(217,118,60,.4);color:var(--orange);border-radius:2px;padding:0 4px;margin-left:4px;cursor:default}
+.field-row label .reset-btn{font-size:8px;background:transparent;border:1px solid rgba(217,118,60,.3);color:rgba(217,118,60,.7);border-radius:2px;padding:0 4px;cursor:pointer;margin-left:3px;line-height:1.4;min-width:auto}
+.field-row label .reset-btn:hover{border-color:var(--orange);color:var(--orange)}
+.field-row input,.field-row select,.field-row textarea{width:100%;background:var(--gunmetal);border:1px solid var(--line);
+  color:var(--bone);border-radius:4px;padding:4px 6px;font-family:'JetBrains Mono',monospace;font-size:10px;outline:none}
+.field-row input:focus,.field-row select:focus,.field-row textarea:focus{border-color:var(--orange)}
+.field-row input.is-override{border-color:rgba(217,118,60,.5);background:rgba(217,118,60,.06)}
+.field-row select.is-override{border-color:rgba(217,118,60,.5);background:rgba(217,118,60,.06)}
+.field-row .inherited-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:#39414b;margin-top:2px;font-style:italic}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .inspector-placeholder{font-size:11px;color:#556;font-family:'JetBrains Mono',monospace;
   padding:20px 12px;text-align:center;line-height:1.6}
+.multi-insp-banner{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;
+  background:rgba(66,182,255,.06);border:1px solid rgba(66,182,255,.2);border-radius:3px;
+  padding:5px 8px;margin-bottom:8px;line-height:1.4}
+
+/* Color picker row */
+.color-row{display:flex;align-items:center;gap:5px}
+.color-row input[type=color]{width:28px;height:22px;border:1px solid var(--line);border-radius:3px;
+  background:transparent;cursor:pointer;padding:1px;flex:0 0 28px}
+.color-row .alpha-in{width:44px;flex:0 0 44px}
+.color-row .macro-sel{flex:1;min-width:0;font-size:9px}
+.color-swatch-lg{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,.2);vertical-align:middle;margin-right:4px;flex:0 0 14px}
+
+/* Style flags */
+.style-flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.style-flag{display:flex;align-items:center;gap:3px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;cursor:pointer;user-select:none}
+.style-flag input[type=checkbox]{accent-color:var(--orange);width:11px;height:11px;cursor:pointer;margin:0}
+.style-flag:hover{color:var(--bone)}
+
+/* Geo toggle (number / string-expr) */
+.geo-toggle{display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:8px;color:#556;margin-bottom:3px}
+.geo-toggle button{font-size:8px;padding:1px 5px;border-radius:2px;border:1px solid var(--line);background:transparent;color:#556;cursor:pointer;line-height:1.4;min-width:auto}
+.geo-toggle button.active{border-color:rgba(66,182,255,.5);color:rgba(66,182,255,.9);background:rgba(66,182,255,.08)}
+.geo-toggle button:hover:not(.active){border-color:#9aa3ad;color:#9aa3ad}
+
+/* Resolved prop display */
+.resolved-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;
+  background:rgba(66,182,255,.1);border:1px solid rgba(66,182,255,.25);color:rgba(66,182,255,.9);
+  border-radius:3px;padding:1px 5px;margin-bottom:4px}
+.prop-grid{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;margin-bottom:8px}
+.prop-k{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;white-space:nowrap}
+.prop-v{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--bone);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.color-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid rgba(255,255,255,.2);vertical-align:middle;margin-right:3px}
 
 /* ---- Export / load panel ---- */
 .export-panel{border-top:1px solid var(--line);flex:0 0 auto}
 .export-panel-hdr{padding:8px 12px;border-bottom:1px solid var(--line);background:var(--gunmetal);cursor:pointer;
   display:flex;align-items:center;justify-content:space-between;user-select:none}
-.export-panel-hdr:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
 .export-panel-hdr h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad}
 .export-panel-hdr .tog{font-size:10px;color:#556}
 .export-body{padding:8px 12px;display:none}
 .export-body.open{display:block}
 .export-body textarea{width:100%;background:var(--gunmetal);border:1px solid var(--line);
   color:#a8d890;font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:4px;
-  padding:6px;resize:vertical;outline:none;min-height:100px}
+  padding:6px;resize:vertical;outline:none;min-height:80px}
 .export-body textarea:focus{border-color:var(--orange)}
-.export-body textarea:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
 .btnbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 button{cursor:pointer;background:var(--steel2);color:var(--bone);border:1px solid var(--line);
   border-radius:4px;padding:5px 10px;font-family:Inter,sans-serif;font-size:11px}
 button:hover{border-color:var(--orange)}
-button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 button.primary{background:var(--orange);border-color:var(--orange);color:#1a1208;font-weight:600}
 button.primary:hover{background:var(--orange-deep);border-color:var(--orange-deep)}
 button.sm{font-size:10px;padding:4px 8px}
 button.flash{animation:btn-flash .4s ease}
 @keyframes btn-flash{0%{background:var(--olive);border-color:var(--olive);color:#fff}100%{}}
-.snap-label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace}
 
-/* ---- Status / live region ---- */
+/* ---- Status ---- */
 #status-msg{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;min-height:14px;margin-top:4px}
 #status-msg.ok{color:var(--olive)}
 #status-msg.err{color:var(--danger)}
 
-/* ---- Cross-link chip ---- */
+/* ---- Cross-link ---- */
 .xlink-btn{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;
   color:#8b939c;border:1px solid var(--line);border-radius:10px;padding:3px 9px;background:#0d1014;
   text-decoration:none;cursor:pointer;transition:border-color .12s,color .12s}
-.xlink-btn:hover,.xlink-btn:focus-visible{border-color:var(--orange);color:var(--orange);outline:none}
+.xlink-btn:hover{border-color:var(--orange);color:var(--orange)}
 .xlink-dot{width:6px;height:6px;border-radius:50%;background:#884488;flex:0 0 6px}
 
 /* ---- Scrollbars ---- */
@@ -173,9 +521,9 @@ button.flash{animation:btn-flash .4s ease}
   <div class="spacer"></div>
   <div class="brand-actions">
     <span class="chip" id="ctrl-count-chip" aria-live="polite" aria-atomic="true"><b>0</b> controls</span>
-    <span class="chip" id="dialog-chip">WF_Menu · idd 11000</span>
-    <a class="xlink-btn" id="garrison-link" href="https://rayswaynl.github.io/garrison-editor/" target="_blank" rel="noopener"
-       title="Open Garrison Editor — shares current layout via localStorage" aria-label="Open Garrison Editor">
+    <span class="chip" id="dialog-chip">—</span>
+    <a class="xlink-btn" href="https://rayswaynl.github.io/garrison-editor/" target="_blank" rel="noopener"
+       title="Open Garrison Editor" aria-label="Open Garrison Editor">
       <span class="xlink-dot" aria-hidden="true"></span>Garrison Editor ↗
     </a>
   </div>
@@ -184,68 +532,117 @@ button.flash{animation:btn-flash .4s ease}
 <!-- Main 3-column layout -->
 <div class="layout" role="main">
 
-  <!-- Left: Palette + Layer list -->
-  <div class="panel panel-left" role="region" aria-label="Control palette and layers">
-    <div class="panel-hdr"><h2 id="palette-heading">Add control</h2></div>
-    <div style="padding:8px;flex:0 0 auto;border-bottom:1px solid var(--line)" role="group" aria-labelledby="palette-heading">
-      <div class="palette-label" aria-hidden="true">background</div>
-      <button class="type-btn" data-type="CT_STATIC" data-bg="1" title="Background/frame (CT_STATIC)" aria-label="Add CT_STATIC background/frame">
-        <span class="type-dot" style="background:#39414b" aria-hidden="true"></span>CT_STATIC
-      </button>
-      <div class="palette-divider" role="separator"></div>
-      <div class="palette-label" aria-hidden="true">controls</div>
-      <button class="type-btn" data-type="CT_BUTTON" title="Button (CT_BUTTON)" aria-label="Add CT_BUTTON">
-        <span class="type-dot" style="background:#2a5a8c" aria-hidden="true"></span>CT_BUTTON
-      </button>
-      <button class="type-btn" data-type="RscShortcutButton" title="Shortcut button (main menu style)" aria-label="Add RscShortcutButton">
-        <span class="type-dot" style="background:#4bb8c8" aria-hidden="true"></span>ShortcutBtn
-      </button>
-      <button class="type-btn" data-type="CT_CLICKABLETEXT" title="Clickable text / icon (CT_CLICKABLETEXT)" aria-label="Add CT_CLICKABLETEXT">
-        <span class="type-dot" style="background:#7a8a38" aria-hidden="true"></span>ClickText
-      </button>
-      <button class="type-btn" data-type="CT_LISTBOX" title="List box (CT_LISTBOX)" aria-label="Add CT_LISTBOX">
-        <span class="type-dot" style="background:#884488" aria-hidden="true"></span>CT_LISTBOX
-      </button>
-      <button class="type-btn" data-type="CT_COMBO" title="Combo / dropdown (CT_COMBO)" aria-label="Add CT_COMBO dropdown">
-        <span class="type-dot" style="background:#b88820" aria-hidden="true"></span>CT_COMBO
-      </button>
-      <button class="type-btn" data-type="CT_EDIT" title="Text edit (CT_EDIT)" aria-label="Add CT_EDIT text input">
-        <span class="type-dot" style="background:#a04040" aria-hidden="true"></span>CT_EDIT
-      </button>
-      <button class="type-btn" data-type="CT_STRUCTUREDTEXT" title="Structured text (CT_STRUCTUREDTEXT)" aria-label="Add CT_STRUCTUREDTEXT">
-        <span class="type-dot" style="background:#6a9040" aria-hidden="true"></span>StructText
-      </button>
-      <button class="type-btn" data-type="CT_CONTROLS_GROUP" title="Controls group (CT_CONTROLS_GROUP)" aria-label="Add CT_CONTROLS_GROUP">
-        <span class="type-dot" style="background:#4444aa" aria-hidden="true"></span>CtrlGroup
-      </button>
+  <!-- Left: Display picker + layer list -->
+  <div class="panel panel-left" role="region" aria-label="Display picker and layers">
+    <div class="display-picker-wrap">
+      <label for="display-picker">Display</label>
+      <select id="display-picker" aria-label="Select display to load">
+        <option value="">— loading —</option>
+      </select>
     </div>
-    <div class="panel-hdr" style="margin-top:0"><h2 id="layers-heading">Layers</h2></div>
+
+    <div class="mode-toggle" role="group" aria-label="Edit or preview mode">
+      <button class="mode-btn active" id="btn-preview" title="Preview mode — clean render">Preview</button>
+      <button class="mode-btn" id="btn-edit" title="Edit mode — selection handles + drag/resize">Edit</button>
+    </div>
+
+    <div class="panel-hdr"><h2 id="layers-heading">Layers</h2></div>
     <div class="scroll" id="layer-list" role="list" aria-labelledby="layers-heading" aria-live="polite"></div>
   </div>
 
   <!-- Center: Canvas -->
   <div class="panel panel-center" role="region" aria-label="Canvas">
+
+    <!-- Pro editing toolbar (edit mode only) -->
+    <div class="edit-toolbar" id="edit-toolbar" role="toolbar" aria-label="Pro editing tools">
+      <!-- Undo/Redo -->
+      <div class="et-group">
+        <button class="et-btn" id="et-undo" title="Undo (Ctrl+Z)" aria-label="Undo">↩ Undo</button>
+        <button class="et-btn" id="et-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" aria-label="Redo">↪ Redo</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Clipboard -->
+      <div class="et-group">
+        <button class="et-btn" id="et-copy" title="Copy (Ctrl+C)" aria-label="Copy">Copy</button>
+        <button class="et-btn" id="et-paste" title="Paste (Ctrl+V)" aria-label="Paste">Paste</button>
+        <button class="et-btn" id="et-dupe" title="Duplicate (Ctrl+D)" aria-label="Duplicate">Dupe</button>
+        <button class="et-btn" id="et-del" title="Delete (Del)" aria-label="Delete">Del</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Align -->
+      <span class="et-label">Align:</span>
+      <div class="et-group">
+        <button class="et-btn" id="et-al-l"  title="Align left edges"    aria-label="Align left">⇤L</button>
+        <button class="et-btn" id="et-al-r"  title="Align right edges"   aria-label="Align right">R⇥</button>
+        <button class="et-btn" id="et-al-t"  title="Align top edges"     aria-label="Align top">⇡T</button>
+        <button class="et-btn" id="et-al-b"  title="Align bottom edges"  aria-label="Align bottom">B⇣</button>
+        <button class="et-btn" id="et-al-hc" title="Center horizontally" aria-label="Center H">⇔H</button>
+        <button class="et-btn" id="et-al-vc" title="Center vertically"   aria-label="Center V">⇕V</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Distribute -->
+      <span class="et-label">Dist:</span>
+      <div class="et-group">
+        <button class="et-btn" id="et-dist-h" title="Distribute horizontally" aria-label="Distribute H">↔</button>
+        <button class="et-btn" id="et-dist-v" title="Distribute vertically"   aria-label="Distribute V">↕</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Z-order -->
+      <span class="et-label">Z:</span>
+      <div class="et-group">
+        <button class="et-btn" id="et-z-front" title="Bring to front" aria-label="Bring to front">▲▲</button>
+        <button class="et-btn" id="et-z-up"    title="Raise one"      aria-label="Raise">▲</button>
+        <button class="et-btn" id="et-z-down"  title="Lower one"      aria-label="Lower">▼</button>
+        <button class="et-btn" id="et-z-back"  title="Send to back"   aria-label="Send to back">▼▼</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Group -->
+      <div class="et-group">
+        <button class="et-btn" id="et-group"   title="Group selection (Ctrl+G)"   aria-label="Group">Group</button>
+        <button class="et-btn" id="et-ungroup" title="Ungroup (Ctrl+Shift+G)"     aria-label="Ungroup">Ungrp</button>
+      </div>
+      <div class="et-sep"></div>
+      <!-- Add control -->
+      <button class="et-btn" id="et-add" title="Add control (A)" aria-label="Add control">+ Add</button>
+    </div>
+
     <div class="canvas-toolbar" role="toolbar" aria-label="Canvas controls">
+      <label title="Derive readable labels + sample values for blank HUD controls in Preview mode">
+        <input type="checkbox" id="sample-data-chk" aria-label="Sample data — show placeholder text in HUD preview" checked>
+        Sample data
+      </label>
+      <span style="width:1px;height:14px;background:var(--line);display:inline-block;margin:0 2px"></span>
       <label>
         <input type="checkbox" id="snap-chk" aria-label="Enable grid snap">
         Grid snap
       </label>
-      <label for="snap-size" class="snap-label">Grid:</label>
+      <label for="snap-size">Grid:</label>
       <select id="snap-size" aria-label="Grid snap size" style="width:58px;background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:3px;padding:3px 5px;font-size:10px;font-family:'JetBrains Mono',monospace">
         <option value="0.01">1%</option>
         <option value="0.005">0.5%</option>
         <option value="0.02">2%</option>
       </select>
+      <label for="stage-res">Screen:</label>
+      <select id="stage-res" aria-label="Stage resolution" style="background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:3px;padding:3px 5px;font-size:10px;font-family:'JetBrains Mono',monospace">
+        <option value="1920,1080">1920×1080</option>
+        <option value="1280,720">1280×720</option>
+        <option value="2560,1440">2560×1440</option>
+      </select>
       <div style="flex:1"></div>
       <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#556" id="cursor-pos" aria-live="off">x:0 y:0</span>
       <button class="sm" id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;min-width:36px;text-align:center" id="zoom-label" aria-live="polite" aria-atomic="true">100%</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;min-width:36px;text-align:center" id="zoom-label" aria-live="polite">100%</span>
       <button class="sm" id="zoom-in" title="Zoom in" aria-label="Zoom in">+</button>
       <button class="sm" id="zoom-fit" title="Fit canvas to view" aria-label="Fit canvas to view">fit</button>
     </div>
     <div class="canvas-wrap" id="canvas-wrap">
-      <div class="stage" id="stage" role="application" aria-label="Dialog layout canvas — drag controls to reposition, use Escape to deselect">
-        <!-- controls rendered here -->
+      <div class="canvas-center" id="canvas-center">
+        <div class="stage-label" id="stage-label">1920 × 1080</div>
+        <div class="stage-label-side">GAME FRAME</div>
+        <div class="stage" id="stage" role="application" aria-label="Dialog canvas — click to select, drag to move">
+          <!-- controls rendered here by JS -->
+          <div id="marquee" aria-hidden="true"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -254,335 +651,2088 @@ button.flash{animation:btn-flash .4s ease}
   <div class="panel panel-right" role="region" aria-label="Inspector and export">
     <div class="panel-hdr"><h2>Inspector</h2></div>
     <div class="scroll" id="inspector-wrap">
-      <div class="inspector-placeholder" id="inspector-placeholder">Select a control<br>to edit its properties</div>
-      <div class="inspector" id="inspector" style="display:none" role="form" aria-label="Selected control properties">
-        <div class="field-row">
-          <label for="f-name">Name</label>
-          <input type="text" id="f-name" placeholder="ControlName" autocomplete="off">
-        </div>
-        <div class="field-row">
-          <label for="f-idc">IDC</label>
-          <input type="number" id="f-idc" placeholder="-2">
-        </div>
-        <div class="field-row">
-          <label for="f-type">Type</label>
-          <select id="f-type">
-            <option value="CT_STATIC">CT_STATIC (0)</option>
-            <option value="CT_BUTTON">CT_BUTTON (1)</option>
-            <option value="CT_EDIT">CT_EDIT (2)</option>
-            <option value="CT_COMBO">CT_COMBO (4)</option>
-            <option value="CT_LISTBOX">CT_LISTBOX (5)</option>
-            <option value="CT_CLICKABLETEXT">CT_CLICKABLETEXT (11)</option>
-            <option value="CT_STRUCTUREDTEXT">CT_STRUCTUREDTEXT (13)</option>
-            <option value="CT_CONTROLS_GROUP">CT_CONTROLS_GROUP (15)</option>
-            <option value="RscShortcutButton">RscShortcutButton (16)</option>
-          </select>
-        </div>
-        <div class="field-row">
-          <label for="f-text">Text / Tooltip</label>
-          <input type="text" id="f-text" placeholder="">
-        </div>
-        <div class="field-row">
-          <label for="f-parent">Parent class</label>
-          <input type="text" id="f-parent" placeholder="RscText" autocomplete="off">
-        </div>
-        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
-        <div class="field-row">
-          <label>Position &amp; Size (0–1 fractions)</label>
-          <div class="grid-2">
-            <div>
-              <label for="f-x" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">x</label>
-              <input type="number" id="f-x" step="0.001" min="0" max="1" aria-label="X position">
-            </div>
-            <div>
-              <label for="f-y" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">y</label>
-              <input type="number" id="f-y" step="0.001" min="0" max="1" aria-label="Y position">
-            </div>
-            <div>
-              <label for="f-w" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">w</label>
-              <input type="number" id="f-w" step="0.001" min="0.001" max="1" aria-label="Width">
-            </div>
-            <div>
-              <label for="f-h" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">h</label>
-              <input type="number" id="f-h" step="0.001" min="0.001" max="1" aria-label="Height">
-            </div>
-          </div>
-        </div>
-        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
-        <div class="field-row">
-          <label for="f-section">Section</label>
-          <select id="f-section">
-            <option value="controls">controls</option>
-            <option value="controlsBackground">controlsBackground</option>
-          </select>
-        </div>
-        <div class="btnbar">
-          <button id="apply-btn" class="primary sm">Apply</button>
-          <button id="delete-btn" class="sm" style="border-color:var(--danger);color:#e88" aria-label="Delete selected control">Delete</button>
-        </div>
-      </div>
+      <div class="inspector-placeholder" id="inspector-placeholder">Select a control<br>to inspect its properties</div>
+      <!-- Full property inspector — built dynamically by renderInspector() -->
+      <div class="inspector" id="inspector" style="display:none"></div>
     </div>
 
-    <!-- Export panel -->
-    <div class="export-panel" role="region" aria-label="Export and load">
+    <!-- Export / Import panel -->
+    <div class="export-panel" role="region" aria-label="Export and Import">
       <div class="export-panel-hdr" id="export-toggle" role="button" tabindex="0"
-           aria-expanded="true" aria-controls="export-body">
-        <h2>Export / Load .hpp</h2>
-        <span class="tog" id="export-tog-label" aria-hidden="true">▲</span>
+           aria-expanded="false" aria-controls="export-body">
+        <h2>Export / Import .hpp</h2>
+        <span class="tog" id="export-tog-label" aria-hidden="true">▼</span>
       </div>
-      <div class="export-body open" id="export-body">
-        <label for="export-out" style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px">Generated .hpp</label>
-        <textarea id="export-out" readonly placeholder="Click Export to generate…" rows="8" aria-label="Exported HPP code" aria-live="polite"></textarea>
+      <div class="export-body" id="export-body">
+        <!-- Export section -->
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Export</div>
+        <textarea id="export-out" readonly placeholder="Click Export to generate…" rows="5" aria-label="Exported HPP code"></textarea>
         <div class="btnbar">
-          <button class="sm primary" id="export-btn" aria-label="Generate HPP export">Export</button>
-          <button class="sm" id="copy-btn" aria-label="Copy HPP to clipboard">Copy</button>
-          <button class="sm" id="download-btn" aria-label="Download as WF_Menu.hpp">Save .hpp</button>
+          <button class="sm primary" id="export-btn">Export</button>
+          <button class="sm" id="copy-btn">Copy</button>
+          <button class="sm" id="download-btn">Save .hpp</button>
         </div>
-        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
-        <label for="load-in" style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px">Load .hpp (paste class controls {...})</label>
-        <textarea id="load-in" placeholder="Paste class controls { ... }; here" rows="5" aria-label="Paste HPP source to import"></textarea>
+        <!-- Import section -->
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#9aa3ad;text-transform:uppercase;letter-spacing:.5px;margin-top:8px;margin-bottom:4px">Import .hpp</div>
+        <textarea id="import-in" placeholder="Paste a display class { … } or class controls { … } block here…" rows="5" aria-label="HPP code to import" style="background:var(--gunmetal);border:1px solid var(--line);color:#a8d890;font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:4px;padding:6px;resize:vertical;outline:none;min-height:60px;width:100%"></textarea>
         <div class="btnbar">
-          <button class="sm" id="load-btn" aria-label="Load HPP from textarea">Load</button>
+          <button class="sm primary" id="import-btn">Parse &amp; Load</button>
+          <button class="sm" id="import-clear-btn">Clear</button>
         </div>
-        <div id="status-msg" role="status" aria-live="polite" aria-atomic="true"></div>
+        <div id="status-msg" role="status" aria-live="polite"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Control palette modal -->
+<div id="palette-modal" role="dialog" aria-modal="true" aria-labelledby="palette-title">
+  <div id="palette-box">
+    <h3>
+      <span id="palette-title">Add Control</span>
+      <button id="palette-close" aria-label="Close">✕</button>
+    </h3>
+    <div id="palette-fields">
+      <div>
+        <label for="pal-name">Name</label>
+        <input type="text" id="pal-name" placeholder="MyControl" autocomplete="off">
+      </div>
+      <div>
+        <label for="pal-base">Base Class</label>
+        <select id="pal-base"></select>
+      </div>
+      <div>
+        <label for="pal-idc">IDC</label>
+        <input type="number" id="pal-idc" placeholder="auto">
+      </div>
+      <div>
+        <label for="pal-section">Section</label>
+        <select id="pal-section">
+          <option value="controls">controls</option>
+          <option value="background">controlsBackground</option>
+        </select>
+      </div>
+    </div>
+    <div id="palette-footer">
+      <button class="sm" id="palette-cancel">Cancel</button>
+      <button class="sm primary" id="palette-add">Add</button>
     </div>
   </div>
 </div>
 
 <script>
 // ============================================================
-// Model
+// Constants
 // ============================================================
-const TYPE_NUM = {
-  CT_STATIC:0, CT_BUTTON:1, CT_EDIT:2, CT_COMBO:4,
-  CT_LISTBOX:5, CT_CLICKABLETEXT:11, CT_STRUCTUREDTEXT:13,
-  CT_CONTROLS_GROUP:15, RscShortcutButton:16,
-  CT_LISTNBOX:102, RscXSliderH:43, RscMapControl:101
-};
-const TYPE_NAME = Object.fromEntries(Object.entries(TYPE_NUM).map(([k,v])=>[v,k]));
 
-const TYPE_DOT_COLOR = {
-  CT_STATIC:'#39414b', CT_BUTTON:'#2a5a8c', RscShortcutButton:'#4bb8c8',
-  CT_CLICKABLETEXT:'#7a8a38', CT_LISTBOX:'#884488', CT_COMBO:'#b88820',
-  CT_STRUCTUREDTEXT:'#6a9040', CT_EDIT:'#a04040', CT_CONTROLS_GROUP:'#4444aa',
-  CT_LISTNBOX:'#a06070', RscXSliderH:'#609060', RscMapControl:'#208060'
-};
+// Default 16:9 stage size (logical pixels at 100% zoom)
+let STAGE_W = 960;  // logical display width; maps to 1920px at 2x, etc.
+let STAGE_H = 540;  // 16:9
+let SCREEN_W = 1920;
+let SCREEN_H = 1080;
 
-// Arma dialog SafeZone: 16:9 unit-square -> pixel mapping
-// Dialog coords: 0..1 = full screen. We render at STAGE_W x STAGE_H.
-const STAGE_W = 800;
-const STAGE_H = 450; // 16:9
+// SafeZone constants (16:9 preview)
+const SZ = { X: 0.07, Y: 0.07, W: 0.86, H: 0.86 };
 
-let model = { controls: [], controlsBackground: [] };
-let nextIdcBase = 20000;
-let selectedId = null;
+// ============================================================
+// State
+// ============================================================
+let uiData = null;           // parsed ui.json
+let currentDisplay = null;   // name of loaded display
+let displayData = null;      // display object from uiData.displays
+let selectedCtrl = null;     // primary selected control
+let selectedSet = new Set(); // multi-select set of ctrl objects
 let zoom = 1.0;
-let idCounter = 0;
+let editMode = false;
+let dragging = null;
+let sampleDataEnabled = true; // "Sample data" toggle — show placeholder text in HUD preview
 
-function genId() { return ++idCounter; }
+// Pro editing state
+let undoStack = [];          // array of {background:[], controls:[]} snapshots
+let redoStack = [];
+let clipboard = [];          // copied control snapshots
+let ctrlMeta = new WeakMap();// ctrl → {locked, hidden, groupId}
+let groupCounter = 0;
+let marqueeState = null;     // {startX,startY} in stage px during marquee drag
+let snapGuides = [];         // active guide elements
+let altCycleStack = [];      // for alt-click overlap cycling
+let altCyclePos = 0;
 
-function makeCtrl(overrides) {
-  const type_name = overrides.type_name || overrides.type_key || 'CT_STATIC';
-  const n = {
-    _id: genId(),
-    name: overrides.name || (type_name + '_' + (idCounter)),
-    parent: overrides.parent || '',
-    idc: overrides.idc !== undefined ? overrides.idc : -2,
-    type: overrides.type !== undefined ? overrides.type : (TYPE_NUM[type_name] || 0),
-    type_name: type_name,
-    x: overrides.x !== undefined ? overrides.x : 0.3,
-    y: overrides.y !== undefined ? overrides.y : 0.3,
-    w: overrides.w !== undefined ? overrides.w : 0.2,
-    h: overrides.h !== undefined ? overrides.h : 0.06,
-    text: overrides.text || '',
-    tooltip: overrides.tooltip || '',
-    action: overrides.action || '',
-    section: overrides.section || 'controls'
+// ---- Undo/redo helpers ----
+function snapshotState() {
+  return {
+    background: JSON.parse(JSON.stringify(displayData.background || [])),
+    controls: JSON.parse(JSON.stringify(displayData.controls || [])),
   };
-  return n;
+}
+
+function pushUndo() {
+  undoStack.push(snapshotState());
+  if (undoStack.length > 100) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+
+function applySnapshot(snap) {
+  // Restore props in-place so WeakMap meta is preserved where possible
+  displayData.background = snap.background;
+  displayData.controls = snap.controls;
+  // Re-tag sections
+  for (const c of (displayData.background || [])) c._section = 'background';
+  for (const c of (displayData.controls || [])) c._section = 'controls';
+  selectedCtrl = null;
+  selectedSet.clear();
+  renderAll();
+}
+
+function undoAction() {
+  if (!undoStack.length) return;
+  redoStack.push(snapshotState());
+  applySnapshot(undoStack.pop());
+  updateUndoButtons();
+}
+
+function redoAction() {
+  if (!redoStack.length) return;
+  undoStack.push(snapshotState());
+  applySnapshot(redoStack.pop());
+  updateUndoButtons();
+}
+
+function updateUndoButtons() {
+  const u = document.getElementById('et-undo');
+  const r = document.getElementById('et-redo');
+  if (u) u.disabled = !undoStack.length;
+  if (r) r.disabled = !redoStack.length;
+}
+
+// ---- Meta helpers ----
+function getMeta(ctrl) {
+  if (!ctrlMeta.has(ctrl)) ctrlMeta.set(ctrl, {locked: false, hidden: false, groupId: null});
+  return ctrlMeta.get(ctrl);
+}
+
+// ---- All controls flat ----
+function allCtrls() {
+  if (!displayData) return [];
+  return [...(displayData.background || []), ...(displayData.controls || [])];
+}
+
+// ---- Next free IDC ----
+function nextIdc() {
+  const used = new Set(allCtrls().map(c => c.idc).filter(v => v !== undefined && v >= 0));
+  let id = 1000;
+  while (used.has(id)) id++;
+  return id;
 }
 
 // ============================================================
-// Load dialogs.json on boot
+// Helpers
 // ============================================================
-async function loadJson() {
+
+function rgba(arr, alpha) {
+  if (!Array.isArray(arr) || arr.length < 3) return 'rgba(0,0,0,0)';
+  const r = Math.round(arr[0] * 255);
+  const g = Math.round(arr[1] * 255);
+  const b = Math.round(arr[2] * 255);
+  const a = alpha !== undefined ? alpha : (arr[3] !== undefined ? arr[3] : 1);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function px(frac, dim) {
+  // Convert 0..1 fraction to logical pixel for current stage
+  return frac * dim;
+}
+
+/**
+ * Evaluate a SafeZone position expression.
+ * Handles strings like "0.882604 * safezoneW + safezoneX",
+ * "(SafeZoneW + SafeZoneX) - 0.0392157", "SafezoneX + 0.01 + \t0.3",
+ * min/max calls, parentheses, and plain numbers.
+ * Case-insensitive for all safezone[X|Y|W|H] variants.
+ */
+function evalSZ(val) {
+  if (typeof val === 'number') return val;
+  if (typeof val == null || val === undefined) return 0;
+  if (typeof val !== 'string') return 0;
+
+  // Replace all case variants of safezone[XYWH] with numeric constants.
+  // Uses a single case-insensitive regex so SafezoneX, SAFEZONEW, safezoneH etc. all match.
+  const expr = val
+    .replace(/\t/g, ' ')
+    .replace(/[Ss]afe[Zz]one[Xx]/gi, SZ.X)
+    .replace(/[Ss]afe[Zz]one[Yy]/gi, SZ.Y)
+    .replace(/[Ss]afe[Zz]one[Ww]/gi, SZ.W)
+    .replace(/[Ss]afe[Zz]one[Hh]/gi, SZ.H);
+
   try {
-    const r = await fetch('assets/data/dialogs.json');
-    const data = await r.json();
-    const wfMenu = data.WF_Menu;
-    if (!wfMenu) { console.warn('WF_Menu not in JSON'); return; }
-
-    model.controlsBackground = (wfMenu.controlsBackground || []).map(c => makeCtrl({
-      ...c,
-      type_name: c.type_name || TYPE_NAME[c.type] || 'CT_STATIC',
-      section: 'controlsBackground'
-    }));
-
-    model.controls = (wfMenu.controls || []).map(c => makeCtrl({
-      ...c,
-      type_name: c.type_name || TYPE_NAME[c.type] || 'CT_STATIC',
-      section: 'controls'
-    }));
-
-    render();
-    // Auto-generate export on boot so the textarea isn't empty
-    document.getElementById('export-out').value = exportHpp();
+    // eslint-disable-next-line no-new-func
+    return Function('"use strict"; return (' + expr + ')')();
   } catch(e) {
-    console.error('Failed to load dialogs.json', e);
+    return parseFloat(val) || 0;
+  }
+}
+
+/**
+ * Clean a display text string:
+ * "$STR_WF_MAIN_Purchase_Units" => "Purchase Units"
+ * "$STR_RUBHUD_Money" => "Money"
+ * "$STR_WF_FOO_BAR" => "Bar"  (last segment, Title Case)
+ */
+function cleanText(t) {
+  if (!t || typeof t !== 'string') return '';
+  if (!t.startsWith('$')) return t;
+  // Strip known prefixes, then return readable last segment(s)
+  const stripped = t
+    .replace(/^\$STR_WF_MAIN_/, '')
+    .replace(/^\$STR_WF_/, '')
+    .replace(/^\$STR_RUBHUD_/, '')
+    .replace(/^\$STR_/, '');
+  // If multiple segments remain, take the last word as the primary label
+  const parts = stripped.split('_').filter(Boolean);
+  if (parts.length === 0) return stripped;
+  // Title-case the last part
+  const last = parts[parts.length - 1];
+  return last.charAt(0).toUpperCase() + last.slice(1).toLowerCase();
+}
+
+/**
+ * Derive a readable label from a control name for HUD sample-data rendering.
+ * Examples:
+ *   RUBHUD_Money          → "Money"
+ *   RUBHUD_FPS_Client     → "FPS Client"
+ *   RUBHUD_AICOUNT        → "AI Count"
+ *   CA_Something          → "Something"
+ *   OptionsIcon0          → (null — picture type, skip)
+ * Returns null if the control should not get a text placeholder.
+ */
+function deriveSampleLabel(name) {
+  if (!name) return null;
+  // Strip known prefixes
+  let s = name
+    .replace(/^RUBHUD_/, '')
+    .replace(/^CA_/, '')
+    .replace(/^WF_/, '')
+    .replace(/^UNITS_/, '')
+    .replace(/^Options/, '');
+  if (!s || s === name) {
+    // No prefix was stripped — use name as-is if it has a useful form
+    s = name;
+  }
+  // camelCase → words (insert space before uppercase run or single cap)
+  s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
+  // underscores → spaces
+  s = s.replace(/_/g, ' ');
+  // Expand known acronyms
+  s = s.replace(/\bAICOUNT\b/gi, 'AI Count');
+  s = s.replace(/\bFPS\b/g, 'FPS');
+  // Trim and collapse spaces
+  s = s.trim().replace(/\s+/g, ' ');
+  return s || null;
+}
+
+/**
+ * Derive a sample VALUE string for a _Value / _Val control in HUD.
+ * Maps known keywords in the control name to representative values.
+ */
+function deriveSampleValue(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('money'))      return '12500';
+  if (n.includes('supplymin'))  return '50';
+  if (n.includes('supply'))     return '340';
+  if (n.includes('income'))     return '+85';
+  if (n.includes('health'))     return '100%';
+  if (n.includes('aicount'))    return '24';
+  if (n.includes('commander'))  return 'Player1';
+  if (n.includes('uptime'))     return '1:24:30';
+  if (n.includes('fps'))        return '62';
+  if (n.includes('city'))       return 'Chernogorsk';
+  return '123';
+}
+
+// Known HUD control name prefixes that should get sample data
+const HUD_NAME_PREFIXES = ['RUBHUD_', 'CA_', 'WF_', 'UNITS_', 'CaptureBar_', 'Overlay_'];
+
+/**
+ * For a control with no real text, derive sample placeholder text for HUD preview.
+ * Only fires for HUD displays (posSystem=safezone) AND for controls whose names
+ * match known HUD prefixes — never for dialog decorative panels.
+ * Returns '' (empty string) if no placeholder is applicable.
+ * Picture/icon controls return '' — they keep their icon placeholder box.
+ */
+function deriveSampleText(ctrl) {
+  const name = ctrl.name || '';
+  const wclass = getWClass(ctrl);
+
+  // Only apply to HUD displays
+  if (!displayData || displayData.posSystem !== 'safezone') return '';
+
+  // Picture / icon controls → keep the box placeholder, don't add text
+  if (wclass === 'picture') return '';
+
+  // Background panels / frames → no text
+  if (wclass === 'iguiback' || wclass === 'rscframe') return '';
+
+  // Only generate sample text for controls with known HUD name prefixes
+  const hasHudPrefix = HUD_NAME_PREFIXES.some(pfx => name.startsWith(pfx));
+  if (!hasHudPrefix) return '';
+
+  // _Value or _Val suffix → show a sample numeric/status value
+  if (/_(Value|Val)$/i.test(name)) return deriveSampleValue(name);
+
+  // Label control → derive readable label from name
+  const label = deriveSampleLabel(name);
+  return label || '';
+}
+
+/**
+ * Get a WYSIWYG class from baseClass + resolved props.
+ * Returns {wClass, subType} where wClass is the CSS class and subType is for further refinement.
+ */
+function getWClass(ctrl) {
+  const base = (ctrl.baseClass || ctrl.rscBase || '').toLowerCase();
+  const r = ctrl.resolved || {};
+
+  if (base.includes('shortcutbuttonmain') || base === 'rscshotcutbuttonmain') return 'shortcutbuttonmain';
+  if (base.includes('shortcutbutton')) return 'shortcutbutton';
+  if (base.includes('button_exit') || base === 'rscbutton_exit') return 'button-exit';
+  if (base.includes('button_back')) return 'button-main'; // treat << like main
+  if (base.includes('button_main') || base === 'rscbutton_main') return 'button-main';
+  if (base.includes('button')) return 'button';
+  if (base === 'iguiback') return 'iguiback';
+  if (base === 'rscframe') return 'rscframe';
+  if (base.includes('mapcontrol') || base.includes('rscmapcontrol')) return 'mapcontrol';
+  if (base.includes('listnbox') || base.includes('listboxa') || base === 'rsclistnbox') return 'listbox';
+  if (base.includes('listbox')) return 'listbox';
+  if (base.includes('combo')) return 'combo';
+  if (base.includes('edit')) return 'edit';
+  if (base.includes('clickabletext')) return 'picture';
+  if (base.includes('picture') || base.includes('picturekeeper')) return 'picture';
+  if (base.includes('structuredtext')) return 'structuredtext';
+  if (base.includes('xsliderh')) return 'slider';
+  if (base.includes('controlsgroup') || base.includes('rsccontrolsgroup')) return 'ctrlgroup';
+
+  // Fallback by type number
+  const type = r.type !== undefined ? r.type : (ctrl.props && ctrl.props.type);
+  switch(type) {
+    case 1: return 'button';
+    case 2: return 'edit';
+    case 4: return 'combo';
+    case 5: return 'listbox';
+    case 11: return 'picture';
+    case 13: return 'structuredtext';
+    case 15: return 'ctrlgroup';
+    case 16: return 'shortcutbutton';
+    case 43: return 'slider';
+    case 101: return 'mapcontrol';
+    case 102: return 'listbox';
+    default: return 'rsctext';
+  }
+}
+
+// Determine if a control is a background control (section)
+function isBgCtrl(ctrl, display) {
+  return (display.background || []).includes(ctrl) ||
+    (ctrl._section === 'background');
+}
+
+// ============================================================
+// Load ui.json
+// ============================================================
+async function loadUiJson() {
+  try {
+    const r = await fetch('assets/data/ui.json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    uiData = await r.json();
+    buildDisplayPicker();
+    // Auto-load WF_Menu
+    loadDisplay('WF_Menu');
+  } catch(e) {
+    console.error('Failed to load ui.json:', e);
+    setStatus('Failed to load ui.json: ' + e.message, 'err');
   }
 }
 
 // ============================================================
-// Stage + zoom
+// Display picker
 // ============================================================
-const stage = document.getElementById('stage');
-const zoomLabel = document.getElementById('zoom-label');
+function buildDisplayPicker() {
+  const sel = document.getElementById('display-picker');
+  sel.innerHTML = '';
 
-function setZoom(z) {
-  zoom = Math.max(0.3, Math.min(3, z));
-  stage.style.width = (STAGE_W * zoom) + 'px';
-  stage.style.height = (STAGE_H * zoom) + 'px';
-  zoomLabel.textContent = Math.round(zoom * 100) + '%';
-  renderControls();
-}
+  const categories = {};
+  for (const [name, d] of Object.entries(uiData.displays)) {
+    const cat = d.category || 'dialog';
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(name);
+  }
 
-document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.15));
-document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.15));
-document.getElementById('zoom-fit').addEventListener('click', () => {
-  const wrap = document.getElementById('canvas-wrap');
-  const wz = (wrap.clientWidth - 48) / STAGE_W;
-  const hz = (wrap.clientHeight - 48) / STAGE_H;
-  setZoom(Math.min(wz, hz));
-});
-
-// Keyboard: Escape deselects, +/- zoom
-document.addEventListener('keydown', e => {
-  // Only act if not focused on a text input / textarea
-  const tag = document.activeElement && document.activeElement.tagName;
-  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-
-  if (e.key === 'Escape') {
-    if (selectedId !== null) {
-      selectCtrl(null);
-      e.preventDefault();
+  const catOrder = ['dialog', 'hud'];
+  for (const cat of catOrder) {
+    if (!categories[cat]) continue;
+    const grp = document.createElement('optgroup');
+    grp.label = cat.toUpperCase() + 'S';
+    for (const name of categories[cat]) {
+      const d = uiData.displays[name];
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name + ' (idd ' + d.idd + ')';
+      grp.appendChild(opt);
     }
+    sel.appendChild(grp);
   }
-  if (!inInput) {
-    if (e.key === '+' || e.key === '=') { setZoom(zoom + 0.15); e.preventDefault(); }
-    if (e.key === '-') { setZoom(zoom - 0.15); e.preventDefault(); }
-    if (e.key === 'Delete' || e.key === 'Backspace') {
-      if (selectedId !== null) {
-        const ctrl = getCtrlById(selectedId);
-        if (ctrl) {
-          model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
-          selectedId = null;
-          render();
-          e.preventDefault();
-        }
+
+  sel.addEventListener('change', () => {
+    if (sel.value) loadDisplay(sel.value);
+  });
+}
+
+// ============================================================
+// Load a display
+// ============================================================
+function loadDisplay(name) {
+  if (!uiData || !uiData.displays[name]) return;
+  currentDisplay = name;
+  displayData = uiData.displays[name];
+  selectedCtrl = null;
+  selectedSet.clear();
+  undoStack = [];
+  redoStack = [];
+  ctrlMeta = new WeakMap();
+  updateUndoButtons();
+
+  // Tag controls with section
+  for (const c of (displayData.background || [])) c._section = 'background';
+  for (const c of (displayData.controls || [])) c._section = 'controls';
+
+  // Update picker
+  const sel = document.getElementById('display-picker');
+  sel.value = name;
+
+  // Update chip
+  const total = (displayData.background || []).length + (displayData.controls || []).length;
+  document.getElementById('ctrl-count-chip').innerHTML = '<b>' + total + '</b> controls';
+  document.getElementById('dialog-chip').textContent = name + ' · idd ' + displayData.idd;
+
+  renderAll();
+}
+
+// ============================================================
+// Coordinate conversion
+// ============================================================
+/**
+ * Look up a geometry value (x/y/w/h) for a control, with sibling-inheritance
+ * fallback for SafeZone displays.  In Arma SQF, controls in the same controls[]
+ * block can omit x/w/h and inherit them from the nearest preceding sibling that
+ * shares the same baseClass.  The generator preserves this faithfully (null in
+ * props means "inherited"), so we replicate the lookup here.
+ */
+function resolveGeo(ctrl, key, posSystem) {
+  // Try resolved first, then props
+  const r = ctrl.resolved || {};
+  const p = ctrl.props || {};
+
+  let raw = r[key] !== undefined ? r[key] : p[key];
+
+  // If still null/undefined, apply in-array class inheritance.
+  // In Arma SQF, a control can declare baseClass = "AnotherControlName" where
+  // that other control is a sibling in the same controls[] block (not a global
+  // baseClass). Walk the inheritance chain: if ctrl.baseClass matches another
+  // control's NAME in the same display, recurse into that control for the value.
+  if ((raw === null || raw === undefined) && displayData) {
+    const all = [...(displayData.background || []), ...(displayData.controls || [])];
+    const myBase = ctrl.baseClass || '';
+
+    // First: check if baseClass names a sibling control (in-array inheritance)
+    const namedParent = myBase ? all.find(c => c.name === myBase) : null;
+    if (namedParent) {
+      const pr = namedParent.resolved || {};
+      const pp = namedParent.props || {};
+      raw = pr[key] !== undefined ? pr[key] : pp[key];
+    }
+
+    // If still missing, fall back to nearest preceding sibling with same baseClass
+    if (raw === null || raw === undefined) {
+      const myIdx = all.indexOf(ctrl);
+      const myBaseLow = myBase.toLowerCase();
+      for (let i = myIdx - 1; i >= 0; i--) {
+        const sib = all[i];
+        if ((sib.baseClass || '').toLowerCase() !== myBaseLow) continue;
+        const sr = sib.resolved || {};
+        const sp = sib.props || {};
+        const sibRaw = sr[key] !== undefined ? sr[key] : sp[key];
+        if (sibRaw !== null && sibRaw !== undefined) { raw = sibRaw; break; }
       }
     }
   }
-});
 
-// Export toggle: also keyboard-activatable (space/enter on the header div)
-document.getElementById('export-toggle').addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    document.getElementById('export-toggle').click();
+  if (raw === null || raw === undefined) {
+    // Sensible defaults: x/y → 0, w → 0.1, h → 0.04
+    raw = (key === 'w') ? 0.1 : (key === 'h') ? 0.04 : 0;
   }
-});
 
-// ============================================================
-// Render
-// ============================================================
-function allControls() {
-  return [...model.controlsBackground, ...model.controls];
+  return posSystem === 'safezone' ? evalSZ(raw) : (parseFloat(raw) || 0);
 }
 
-function getCtrlById(id) {
-  return allControls().find(c => c._id === id);
+function ctrlPx(ctrl) {
+  // Returns {left, top, width, height} in logical stage pixels
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+
+  const xf = resolveGeo(ctrl, 'x', posSystem);
+  const yf = resolveGeo(ctrl, 'y', posSystem);
+  const wf = resolveGeo(ctrl, 'w', posSystem);
+  const hf = resolveGeo(ctrl, 'h', posSystem);
+
+  return {
+    left: xf * STAGE_W,
+    top: yf * STAGE_H,
+    width: Math.max(2, wf * STAGE_W),
+    height: Math.max(2, hf * STAGE_H)
+  };
 }
 
-function render() {
+// ============================================================
+// WYSIWYG Control rendering
+// ============================================================
+function buildControlEl(ctrl, zIndex) {
+  const r = ctrl.resolved || ctrl.props || {};
+  const p = ctrl.props || {};
+  const wclass = getWClass(ctrl);
+  const geo = ctrlPx(ctrl);
+  const isSelected = ctrl === selectedCtrl;
+  const isMulti = selectedSet.has(ctrl) && ctrl !== selectedCtrl;
+  const meta = getMeta(ctrl);
+
+  const el = document.createElement('div');
+  let cls = 'ctrl';
+  if (editMode) cls += ' edit-mode';
+  if (isSelected) cls += ' selected';
+  else if (selectedSet.has(ctrl)) cls += ' multi-sel';
+  if (meta.locked) cls += ' ctrl-locked';
+  if (meta.hidden) cls += ' ctrl-hidden';
+  if (meta.groupId !== null) cls += ' grouped';
+  el.className = cls;
+  el.dataset.name = ctrl.name || '';
+  el.dataset.ctrlIdx = allCtrls().indexOf(ctrl);
+
+  // Base geometry
+  el.style.left = (geo.left * zoom) + 'px';
+  el.style.top = (geo.top * zoom) + 'px';
+  el.style.width = (geo.width * zoom) + 'px';
+  el.style.height = (geo.height * zoom) + 'px';
+  el.style.zIndex = zIndex;
+
+  // Font size from sizeEx: sizeEx is fraction of screen height
+  const sizeEx = r.sizeEx !== undefined ? r.sizeEx : 0.03;
+  const fontPx = sizeEx * STAGE_H * zoom;
+
+  // Apply WYSIWYG style based on type
+  switch (wclass) {
+    case 'iguiback': {
+      el.classList.add('wt-iguiback');
+      const bg = r.colorBackground || p.colorBackground;
+      if (Array.isArray(bg)) el.style.background = rgba(bg);
+      break;
+    }
+
+    case 'rscframe': {
+      el.classList.add('wt-rscframe');
+      const ct = r.colorText || p.colorText || [1,1,1,1];
+      el.style.borderColor = rgba(ct);
+      break;
+    }
+
+    case 'mapcontrol': {
+      el.classList.add('wt-mapcontrol');
+      const inner = document.createElement('div');
+      inner.className = 'map-label';
+      inner.textContent = 'MAP';
+      inner.style.fontSize = Math.max(8, fontPx * 0.8) + 'px';
+      el.appendChild(inner);
+      break;
+    }
+
+    case 'shortcutbuttonmain': {
+      el.classList.add('wt-shortcutbuttonmain');
+      const color = r.color || p.color || [0.2588, 0.7137, 1, 1];
+      el.style.borderColor = rgba(color);
+      el.style.boxShadow = `inset 0 0 ${geo.width*zoom*0.1}px ${rgba(color, 0.08)}, 0 0 ${geo.width*zoom*0.05}px ${rgba(color, 0.25)}`;
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'sb-icon';
+      iconDiv.style.fontSize = Math.max(7, fontPx * 0.9) + 'px';
+      iconDiv.style.color = rgba(color, 0.7);
+      iconDiv.style.borderRightColor = rgba(color, 0.35);
+      iconDiv.style.background = rgba(color, 0.1);
+      iconDiv.innerHTML = '&#9632;'; // placeholder icon
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'sb-label';
+      // In preview: show real text only. In edit: fall back to ctrl.name so tiles are identifiable.
+      const rawTxtSBM = r.text !== undefined ? r.text : p.text;
+      const txt = cleanText(rawTxtSBM || (editMode ? ctrl.name : '') || '');
+      labelDiv.textContent = txt;
+      labelDiv.style.fontSize = Math.max(7, fontPx * 0.95) + 'px';
+
+      el.appendChild(iconDiv);
+      el.appendChild(labelDiv);
+      break;
+    }
+
+    case 'shortcutbutton': {
+      el.classList.add('wt-shortcutbutton');
+      const color = r.color || p.color || [0.543, 0.574, 0.41, 1];
+      el.style.borderColor = rgba(color);
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'sb-icon';
+      iconDiv.style.fontSize = Math.max(6, fontPx * 0.8) + 'px';
+      iconDiv.style.color = rgba(color, 0.8);
+      iconDiv.style.borderRightColor = rgba(color, 0.3);
+      iconDiv.style.background = rgba(color, 0.08);
+      iconDiv.innerHTML = '&#9632;';
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'sb-label';
+      const rawTxtSB = r.text !== undefined ? r.text : p.text;
+      labelDiv.textContent = cleanText(rawTxtSB || (editMode ? ctrl.name : '') || '');
+      labelDiv.style.fontSize = Math.max(6, fontPx * 0.85) + 'px';
+
+      el.appendChild(iconDiv);
+      el.appendChild(labelDiv);
+      break;
+    }
+
+    case 'button':
+    case 'button-main':
+    case 'button-exit': {
+      el.classList.add('wt-rscbutton');
+      const bg = r.colorBackground || p.colorBackground;
+      const ct = r.colorText || p.colorText || [1,1,1,0.8];
+
+      if (wclass === 'button-main') {
+        el.classList.add('wt-rscbutton-main');
+      } else if (wclass === 'button-exit') {
+        el.classList.add('wt-rscbutton-exit');
+      } else if (Array.isArray(bg)) {
+        el.style.background = rgba(bg);
+      }
+
+      el.style.color = rgba(ct);
+      el.style.fontSize = Math.max(7, fontPx) + 'px';
+
+      const rawTxtBtn = r.text !== undefined ? r.text : p.text;
+      el.textContent = cleanText(rawTxtBtn || (editMode ? ctrl.name : '') || '');
+      break;
+    }
+
+    case 'listbox': {
+      el.classList.add('wt-listbox');
+      const bg = r.colorBackground || p.colorBackground || [0,0,0,1];
+      if (Array.isArray(bg)) el.style.background = rgba(bg);
+
+      const header = document.createElement('div');
+      header.className = 'lb-header';
+      // Listboxes show their name in the header in both modes — it's a structural label, not text content
+      header.textContent = ctrl.name || '';
+      header.style.fontSize = Math.max(6, fontPx * 0.75) + 'px';
+
+      const rows = document.createElement('div');
+      rows.className = 'lb-rows';
+      // Render a few sample rows
+      const sampleRows = ['Item 1', 'Item 2', 'Item 3', 'Item 4'];
+      sampleRows.forEach((txt, i) => {
+        const row = document.createElement('div');
+        row.className = 'lb-row' + (i === 0 ? ' sel' : '');
+        row.textContent = txt;
+        row.style.fontSize = Math.max(5, fontPx * 0.7) + 'px';
+        rows.appendChild(row);
+      });
+
+      el.appendChild(header);
+      el.appendChild(rows);
+      break;
+    }
+
+    case 'combo': {
+      el.classList.add('wt-combo');
+      const ct = r.colorText || p.colorText || [1,1,1,0.75];
+      const color = r.color || p.color || [0.2588, 0.7137, 1, 1];
+
+      const textEl = document.createElement('div');
+      textEl.className = 'combo-text';
+      const rawTxtCombo = r.text !== undefined ? r.text : p.text;
+      textEl.textContent = cleanText(rawTxtCombo || '') || '---';
+      textEl.style.fontSize = Math.max(6, fontPx * 0.8) + 'px';
+      textEl.style.color = rgba(ct);
+
+      const arrowEl = document.createElement('div');
+      arrowEl.className = 'combo-arrow';
+      arrowEl.innerHTML = '&#9660;';
+      arrowEl.style.color = rgba(color);
+      arrowEl.style.fontSize = Math.max(6, fontPx * 0.7) + 'px';
+
+      el.appendChild(textEl);
+      el.appendChild(arrowEl);
+      break;
+    }
+
+    case 'edit': {
+      el.classList.add('wt-edit');
+      // The ::after pseudo-element handles the cursor
+      const inner = document.createElement('div');
+      inner.className = 'edit-inner';
+      inner.textContent = cleanText(r.text || p.text || '') || '';
+      inner.style.fontSize = Math.max(6, fontPx * 0.8) + 'px';
+      el.appendChild(inner);
+      // Remove cursor in preview if text has content
+      if (inner.textContent) el.style.setProperty('--edit-cursor-opacity', '0');
+      break;
+    }
+
+    case 'picture': {
+      el.classList.add('wt-picture');
+      const ct = r.color || r.colorText || p.colorText || [0.75, 0.75, 0.75, 1];
+      const colorVal = rgba(ct);
+      el.style.borderColor = rgba(ct, 0.3);
+
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'pic-icon';
+      iconDiv.style.color = colorVal;
+
+      // Icon placeholder square
+      const sq = document.createElement('div');
+      sq.style.cssText = `width:${Math.max(8, geo.width*zoom*0.35)}px;height:${Math.max(8, geo.height*zoom*0.6)}px;border:1px solid currentColor;opacity:.5;border-radius:2px`;
+      iconDiv.appendChild(sq);
+
+      const lbl = document.createElement('div');
+      lbl.style.cssText = `font-size:${Math.max(5, fontPx*0.55)}px;opacity:.6;margin-top:1px;overflow:hidden;max-width:${geo.width*zoom*0.9}px;text-align:center;white-space:nowrap;text-overflow:ellipsis`;
+      const rawTxtPic = r.text !== undefined ? r.text : p.text;
+      lbl.textContent = cleanText(rawTxtPic || '');
+      iconDiv.appendChild(lbl);
+
+      el.appendChild(iconDiv);
+      break;
+    }
+
+    case 'structuredtext': {
+      el.classList.add('wt-structuredtext');
+      const ct = r.colorText || p.colorText || [1, 1, 0.7, 1];
+      el.style.color = rgba(ct);
+      el.style.fontSize = Math.max(6, fontPx * 0.85) + 'px';
+      const rawTxtST = r.text !== undefined ? r.text : p.text;
+      el.textContent = cleanText(rawTxtST || '');
+      break;
+    }
+
+    case 'slider': {
+      el.classList.add('wt-slider');
+      const color = r.color || p.color || [1,1,1,0.4];
+
+      const arrLeft = document.createElement('span');
+      arrLeft.className = 'sl-arr';
+      arrLeft.innerHTML = '&#9664;';
+
+      const track = document.createElement('div');
+      track.className = 'sl-track';
+      const fill = document.createElement('div');
+      fill.className = 'sl-fill';
+      const thumb = document.createElement('div');
+      thumb.className = 'sl-thumb';
+      track.appendChild(fill);
+      track.appendChild(thumb);
+
+      const arrRight = document.createElement('span');
+      arrRight.className = 'sl-arr';
+      arrRight.innerHTML = '&#9654;';
+
+      el.appendChild(arrLeft);
+      el.appendChild(track);
+      el.appendChild(arrRight);
+      break;
+    }
+
+    case 'ctrlgroup': {
+      el.classList.add('wt-ctrlgroup');
+      // Render name label in edit mode
+      if (editMode) {
+        const lbl = document.createElement('div');
+        lbl.style.cssText = `font-family:'JetBrains Mono',monospace;font-size:${Math.max(6, fontPx*0.6)}px;color:rgba(100,100,200,.7);padding:2px;`;
+        lbl.textContent = ctrl.name;
+        el.appendChild(lbl);
+      }
+      break;
+    }
+
+    default: // rsctext
+    case 'rsctext': {
+      el.classList.add('wt-rsctext');
+
+      const ct = r.colorText || p.colorText;
+      const bg = r.colorBackground || p.colorBackground;
+
+      if (Array.isArray(ct)) el.style.color = rgba(ct);
+      if (Array.isArray(bg) && (bg[3] || 0) > 0.01) {
+        el.style.background = rgba(bg);
+      } else {
+        el.style.background = 'transparent';
+      }
+
+      el.style.fontSize = Math.max(6, fontPx) + 'px';
+
+      // Apply text shadow
+      const shadow = r.shadow !== undefined ? r.shadow : 2;
+      if (shadow === 2) {
+        el.style.textShadow = '1px 1px 2px rgba(0,0,0,.9)';
+      } else if (shadow === 1) {
+        el.style.textShadow = '0 0 3px rgba(0,0,0,.9),-1px -1px 0 rgba(0,0,0,.6),1px 1px 0 rgba(0,0,0,.6)';
+      }
+
+      // In preview mode: render real text; if empty and sample-data is ON, show placeholder.
+      // In edit mode: use real text only (name shown via overlay tag added below).
+      const rawTxt = r.text !== undefined ? r.text : p.text;
+      let displayTxt = cleanText(rawTxt || '');
+      if (!editMode && !displayTxt && sampleDataEnabled) {
+        displayTxt = deriveSampleText(ctrl);
+        if (displayTxt) {
+          // Style sample text slightly dimmed/italic to distinguish from real content
+          el.style.opacity = '0.72';
+          el.style.fontStyle = 'italic';
+        }
+      }
+      el.textContent = displayTxt;
+      break;
+    }
+  }
+
+  // Edit-mode name overlay tag — compact on HUD displays to avoid tag-mass overlap.
+  // For dialogs: show full name (controls are large enough).
+  // For HUD: show a small dot for unselected/unhovered controls; only the
+  // selected control and the hovered control (via CSS :hover) get the full tag.
+  if (editMode && ctrl.name) {
+    const isHUD = displayData && displayData.posSystem === 'safezone';
+    const nameTag = document.createElement('div');
+    nameTag.setAttribute('aria-hidden', 'true');
+    nameTag.dataset.nametag = '1';
+    nameTag.title = ctrl.name; // full name in browser tooltip
+
+    const tagFontPx = Math.max(6, Math.min(10, fontPx * 0.55));
+
+    if (isHUD && !isSelected) {
+      // Compact: tiny dot-badge for unselected HUD controls
+      nameTag.style.cssText = [
+        'position:absolute',
+        'top:1px',
+        'left:1px',
+        'font-family:"JetBrains Mono",monospace',
+        `font-size:${tagFontPx}px`,
+        'color:rgba(75,184,200,0.9)',
+        'background:rgba(0,0,0,0.65)',
+        'padding:0 2px',
+        'border-radius:2px',
+        'pointer-events:none',
+        'z-index:2',
+        'white-space:nowrap',
+        'overflow:hidden',
+        'line-height:1.4',
+        'max-width:80px',
+        'text-overflow:ellipsis',
+      ].join(';');
+      // Truncate to ~10 chars with ellipsis indicator
+      const shortName = ctrl.name.length > 10 ? ctrl.name.slice(0, 9) + '…' : ctrl.name;
+      nameTag.textContent = shortName;
+      // On hover show full name (CSS handles visibility via data attr)
+      nameTag.dataset.fullname = ctrl.name;
+      nameTag.dataset.shortname = shortName;
+      // Hover expand via inline event (mouseenter/leave on the tag itself won't
+      // fire since pointer-events:none; use the parent ctrl element instead)
+      el.addEventListener('mouseenter', () => {
+        if (nameTag.isConnected) nameTag.textContent = ctrl.name;
+      });
+      el.addEventListener('mouseleave', () => {
+        if (nameTag.isConnected) nameTag.textContent = shortName;
+      });
+    } else {
+      // Dialog or selected HUD control: show full name
+      nameTag.style.cssText = [
+        'position:absolute',
+        'top:1px',
+        'left:1px',
+        'font-family:"JetBrains Mono",monospace',
+        `font-size:${tagFontPx}px`,
+        'color:rgba(75,184,200,0.75)',
+        'background:rgba(0,0,0,0.55)',
+        'padding:0 2px',
+        'border-radius:2px',
+        'pointer-events:none',
+        'z-index:2',
+        'white-space:nowrap',
+        'overflow:hidden',
+        `max-width:${Math.max(20, geo.width * zoom - 4)}px`,
+        'text-overflow:ellipsis',
+        'line-height:1.4',
+      ].join(';');
+      nameTag.textContent = ctrl.name;
+    }
+    el.appendChild(nameTag);
+  }
+
+  // Resize handle (edit mode)
+  const rh = document.createElement('div');
+  rh.className = 'rh';
+  rh.dataset.resize = '1';
+  rh.setAttribute('aria-hidden', 'true');
+  el.appendChild(rh);
+
+  // Events
+  el.addEventListener('mousedown', (e) => onCtrlMouseDown(e, ctrl));
+  el.title = ctrl.name + (ctrl.idc !== undefined && ctrl.idc >= 0 ? ' (idc ' + ctrl.idc + ')' : '')
+    + (getMeta(ctrl).locked ? ' [LOCKED]' : '') + (getMeta(ctrl).hidden ? ' [HIDDEN]' : '');
+
+  return el;
+}
+
+// ============================================================
+// Render all
+// ============================================================
+function renderAll() {
   renderControls();
   renderLayers();
   renderInspector();
-  updateChip();
-}
-
-function updateChip() {
-  const total = model.controls.length + model.controlsBackground.length;
-  document.getElementById('ctrl-count-chip').innerHTML = '<b>' + total + '</b> controls';
-}
-
-function typeClass(type_name) {
-  if (type_name === 'RscShortcutButton' || type_name === 'RscShortcutButtonMain') return 't-RscShortcutButton';
-  return 't-' + (type_name || 'CT_STATIC');
-}
-
-function ctrlLabel(c) {
-  const txt = c.text ? c.text.replace(/^\$STR_WF_/, '').replace(/^\$STR_WF_MAIN_/, '') : '';
-  return txt || c.name;
 }
 
 function renderControls() {
-  // Remove all ctrl-box children
-  [...stage.querySelectorAll('.ctrl-box')].forEach(el => el.remove());
+  const stage = document.getElementById('stage');
+  // Clear
+  stage.innerHTML = '';
 
-  const all = allControls();
-  all.forEach((c, i) => {
-    const el = document.createElement('div');
-    el.className = 'ctrl-box ' + typeClass(c.type_name);
-    if (c._id === selectedId) el.classList.add('selected');
+  if (!displayData) return;
 
-    const px = Math.round(c.x * STAGE_W * zoom);
-    const py = Math.round(c.y * STAGE_H * zoom);
-    const pw = Math.max(6, Math.round(c.w * STAGE_W * zoom));
-    const ph = Math.max(4, Math.round(c.h * STAGE_H * zoom));
-
-    el.style.left = px + 'px';
-    el.style.top = py + 'px';
-    el.style.width = pw + 'px';
-    el.style.height = ph + 'px';
-    el.style.zIndex = i + 1;
-    el.dataset.id = c._id;
-    el.title = c.name + (c.tooltip ? '\n' + c.tooltip : '');
-    el.setAttribute('role', 'button');
-    el.setAttribute('aria-label', c.name + ' (' + c.type_name + ')' + (c._id === selectedId ? ', selected' : ''));
-    el.setAttribute('tabindex', '0');
-
-    // Label
-    const lbl = document.createElement('span');
-    lbl.textContent = ctrlLabel(c);
-    lbl.style.pointerEvents = 'none';
-    lbl.setAttribute('aria-hidden', 'true');
-    el.appendChild(lbl);
-
-    // Resize handle
-    const rh = document.createElement('div');
-    rh.className = 'resize-handle';
-    rh.dataset.resize = '1';
-    rh.setAttribute('aria-hidden', 'true');
-    el.appendChild(rh);
-
-    // Events
-    el.addEventListener('mousedown', onCtrlMouseDown);
-    el.addEventListener('keydown', ev => {
-      if (ev.key === 'Enter' || ev.key === ' ') {
-        selectCtrl(c._id);
-        ev.preventDefault();
-      }
-    });
-
+  const all = [...(displayData.background || []), ...(displayData.controls || [])];
+  all.forEach((ctrl, i) => {
+    const el = buildControlEl(ctrl, i + 1);
     stage.appendChild(el);
   });
 }
 
 // ============================================================
-// Drag + Resize
+// Layer list
 // ============================================================
-let dragging = null; // {_id, mode:'move'|'resize', startMx, startMy, startX, startY, startW, startH}
+function renderLayers() {
+  const el = document.getElementById('layer-list');
+  el.innerHTML = '';
+
+  if (!displayData) return;
+
+  function addSection(arr, label, isBg) {
+    if (!arr || arr.length === 0) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'layer-hdr';
+    hdr.textContent = label;
+    el.appendChild(hdr);
+
+    arr.forEach(ctrl => {
+      const meta = getMeta(ctrl);
+      const isPrimary = ctrl === selectedCtrl;
+      const isInSet = selectedSet.has(ctrl);
+      let rowCls = 'layer-item';
+      if (isPrimary) rowCls += ' selected';
+      else if (isInSet) rowCls += ' multi-selected';
+      if (isBg) rowCls += ' bg-ctrl';
+      if (meta.locked) rowCls += ' locked';
+      if (meta.hidden) rowCls += ' hidden-ctrl';
+
+      const row = document.createElement('div');
+      row.className = rowCls;
+      row.setAttribute('role', 'listitem');
+      row.setAttribute('tabindex', '0');
+
+      const dot = document.createElement('span');
+      dot.className = 'layer-dot';
+      dot.style.background = getWClassColor(getWClass(ctrl));
+      dot.setAttribute('aria-hidden', 'true');
+      row.appendChild(dot);
+
+      const name = document.createElement('span');
+      name.className = 'layer-name';
+      name.textContent = ctrl.name;
+      name.title = ctrl.name;
+      row.appendChild(name);
+
+      const idc = document.createElement('span');
+      idc.className = 'layer-idc';
+      idc.textContent = ctrl.idc !== undefined && ctrl.idc >= 0 ? ctrl.idc : '';
+      row.appendChild(idc);
+
+      // Hide toggle
+      const hideBtn = document.createElement('button');
+      hideBtn.className = 'layer-action' + (meta.hidden ? ' active' : '');
+      hideBtn.title = meta.hidden ? 'Show' : 'Hide';
+      hideBtn.setAttribute('aria-label', (meta.hidden ? 'Show' : 'Hide') + ' ' + ctrl.name);
+      hideBtn.textContent = meta.hidden ? '○' : '●';
+      hideBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        meta.hidden = !meta.hidden;
+        renderAll();
+      });
+      row.appendChild(hideBtn);
+
+      // Lock toggle
+      const lockBtn = document.createElement('button');
+      lockBtn.className = 'layer-action' + (meta.locked ? ' active' : '');
+      lockBtn.title = meta.locked ? 'Unlock' : 'Lock';
+      lockBtn.setAttribute('aria-label', (meta.locked ? 'Unlock' : 'Lock') + ' ' + ctrl.name);
+      lockBtn.textContent = meta.locked ? '🔒' : '🔓';
+      lockBtn.style.fontSize = '9px';
+      lockBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        meta.locked = !meta.locked;
+        renderAll();
+      });
+      row.appendChild(lockBtn);
+
+      row.addEventListener('click', e => {
+        if (e.target === hideBtn || e.target === lockBtn) return;
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+          // Add/remove from multi-select
+          if (selectedSet.has(ctrl)) {
+            selectedSet.delete(ctrl);
+            if (ctrl === selectedCtrl) {
+              selectedCtrl = selectedSet.size ? [...selectedSet][0] : null;
+            }
+          } else {
+            selectedSet.add(ctrl);
+            selectedCtrl = ctrl;
+          }
+          renderControls();
+          renderLayers();
+          renderInspector();
+        } else {
+          selectCtrl(ctrl);
+        }
+      });
+      row.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ') { selectCtrl(ctrl); ev.preventDefault(); }
+      });
+      el.appendChild(row);
+    });
+  }
+
+  addSection(displayData.background, 'controlsBackground', true);
+  addSection(displayData.controls, 'controls', false);
+}
+
+function getWClassColor(wclass) {
+  const map = {
+    'shortcutbuttonmain': '#42b6ff',
+    'shortcutbutton': '#8a9266',
+    'button-main': '#2a80cc',
+    'button': '#5c6536',
+    'button-exit': '#802020',
+    'iguiback': '#39414b',
+    'rscframe': '#666',
+    'mapcontrol': '#406030',
+    'listbox': '#884488',
+    'combo': '#b88820',
+    'edit': '#804040',
+    'picture': '#6a9040',
+    'structuredtext': '#7a7020',
+    'slider': '#609060',
+    'ctrlgroup': '#4444aa',
+    'rsctext': '#6a6050',
+  };
+  return map[wclass] || '#39414b';
+}
+
+// ============================================================
+// Inspector — full editable property inspector
+// ============================================================
+
+// HUD displays use SafeZone string expressions for geometry
+function isHudDisplay() {
+  return displayData && displayData.posSystem === 'safezone';
+}
+
+// Retrieve the inherited value of a prop from the baseClass chain (not from ctrl.props)
+function inheritedVal(ctrl, key) {
+  if (!uiData) return undefined;
+  let base = ctrl.baseClass || ctrl.rscBase;
+  const visited = new Set();
+  while (base && !visited.has(base)) {
+    visited.add(base);
+    const bc = uiData.baseClasses && uiData.baseClasses[base];
+    if (!bc) break;
+    if (bc.props && key in bc.props) return bc.props[key];
+    base = bc.parent;
+  }
+  return undefined;
+}
+
+// Check if a prop is overridden (present in ctrl.props)
+function isPropOverride(ctrl, key) {
+  return ctrl.props && key in ctrl.props;
+}
+
+// Get effective value: override → resolved → inherited
+function effectiveVal(ctrl, key) {
+  const p = ctrl.props || {};
+  const r = ctrl.resolved || {};
+  if (key in p) return p[key];
+  if (key in r) return r[key];
+  return inheritedVal(ctrl, key);
+}
+
+// Convert RGBA array [r,g,b,a] → hex #rrggbb (for color input)
+function rgbaToHex(arr) {
+  if (!Array.isArray(arr) || arr.length < 3) return '#000000';
+  const r = Math.round(Math.min(1, Math.max(0, arr[0])) * 255);
+  const g = Math.round(Math.min(1, Math.max(0, arr[1])) * 255);
+  const b = Math.round(Math.min(1, Math.max(0, arr[2])) * 255);
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+// Convert hex #rrggbb + alpha 0..1 → RGBA array
+function hexAlphaToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  return [parseFloat(r.toFixed(4)), parseFloat(g.toFixed(4)), parseFloat(b.toFixed(4)), parseFloat(alpha.toFixed(4))];
+}
+
+// Get macro name for an RGBA array (or null if not a macro match)
+function macroForRgba(arr) {
+  if (!uiData || !arr) return null;
+  for (const [name, val] of Object.entries(uiData.macros || {})) {
+    if (Array.isArray(val) && val.length === arr.length) {
+      if (val.every((v, i) => Math.abs(v - arr[i]) < 0.001)) return name;
+    }
+  }
+  return null;
+}
+
+// Style flag bit definitions (Arma 2 control style constants)
+const STYLE_FLAGS = [
+  { bit: 0x01, label: 'ST_MULTI' },
+  { bit: 0x02, label: 'ST_CENTER' },
+  { bit: 0x04, label: 'ST_RIGHT' },
+  { bit: 0x06, label: 'ST_LEFT (def)' },
+  { bit: 0x10, label: 'ST_TITLE_BAR' },
+  { bit: 0x20, label: 'ST_PICTURE' },
+  { bit: 0x40, label: 'ST_FRAME' },
+  { bit: 0x80, label: 'ST_BACKGROUND' },
+  { bit: 0x100, label: 'ST_GROUP_BOX' },
+  { bit: 0x200, label: 'ST_UPPER' },
+  { bit: 0x400, label: 'ST_GROUP_BOX2' },
+  { bit: 0x800, label: 'ST_HUD_BACKGROUND' },
+  { bit: 0x1000, label: 'ST_TILE_PICTURE' },
+  { bit: 0x2000, label: 'ST_WITH_RECT' },
+  { bit: 0x4000, label: 'ST_LINE' },
+];
+
+// Parse style value (can be "0x02 + 0x100", "0x02", "2", etc.) → integer
+function parseStyle(val) {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return val;
+  const str = String(val).replace(/\s+/g,'');
+  // Evaluate addition of hex/decimal literals
+  try {
+    return str.split('+').reduce((sum, part) => {
+      const t = part.trim();
+      return sum + (t.startsWith('0x') || t.startsWith('0X') ? parseInt(t,16) : parseInt(t,10)||0);
+    }, 0);
+  } catch(e) { return 0; }
+}
+
+// Convert integer style → "0x02 + 0x100" string (skip 0)
+function formatStyle(bits) {
+  if (!bits) return '0';
+  const parts = STYLE_FLAGS.filter(f => (bits & f.bit) === f.bit && f.bit !== 0x06)
+    .map(f => '0x' + f.bit.toString(16).toUpperCase());
+  // Also check left-align non-flags
+  return parts.length ? parts.join(' + ') : String(bits);
+}
+
+// Known font names from Arma 2
+const KNOWN_FONTS = [
+  'Zeppelin32', 'Zeppelin35', 'EtelkaNarrowMediumPro',
+  'PuristaMedium', 'LucidaConsoleB', 'TahomaB', 'Bitstream',
+  'RobotoCondensed', 'puristaMedium', 'lucidaConsoleB'
+];
+
+// Color prop keys
+const COLOR_KEYS = new Set([
+  'colorText','colorBackground','colorBackgroundActive','colorFocused',
+  'colorShadow','colorBorder','colorDisabled','colorBackgroundDisabled',
+  'colorSelectBackground','color','color2','colorBackground2','colorSelect',
+  'colorActive','colorOutside','colorPictureFocused',
+]);
+
+// Geo keys (skip from props section — shown in Geometry section)
+const GEO_KEYS = new Set(['x','y','w','h']);
+
+// Keys to skip entirely in inspector (internal / texture arrays / sound arrays)
+const SKIP_KEYS = new Set([
+  'type','type_name','idc',
+  'animTextureNormal','animTextureDisabled','animTextureOver','animTextureFocused',
+  'animTexturePressed','animTextureDefault','textureNoShortcut',
+  'soundEnter','soundPush','soundClick','soundEscape',
+  'soundSelect','soundExpand','soundCollapse','soundDoubleClick',
+  'period','periodFocus','periodOver','default',
+  'columns','maxHistoryDelay','autoScrollSpeed','autoScrollDelay','autoScrollRewind',
+  'offsetX','offsetY','offsetPressedX','offsetPressedY',
+  'borderSize','colorShadow','colorBorder',
+]);
+
+// State: geo mode per axis ('num' or 'expr') — persists across inspector refreshes
+const geoMode = { x:'num', y:'num', w:'num', h:'num' };
+
+// Track which control is currently inspected to avoid full rebuilds during drags
+let _inspectedCtrl = null;
+
+function renderInspector() {
+  const ctrl = selectedCtrl;
+  const multiCount = selectedSet.size;
+  const placeholder = document.getElementById('inspector-placeholder');
+  const insp = document.getElementById('inspector');
+
+  if (!ctrl) {
+    placeholder.style.display = '';
+    insp.style.display = 'none';
+    _inspectedCtrl = null;
+    return;
+  }
+
+  placeholder.style.display = 'none';
+  insp.style.display = '';
+
+  // Rebuild the inspector DOM completely (it's cheap enough; avoids stale listeners)
+  insp.innerHTML = '';
+  _inspectedCtrl = ctrl;
+
+  const isMulti = multiCount > 1;
+
+  // Helper: create a labelled field row
+  function makeRow(key, labelText, inputEl, isOverride, inheritVal) {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+
+    const lbl = document.createElement('label');
+
+    const lblText = document.createElement('span');
+    lblText.className = 'lbl-text';
+    lblText.textContent = labelText;
+    lbl.appendChild(lblText);
+
+    if (isOverride) {
+      const badge = document.createElement('span');
+      badge.className = 'override-badge';
+      badge.title = 'This prop overrides the inherited value';
+      badge.textContent = 'override';
+      lbl.appendChild(badge);
+
+      if (key && !isMulti) {
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'reset-btn';
+        resetBtn.title = 'Reset to inherited';
+        resetBtn.textContent = '↺';
+        resetBtn.addEventListener('click', () => {
+          if (ctrl.props) delete ctrl.props[key];
+          // Also sync resolved
+          const inh = inheritedVal(ctrl, key);
+          if (ctrl.resolved && inh !== undefined) ctrl.resolved[key] = inh;
+          else if (ctrl.resolved) delete ctrl.resolved[key];
+          renderAll();
+        });
+        lbl.appendChild(resetBtn);
+      }
+    }
+
+    row.appendChild(lbl);
+    row.appendChild(inputEl);
+
+    if (inheritVal !== undefined && !isOverride) {
+      const hint = document.createElement('div');
+      hint.className = 'inherited-hint';
+      hint.textContent = 'inherited: ' + fmtVal(inheritVal);
+      row.appendChild(hint);
+    }
+
+    return row;
+  }
+
+  // Apply a prop change to the selected control(s)
+  function applyProp(key, value) {
+    pushUndo();
+    const targets = isMulti ? [...selectedSet] : [ctrl];
+    for (const c of targets) {
+      if (!c.props) c.props = {};
+      c.props[key] = value;
+      if (c.resolved) c.resolved[key] = value;
+    }
+    renderControls();
+    // Don't re-render inspector to avoid losing focus; just update override styling
+    updateOverrideStyling(key);
+  }
+
+  function updateOverrideStyling(key) {
+    // Update input override class without full re-render
+    const el = insp.querySelector('[data-prop="' + key + '"]');
+    if (el) {
+      const over = isPropOverride(ctrl, key);
+      el.classList.toggle('is-override', over);
+    }
+  }
+
+  // ---- Section: Identity ----
+  const secIdentity = document.createElement('h3');
+  secIdentity.textContent = isMulti ? 'Multi-select (' + multiCount + ')' : 'Identity';
+  insp.appendChild(secIdentity);
+
+  if (isMulti) {
+    const banner = document.createElement('div');
+    banner.className = 'multi-insp-banner';
+    const names = [...selectedSet].map(c => c.name);
+    banner.textContent = names.slice(0, 5).join(', ') + (names.length > 5 ? ' +' + (names.length-5) + ' more' : '');
+    insp.appendChild(banner);
+  }
+
+  // Name field (single only)
+  if (!isMulti) {
+    const nameIn = document.createElement('input');
+    nameIn.type = 'text';
+    nameIn.value = ctrl.name || '';
+    nameIn.dataset.prop = '_name';
+    nameIn.addEventListener('change', () => {
+      const newName = nameIn.value.trim();
+      if (newName && newName !== ctrl.name) {
+        pushUndo();
+        ctrl.name = newName;
+        renderAll();
+      }
+    });
+    insp.appendChild(makeRow('_name', 'Name', nameIn, false));
+
+    // IDC
+    const idcIn = document.createElement('input');
+    idcIn.type = 'number';
+    idcIn.value = ctrl.idc !== undefined ? ctrl.idc : -2;
+    idcIn.dataset.prop = '_idc';
+    idcIn.addEventListener('change', () => {
+      const v = parseInt(idcIn.value);
+      if (!isNaN(v)) {
+        pushUndo();
+        ctrl.idc = v;
+        renderLayers();
+      }
+    });
+    insp.appendChild(makeRow('_idc', 'IDC', idcIn, false));
+  }
+
+  // BaseClass dropdown (single only)
+  if (!isMulti) {
+    const baseIn = document.createElement('select');
+    baseIn.dataset.prop = '_baseClass';
+    const baseClasses = Object.keys(uiData && uiData.baseClasses || {});
+    const common = ['RscText','RscButton','RscButton_Main','RscButton_Exit',
+      'RscShortcutButton','RscShortcutButtonMain','RscListBox','RscListnBox',
+      'RscCombo','RscEdit','RscStructuredText','RscPicture','RscFrame',
+      'IGUIBack','RscMapControl','RscXSliderH','RscControlsGroup','RscClickableText'];
+    const allBases = [...new Set([...common, ...baseClasses])].sort();
+    // Add current value even if not in the list
+    const curBase = ctrl.baseClass || ctrl.rscBase || '';
+    if (curBase && !allBases.includes(curBase)) allBases.unshift(curBase);
+    allBases.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      if (name === curBase) opt.selected = true;
+      baseIn.appendChild(opt);
+    });
+    baseIn.addEventListener('change', () => {
+      pushUndo();
+      ctrl.baseClass = baseIn.value;
+      // Re-resolve inherited props from new base
+      if (uiData && uiData.baseClasses && uiData.baseClasses[baseIn.value]) {
+        const newResolved = Object.assign({}, uiData.baseClasses[baseIn.value].props || {});
+        // Merge existing prop overrides on top
+        ctrl.resolved = Object.assign(newResolved, ctrl.props || {});
+      }
+      renderAll();
+    });
+    insp.appendChild(makeRow('_baseClass', 'Base Class', baseIn, false));
+  }
+
+  // ---- Section: Geometry ----
+  const secGeo = document.createElement('h3');
+  secGeo.textContent = 'Geometry';
+  insp.appendChild(secGeo);
+
+  const isHUD = isHudDisplay();
+
+  // Toggle row for HUD
+  if (isHUD) {
+    const toggleRow = document.createElement('div');
+    toggleRow.className = 'geo-toggle';
+    toggleRow.innerHTML = '<span>Input mode:</span>';
+    ['x','y','w','h'].forEach(axis => {
+      const btn = document.createElement('button');
+      btn.textContent = axis + ':' + (geoMode[axis] === 'expr' ? 'expr' : 'num');
+      btn.className = geoMode[axis] === 'expr' ? 'active' : '';
+      btn.title = 'Toggle ' + axis + ' between numeric and SafeZone expression';
+      btn.addEventListener('click', () => {
+        geoMode[axis] = geoMode[axis] === 'expr' ? 'num' : 'expr';
+        renderInspector(); // rebuild with new mode
+      });
+      toggleRow.appendChild(btn);
+    });
+    insp.appendChild(toggleRow);
+  }
+
+  const geoGrid = document.createElement('div');
+  geoGrid.className = 'grid-2';
+  insp.appendChild(geoGrid);
+
+  ['x','y','w','h'].forEach(axis => {
+    const rawVal = effectiveVal(ctrl, axis);
+    const isOver = isPropOverride(ctrl, axis);
+    const inh = inheritedVal(ctrl, axis);
+
+    const useExpr = isHUD && geoMode[axis] === 'expr';
+    const inp = document.createElement('input');
+    inp.dataset.prop = axis;
+    inp.type = useExpr ? 'text' : 'number';
+    if (useExpr) {
+      inp.value = (ctrl.props && axis in ctrl.props) ? String(ctrl.props[axis])
+        : (rawVal !== undefined ? String(rawVal) : '');
+    } else {
+      const numVal = isHUD ? evalSZ(rawVal) : (parseFloat(rawVal) || 0);
+      inp.value = parseFloat(numVal.toFixed(6));
+      inp.step = '0.001';
+    }
+    if (isOver) inp.classList.add('is-override');
+
+    inp.addEventListener('change', () => {
+      const v = useExpr ? inp.value.trim() : parseFloat(inp.value);
+      if (!useExpr && isNaN(v)) return;
+      applyProp(axis, v);
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(makeRow(axis, axis.toUpperCase(), inp, isOver, isOver ? inh : undefined));
+    geoGrid.appendChild(wrapper);
+  });
+
+  // ---- Section: Text / Label ----
+  const secText = document.createElement('h3');
+  secText.textContent = 'Text';
+  insp.appendChild(secText);
+
+  // Get common text value for multi-select
+  const multiTextVal = isMulti
+    ? ([...selectedSet].map(c => effectiveVal(c,'text')).every((v,_,a) => v===a[0]) ? effectiveVal(ctrl,'text') : '(mixed)')
+    : effectiveVal(ctrl,'text');
+
+  const textIn = document.createElement('input');
+  textIn.type = 'text';
+  textIn.value = typeof multiTextVal === 'string' ? multiTextVal : '';
+  textIn.placeholder = isMulti && multiTextVal === '(mixed)' ? '(mixed)' : '(none)';
+  textIn.dataset.prop = 'text';
+  if (isPropOverride(ctrl, 'text')) textIn.classList.add('is-override');
+  textIn.addEventListener('change', () => {
+    applyProp('text', textIn.value);
+    renderControls();
+  });
+  insp.appendChild(makeRow('text', 'Text', textIn, isPropOverride(ctrl, 'text'), inheritedVal(ctrl,'text')));
+
+  // Tooltip
+  const tooltipIn = document.createElement('input');
+  tooltipIn.type = 'text';
+  tooltipIn.value = effectiveVal(ctrl, 'tooltip') || '';
+  tooltipIn.dataset.prop = 'tooltip';
+  if (isPropOverride(ctrl, 'tooltip')) tooltipIn.classList.add('is-override');
+  tooltipIn.addEventListener('change', () => applyProp('tooltip', tooltipIn.value));
+  insp.appendChild(makeRow('tooltip', 'Tooltip', tooltipIn, isPropOverride(ctrl,'tooltip'), inheritedVal(ctrl,'tooltip')));
+
+  // ---- Section: Appearance ----
+  const secAppear = document.createElement('h3');
+  secAppear.textContent = 'Appearance';
+  insp.appendChild(secAppear);
+
+  // Font
+  const fontIn = document.createElement('select');
+  fontIn.dataset.prop = 'font';
+  const fontVal = effectiveVal(ctrl, 'font') || 'Zeppelin32';
+  const allFonts = [...new Set([...KNOWN_FONTS, fontVal])];
+  allFonts.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f; opt.textContent = f;
+    if (f === fontVal) opt.selected = true;
+    fontIn.appendChild(opt);
+  });
+  if (isPropOverride(ctrl, 'font')) fontIn.classList.add('is-override');
+  fontIn.addEventListener('change', () => applyProp('font', fontIn.value));
+  insp.appendChild(makeRow('font', 'Font', fontIn, isPropOverride(ctrl,'font'), inheritedVal(ctrl,'font')));
+
+  // sizeEx
+  const sizeIn = document.createElement('input');
+  sizeIn.type = 'number';
+  sizeIn.step = '0.001';
+  sizeIn.value = parseFloat((effectiveVal(ctrl,'sizeEx') || 0.03).toFixed(5));
+  sizeIn.dataset.prop = 'sizeEx';
+  if (isPropOverride(ctrl, 'sizeEx')) sizeIn.classList.add('is-override');
+  sizeIn.addEventListener('change', () => applyProp('sizeEx', parseFloat(sizeIn.value)));
+  insp.appendChild(makeRow('sizeEx', 'sizeEx', sizeIn, isPropOverride(ctrl,'sizeEx'), inheritedVal(ctrl,'sizeEx')));
+
+  // Shadow
+  const shadowIn = document.createElement('select');
+  shadowIn.dataset.prop = 'shadow';
+  [[0,'0 — none'],[1,'1 — outline'],[2,'2 — drop']].forEach(([v,l]) => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = l;
+    const sv = effectiveVal(ctrl,'shadow');
+    if (sv !== undefined && parseInt(sv) === v) opt.selected = true;
+    shadowIn.appendChild(opt);
+  });
+  if (isPropOverride(ctrl, 'shadow')) shadowIn.classList.add('is-override');
+  shadowIn.addEventListener('change', () => applyProp('shadow', parseInt(shadowIn.value)));
+  insp.appendChild(makeRow('shadow', 'Shadow', shadowIn, isPropOverride(ctrl,'shadow'), inheritedVal(ctrl,'shadow')));
+
+  // Style (flag checkboxes)
+  const styleVal = parseStyle(effectiveVal(ctrl, 'style'));
+  const styleIsOver = isPropOverride(ctrl, 'style');
+  const styleRow = document.createElement('div');
+  styleRow.className = 'field-row';
+  const styleLbl = document.createElement('label');
+  const styleLblText = document.createElement('span');
+  styleLblText.className = 'lbl-text';
+  styleLblText.textContent = 'Style';
+  styleLbl.appendChild(styleLblText);
+  if (styleIsOver) {
+    const badge = document.createElement('span');
+    badge.className = 'override-badge';
+    badge.textContent = 'override';
+    styleLbl.appendChild(badge);
+    if (!isMulti) {
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'reset-btn';
+      resetBtn.textContent = '↺';
+      resetBtn.addEventListener('click', () => {
+        if (ctrl.props) delete ctrl.props.style;
+        const inh = inheritedVal(ctrl, 'style');
+        if (ctrl.resolved && inh !== undefined) ctrl.resolved.style = inh;
+        else if (ctrl.resolved) delete ctrl.resolved.style;
+        renderAll();
+      });
+      styleLbl.appendChild(resetBtn);
+    }
+  }
+  styleRow.appendChild(styleLbl);
+  const flagsWrap = document.createElement('div');
+  flagsWrap.className = 'style-flags';
+  STYLE_FLAGS.slice(0, 8).forEach(({ bit, label }) => {
+    const flagEl = document.createElement('label');
+    flagEl.className = 'style-flag';
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.checked = (styleVal & bit) !== 0;
+    chk.addEventListener('change', () => {
+      let cur = parseStyle(effectiveVal(ctrl, 'style'));
+      if (chk.checked) cur |= bit; else cur &= ~bit;
+      applyProp('style', cur ? formatStyle(cur) : '0');
+    });
+    flagEl.appendChild(chk);
+    flagEl.appendChild(document.createTextNode(label));
+    flagsWrap.appendChild(flagEl);
+  });
+  styleRow.appendChild(flagsWrap);
+  insp.appendChild(styleRow);
+
+  // ---- Section: Colors ----
+  const secColors = document.createElement('h3');
+  secColors.textContent = 'Colors';
+  insp.appendChild(secColors);
+
+  const colorPropList = [
+    'colorBackground','colorText','colorFocused','color',
+    'colorBackgroundActive','colorDisabled','colorBackgroundDisabled','colorSelect',
+  ];
+
+  // Collect which color props are actually relevant (present in resolved or props)
+  const relevantColors = colorPropList.filter(k => {
+    const v = effectiveVal(ctrl, k);
+    return Array.isArray(v);
+  });
+  // Always show at least the core 3
+  const coreColors = ['colorBackground','colorText','colorFocused','color'];
+  const showColors = [...new Set([...coreColors, ...relevantColors])];
+
+  showColors.forEach(key => {
+    const curVal = effectiveVal(ctrl, key);
+    const isOver = isPropOverride(ctrl, key);
+    const inh = inheritedVal(ctrl, key);
+    const arr = Array.isArray(curVal) ? curVal : [0,0,0,1];
+
+    const colorRow = document.createElement('div');
+    colorRow.className = 'color-row';
+
+    // Color picker
+    const colorPick = document.createElement('input');
+    colorPick.type = 'color';
+    colorPick.value = rgbaToHex(arr);
+    colorPick.title = 'Pick color';
+
+    // Alpha input
+    const alphaIn = document.createElement('input');
+    alphaIn.type = 'number';
+    alphaIn.className = 'alpha-in';
+    alphaIn.min = '0'; alphaIn.max = '1'; alphaIn.step = '0.01';
+    alphaIn.value = parseFloat((arr[3] !== undefined ? arr[3] : 1).toFixed(3));
+    alphaIn.title = 'Alpha (0–1)';
+    alphaIn.style.cssText = 'width:50px;padding:2px 4px;font-size:9px';
+
+    // Macro dropdown
+    const macroSel = document.createElement('select');
+    macroSel.className = 'macro-sel';
+    macroSel.style.fontSize = '9px';
+    const noMacroOpt = document.createElement('option');
+    noMacroOpt.value = ''; noMacroOpt.textContent = '— macro —';
+    macroSel.appendChild(noMacroOpt);
+    const curMacro = macroForRgba(arr);
+    Object.entries(uiData && uiData.macros || {}).forEach(([name, val]) => {
+      if (!Array.isArray(val)) return;
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      if (name === curMacro) opt.selected = true;
+      macroSel.appendChild(opt);
+    });
+
+    // Swatch
+    const swatch = document.createElement('span');
+    swatch.className = 'color-swatch-lg';
+    swatch.style.background = rgba(arr);
+
+    function refreshSwatch(newArr) {
+      swatch.style.background = rgba(newArr);
+      colorPick.value = rgbaToHex(newArr);
+      alphaIn.value = parseFloat((newArr[3] !== undefined ? newArr[3] : 1).toFixed(3));
+      // Update macro dropdown
+      const nm = macroForRgba(newArr);
+      macroSel.value = nm || '';
+    }
+
+    colorPick.addEventListener('input', () => {
+      const newArr = hexAlphaToRgba(colorPick.value, parseFloat(alphaIn.value)||1);
+      applyProp(key, newArr);
+      refreshSwatch(newArr);
+      macroSel.value = macroForRgba(newArr) || '';
+    });
+
+    alphaIn.addEventListener('change', () => {
+      const newArr = hexAlphaToRgba(colorPick.value, Math.max(0, Math.min(1, parseFloat(alphaIn.value)||1)));
+      applyProp(key, newArr);
+      refreshSwatch(newArr);
+    });
+
+    macroSel.addEventListener('change', () => {
+      if (!macroSel.value) return;
+      const macroVal = uiData.macros[macroSel.value];
+      if (Array.isArray(macroVal)) {
+        applyProp(key, macroVal);
+        refreshSwatch(macroVal);
+      }
+    });
+
+    colorRow.appendChild(swatch);
+    colorRow.appendChild(colorPick);
+    colorRow.appendChild(alphaIn);
+    colorRow.appendChild(macroSel);
+
+    insp.appendChild(makeRow(key, key, colorRow, isOver, isOver ? inh : undefined));
+  });
+
+  // ---- Section: Events / Actions ----
+  const secEvents = document.createElement('h3');
+  secEvents.textContent = 'Events';
+  insp.appendChild(secEvents);
+
+  const eventKeys = ['action','onButtonClick','onLBSelChanged','onLBDblClick','onMouseButtonClick'];
+  eventKeys.forEach(key => {
+    const curVal = effectiveVal(ctrl, key);
+    if (curVal === undefined && !isPropOverride(ctrl, key)) {
+      // Only show if it's a common key or already has a value
+      const commonEvents = ['action','onButtonClick','onLBSelChanged'];
+      if (!commonEvents.includes(key)) return;
+    }
+    const eventIn = document.createElement('textarea');
+    eventIn.rows = 2;
+    eventIn.style.cssText = 'font-size:9px;resize:vertical;min-height:36px';
+    eventIn.value = (curVal !== undefined && curVal !== null) ? String(curVal) : '';
+    eventIn.placeholder = '(none)';
+    eventIn.dataset.prop = key;
+    if (isPropOverride(ctrl, key)) eventIn.classList.add('is-override');
+    eventIn.addEventListener('change', () => {
+      const v = eventIn.value.trim();
+      if (v) applyProp(key, v);
+      else {
+        // Remove override if empty
+        if (ctrl.props) delete ctrl.props[key];
+        if (ctrl.resolved) delete ctrl.resolved[key];
+        renderControls();
+      }
+    });
+    insp.appendChild(makeRow(key, key, eventIn, isPropOverride(ctrl, key), inheritedVal(ctrl, key)));
+  });
+}
+
+function fmtVal(v) {
+  if (v === null || v === undefined) return '—';
+  if (Array.isArray(v)) {
+    if (v.length <= 4 && v.every(x => typeof x === 'number')) {
+      return '[' + v.map(x => parseFloat(x.toFixed(3))).join(', ') + ']';
+    }
+    return '[…]';
+  }
+  if (typeof v === 'number') return parseFloat(v.toFixed(6)).toString();
+  return String(v);
+}
+
+// ============================================================
+// Selection
+// ============================================================
+function selectCtrl(ctrl) {
+  selectedCtrl = ctrl;
+  selectedSet.clear();
+  if (ctrl) selectedSet.add(ctrl);
+  renderControls();
+  renderLayers();
+  renderInspector();
+}
+
+function selectMulti(ctrls) {
+  selectedSet = new Set(ctrls);
+  selectedCtrl = ctrls.length ? ctrls[ctrls.length - 1] : null;
+  renderControls();
+  renderLayers();
+  renderInspector();
+}
+
+// Get bounding box (in fractional coords) of the current selection
+function selectionBounds() {
+  const ctrls = [...selectedSet];
+  if (!ctrls.length) return null;
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const c of ctrls) {
+    const xf = resolveGeo(c, 'x', posSystem);
+    const yf = resolveGeo(c, 'y', posSystem);
+    const wf = resolveGeo(c, 'w', posSystem);
+    const hf = resolveGeo(c, 'h', posSystem);
+    minX = Math.min(minX, xf);
+    minY = Math.min(minY, yf);
+    maxX = Math.max(maxX, xf + wf);
+    maxY = Math.max(maxY, yf + hf);
+  }
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+// Click on empty stage — start marquee or deselect
+document.getElementById('stage').addEventListener('mousedown', e => {
+  if (e.target !== document.getElementById('stage') &&
+      e.target !== document.getElementById('marquee')) return;
+  if (!editMode) { selectCtrl(null); return; }
+
+  // Start marquee
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  const sx = (e.clientX - rect.left) / zoom;
+  const sy = (e.clientY - rect.top) / zoom;
+  marqueeState = { startX: sx, startY: sy };
+  const mq = document.getElementById('marquee');
+  mq.style.display = 'block';
+  mq.style.left = sx + 'px';
+  mq.style.top = sy + 'px';
+  mq.style.width = '0px';
+  mq.style.height = '0px';
+
+  if (!e.shiftKey && !e.ctrlKey && !e.metaKey) {
+    selectCtrl(null);
+  }
+  e.preventDefault();
+});
+
+// ============================================================
+// Drag + Resize (edit mode only)
+// ============================================================
+function onCtrlMouseDown(e, ctrl) {
+  if (!editMode) { selectCtrl(ctrl); return; }
+
+  const meta = getMeta(ctrl);
+  if (meta.locked) return; // locked — don't start drag
+
+  // Alt-click: cycle through overlapping controls at this point
+  if (e.altKey) {
+    e.stopPropagation();
+    e.preventDefault();
+    altCycleAt(e);
+    return;
+  }
+
+  // Shift/Ctrl: add/toggle in multi-select
+  if (e.shiftKey || e.ctrlKey || e.metaKey) {
+    e.stopPropagation();
+    if (selectedSet.has(ctrl)) {
+      selectedSet.delete(ctrl);
+      if (ctrl === selectedCtrl) selectedCtrl = selectedSet.size ? [...selectedSet][selectedSet.size-1] : null;
+    } else {
+      selectedSet.add(ctrl);
+      selectedCtrl = ctrl;
+    }
+    renderControls();
+    renderLayers();
+    renderInspector();
+    return;
+  }
+
+  // If clicking a control not in the current selection, select it (respecting groups)
+  if (!selectedSet.has(ctrl)) maybeSelectGroup(ctrl);
+
+  const isResize = e.target.dataset.resize === '1';
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+
+  const getF = (c, key) => {
+    const r = c.resolved || c.props || {};
+    const p = c.props || {};
+    const raw = r[key] !== undefined ? r[key] : p[key];
+    return posSystem === 'safezone' ? evalSZ(raw) : parseFloat(raw) || 0;
+  };
+
+  // Capture starting positions of ALL selected controls
+  const startPositions = [...selectedSet].map(c => ({
+    ctrl: c,
+    x: getF(c, 'x'), y: getF(c, 'y'),
+    w: getF(c, 'w'), h: getF(c, 'h'),
+  }));
+
+  dragging = {
+    ctrl, isResize,
+    startMx: e.clientX, startMy: e.clientY,
+    startPositions,
+    posSystem,
+    moved: false,
+  };
+
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+// Alt-click: cycle overlapping controls
+function altCycleAt(e) {
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / zoom;
+  const py = (e.clientY - rect.top) / zoom;
+
+  // Find all controls whose pixel rect contains this point
+  const hits = allCtrls().filter(c => {
+    if (getMeta(c).hidden) return false;
+    const g = ctrlPx(c);
+    return px >= g.left && px <= g.left + g.width && py >= g.top && py <= g.top + g.height;
+  });
+  if (!hits.length) { selectCtrl(null); return; }
+
+  // If same hit set as last cycle, advance; else start fresh
+  const key = hits.map(c => c.name).join('|');
+  if (altCycleStack.join('|') !== key) {
+    altCycleStack = hits.map(c => c.name);
+    // Start from the currently selected one if it's in hits
+    const curIdx = hits.indexOf(selectedCtrl);
+    altCyclePos = curIdx >= 0 ? (curIdx + 1) % hits.length : 0;
+  } else {
+    altCyclePos = (altCyclePos + 1) % hits.length;
+  }
+  selectCtrl(hits[altCyclePos]);
+}
+
+// Clear snap guides
+function clearGuides() {
+  snapGuides.forEach(g => g.remove());
+  snapGuides = [];
+}
+
+// Draw a snap guide line on the stage
+function addGuide(isHoriz, fracPos) {
+  const stage = document.getElementById('stage');
+  const g = document.createElement('div');
+  g.className = 'snap-guide ' + (isHoriz ? 'h' : 'v');
+  if (isHoriz) {
+    g.style.top = (fracPos * STAGE_H * zoom) + 'px';
+  } else {
+    g.style.left = (fracPos * STAGE_W * zoom) + 'px';
+  }
+  stage.appendChild(g);
+  snapGuides.push(g);
+}
+
+// Smart snap: returns snapped value and optionally adds guides
+function smartSnap(v, dim, isX, movingCtrls) {
+  const snapEnabled = document.getElementById('snap-chk').checked;
+  const gridStep = parseFloat(document.getElementById('snap-size').value) || 0.01;
+  const THRESHOLD = 0.008; // fraction units
+
+  let best = v;
+  let bestDist = Infinity;
+  let guidePos = null;
+
+  if (snapEnabled) {
+    // Grid snap
+    const gridSnapped = Math.round(v / gridStep) * gridStep;
+    const dist = Math.abs(v - gridSnapped);
+    if (dist < bestDist) { best = gridSnapped; bestDist = dist; guidePos = null; }
+  }
+
+  // Snap to other controls' edges and centers
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+  const others = allCtrls().filter(c => !movingCtrls.has(c) && !getMeta(c).hidden);
+  for (const o of others) {
+    const ox = resolveGeo(o, 'x', posSystem);
+    const oy = resolveGeo(o, 'y', posSystem);
+    const ow = resolveGeo(o, 'w', posSystem);
+    const oh = resolveGeo(o, 'h', posSystem);
+    const candidates = isX
+      ? [ox, ox + ow, ox + ow / 2]
+      : [oy, oy + oh, oy + oh / 2];
+    for (const c of candidates) {
+      const dist = Math.abs(v - c);
+      if (dist < THRESHOLD && dist < bestDist) {
+        bestDist = dist;
+        best = c;
+        guidePos = { isHoriz: !isX, pos: c };
+      }
+    }
+  }
+
+  return { val: best, guide: guidePos };
+}
+
+document.addEventListener('mousemove', e => {
+  // Update cursor readout
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) / zoom;
+  const my = (e.clientY - rect.top) / zoom;
+  const fxc = (mx / STAGE_W).toFixed(3);
+  const fyc = (my / STAGE_H).toFixed(3);
+  document.getElementById('cursor-pos').textContent = 'x:' + fxc + ' y:' + fyc;
+
+  // Marquee update
+  if (marqueeState && editMode) {
+    const sx = marqueeState.startX;
+    const sy = marqueeState.startY;
+    const ex = mx, ey = my;
+    const left = Math.min(sx, ex), top = Math.min(sy, ey);
+    const w = Math.abs(ex - sx), h = Math.abs(ey - sy);
+    const mq = document.getElementById('marquee');
+    mq.style.left = (left * zoom) + 'px';
+    mq.style.top = (top * zoom) + 'px';
+    mq.style.width = (w * zoom) + 'px';
+    mq.style.height = (h * zoom) + 'px';
+    return;
+  }
+
+  if (!dragging || !editMode) return;
+
+  dragging.moved = true;
+  const dx = (e.clientX - dragging.startMx) / (STAGE_W * zoom);
+  const dy = (e.clientY - dragging.startMy) / (STAGE_H * zoom);
+  const movingSet = new Set(dragging.startPositions.map(s => s.ctrl));
+
+  clearGuides();
+
+  if (dragging.isResize) {
+    // Resize primary only
+    const sp = dragging.startPositions.find(s => s.ctrl === dragging.ctrl);
+    if (sp) {
+      const newW = Math.max(0.005, sp.w + dx);
+      const newH = Math.max(0.002, sp.h + dy);
+      const snapW = smartSnap(newW, STAGE_W, true, movingSet);
+      const snapH = smartSnap(newH, STAGE_H, false, movingSet);
+      sp.ctrl.props.w = snapW.val;
+      sp.ctrl.props.h = snapH.val;
+      if (sp.ctrl.resolved) { sp.ctrl.resolved.w = snapW.val; sp.ctrl.resolved.h = snapH.val; }
+      if (snapW.guide) addGuide(snapW.guide.isHoriz, snapW.guide.pos);
+      if (snapH.guide) addGuide(snapH.guide.isHoriz, snapH.guide.pos);
+    }
+  } else {
+    // Move all selected
+    for (const sp of dragging.startPositions) {
+      const newX = Math.max(0, sp.x + dx);
+      const newY = Math.max(0, sp.y + dy);
+      const snapX = smartSnap(newX, STAGE_W, true, movingSet);
+      const snapY = smartSnap(newY, STAGE_H, false, movingSet);
+      sp.ctrl.props.x = snapX.val;
+      sp.ctrl.props.y = snapY.val;
+      if (sp.ctrl.resolved) { sp.ctrl.resolved.x = snapX.val; sp.ctrl.resolved.y = snapY.val; }
+      // Only show guides for primary
+      if (sp.ctrl === dragging.ctrl) {
+        if (snapX.guide) addGuide(snapX.guide.isHoriz, snapX.guide.pos);
+        if (snapY.guide) addGuide(snapY.guide.isHoriz, snapY.guide.pos);
+      }
+    }
+  }
+
+  renderControls();
+  const p = dragging.ctrl.props;
+  const rinsp = el => document.getElementById(el);
+  if (rinsp('insp-x')) {
+    rinsp('insp-x').textContent = fmtVal(p.x);
+    rinsp('insp-y').textContent = fmtVal(p.y);
+    rinsp('insp-w').textContent = fmtVal(p.w);
+    rinsp('insp-h').textContent = fmtVal(p.h);
+  }
+});
+
+document.addEventListener('mouseup', e => {
+  // Finish marquee
+  if (marqueeState && editMode) {
+    const stage = document.getElementById('stage');
+    const rect = stage.getBoundingClientRect();
+    const ex = (e.clientX - rect.left) / zoom;
+    const ey = (e.clientY - rect.top) / zoom;
+    const left = Math.min(marqueeState.startX, ex) / STAGE_W;
+    const right = Math.max(marqueeState.startX, ex) / STAGE_W;
+    const top = Math.min(marqueeState.startY, ey) / STAGE_H;
+    const bottom = Math.max(marqueeState.startY, ey) / STAGE_H;
+
+    const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+    const hits = allCtrls().filter(c => {
+      if (getMeta(c).hidden || getMeta(c).locked) return false;
+      const cx = resolveGeo(c, 'x', posSystem);
+      const cy = resolveGeo(c, 'y', posSystem);
+      const cw = resolveGeo(c, 'w', posSystem);
+      const ch = resolveGeo(c, 'h', posSystem);
+      return cx < right && cx + cw > left && cy < bottom && cy + ch > top;
+    });
+
+    document.getElementById('marquee').style.display = 'none';
+    marqueeState = null;
+
+    if (hits.length) {
+      if (e.shiftKey || e.ctrlKey || e.metaKey) {
+        hits.forEach(c => selectedSet.add(c));
+        selectedCtrl = hits[hits.length - 1];
+      } else {
+        selectMulti(hits);
+      }
+    }
+    return;
+  }
+
+  if (dragging && dragging.moved) {
+    pushUndo();
+  }
+  dragging = null;
+  clearGuides();
+});
 
 function snapVal(v) {
   if (!document.getElementById('snap-chk').checked) return v;
@@ -590,489 +2740,1316 @@ function snapVal(v) {
   return Math.round(v / step) * step;
 }
 
-function onCtrlMouseDown(e) {
-  const id = parseInt(e.currentTarget.dataset.id);
-  selectCtrl(id);
+// ============================================================
+// Zoom + Stage size
+// ============================================================
+const stage = document.getElementById('stage');
+const zoomLabel = document.getElementById('zoom-label');
 
-  const ctrl = getCtrlById(id);
-  if (!ctrl) return;
-
-  const isResize = e.target.dataset.resize === '1';
-  dragging = {
-    _id: id,
-    mode: isResize ? 'resize' : 'move',
-    startMx: e.clientX,
-    startMy: e.clientY,
-    startX: ctrl.x,
-    startY: ctrl.y,
-    startW: ctrl.w,
-    startH: ctrl.h
-  };
-  e.stopPropagation();
-  e.preventDefault();
-}
-
-document.addEventListener('mousemove', e => {
-  if (!dragging) {
-    // Update cursor position display
-    const stageRect = stage.getBoundingClientRect();
-    const mx = e.clientX - stageRect.left;
-    const my = e.clientY - stageRect.top;
-    const fx = mx / (STAGE_W * zoom);
-    const fy = my / (STAGE_H * zoom);
-    if (fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1) {
-      document.getElementById('cursor-pos').textContent =
-        'x:' + fx.toFixed(3) + ' y:' + fy.toFixed(3);
-    }
-    return;
-  }
-
-  const dx = (e.clientX - dragging.startMx) / (STAGE_W * zoom);
-  const dy = (e.clientY - dragging.startMy) / (STAGE_H * zoom);
-  const ctrl = getCtrlById(dragging._id);
-  if (!ctrl) return;
-
-  if (dragging.mode === 'move') {
-    ctrl.x = snapVal(Math.max(0, Math.min(1 - ctrl.w, dragging.startX + dx)));
-    ctrl.y = snapVal(Math.max(0, Math.min(1 - ctrl.h, dragging.startY + dy)));
-  } else {
-    ctrl.w = snapVal(Math.max(0.01, Math.min(1 - ctrl.x, dragging.startW + dx)));
-    ctrl.h = snapVal(Math.max(0.005, Math.min(1 - ctrl.y, dragging.startH + dy)));
-  }
-
+function setZoom(z) {
+  zoom = Math.max(0.2, Math.min(4, z));
+  stage.style.width = (STAGE_W * zoom) + 'px';
+  stage.style.height = (STAGE_H * zoom) + 'px';
+  zoomLabel.textContent = Math.round(zoom * 100) + '%';
   renderControls();
-  if (ctrl._id === selectedId) syncInspectorPos(ctrl);
-});
-
-document.addEventListener('mouseup', () => {
-  if (dragging) {
-    dragging = null;
-    renderLayers();
-  }
-});
-
-// Click on empty stage to deselect
-stage.addEventListener('mousedown', e => {
-  if (e.target === stage) { selectCtrl(null); }
-});
-
-// ============================================================
-// Selection
-// ============================================================
-function selectCtrl(id) {
-  selectedId = id;
-  render();
-  // Return focus to the selected element if set programmatically
-  if (id !== null) {
-    requestAnimationFrame(() => {
-      const el = stage.querySelector('[data-id="' + id + '"]');
-      if (el) el.focus({ preventScroll: true });
-    });
-  }
 }
 
-// ============================================================
-// Inspector
-// ============================================================
-function renderInspector() {
-  const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
-  if (!ctrl) {
-    document.getElementById('inspector-placeholder').style.display = '';
-    document.getElementById('inspector').style.display = 'none';
+document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.1));
+document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.1));
+document.getElementById('zoom-fit').addEventListener('click', () => {
+  const wrap = document.getElementById('canvas-wrap');
+  const wz = (wrap.clientWidth - 80) / STAGE_W;
+  const hz = (wrap.clientHeight - 80) / STAGE_H;
+  setZoom(Math.min(wz, hz, 1.5));
+});
+
+// Mouse-wheel zoom
+document.getElementById('canvas-wrap').addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.1 : -0.1;
+  setZoom(zoom + delta);
+}, { passive: false });
+
+// Stage resolution picker
+document.getElementById('stage-res').addEventListener('change', e => {
+  const parts = e.target.value.split(',');
+  SCREEN_W = parseInt(parts[0]);
+  SCREEN_H = parseInt(parts[1]);
+  // Keep logical stage at half res (960x540 for 1920x1080, etc.)
+  STAGE_W = SCREEN_W / 2;
+  STAGE_H = SCREEN_H / 2;
+  document.getElementById('stage-label').textContent = SCREEN_W + ' × ' + SCREEN_H;
+  setZoom(zoom);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  if (inInput) return;
+
+  if (e.key === 'Escape') {
+    selectCtrl(null);
+    document.getElementById('palette-modal').classList.remove('open');
+    e.preventDefault();
     return;
   }
-  document.getElementById('inspector-placeholder').style.display = 'none';
-  document.getElementById('inspector').style.display = '';
+  if (e.key === '+' || e.key === '=') { setZoom(zoom + 0.1); e.preventDefault(); return; }
+  if (e.key === '-') { setZoom(zoom - 0.1); e.preventDefault(); return; }
+  if (e.key === 'f' || e.key === 'F') { document.getElementById('zoom-fit').click(); e.preventDefault(); return; }
 
-  document.getElementById('f-name').value = ctrl.name || '';
-  document.getElementById('f-idc').value = ctrl.idc !== undefined ? ctrl.idc : -2;
-  document.getElementById('f-type').value = ctrl.type_name || 'CT_STATIC';
-  document.getElementById('f-text').value = ctrl.text || '';
-  document.getElementById('f-parent').value = ctrl.parent || '';
-  document.getElementById('f-x').value = parseFloat(ctrl.x.toFixed(6));
-  document.getElementById('f-y').value = parseFloat(ctrl.y.toFixed(6));
-  document.getElementById('f-w').value = parseFloat(ctrl.w.toFixed(6));
-  document.getElementById('f-h').value = parseFloat(ctrl.h.toFixed(6));
-  document.getElementById('f-section').value = ctrl.section || 'controls';
+  // Undo / Redo
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { undoAction(); e.preventDefault(); return; }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { redoAction(); e.preventDefault(); return; }
 
-  // Update delete button label with control name
-  document.getElementById('delete-btn').setAttribute('aria-label', 'Delete ' + ctrl.name);
-}
+  // Copy / Paste / Duplicate / Delete (edit mode)
+  if (editMode) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'c') { copySelection(); e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v') { pasteSelection(); e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd') { duplicateSelection(); e.preventDefault(); return; }
+    if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelection(); e.preventDefault(); return; }
 
-function syncInspectorPos(ctrl) {
-  document.getElementById('f-x').value = parseFloat(ctrl.x.toFixed(6));
-  document.getElementById('f-y').value = parseFloat(ctrl.y.toFixed(6));
-  document.getElementById('f-w').value = parseFloat(ctrl.w.toFixed(6));
-  document.getElementById('f-h').value = parseFloat(ctrl.h.toFixed(6));
-}
+    // Group / Ungroup
+    if ((e.ctrlKey || e.metaKey) && e.key === 'g' && !e.shiftKey) { groupSelection(); e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'g' && e.shiftKey) { ungroupSelection(); e.preventDefault(); return; }
 
-// Apply inspector -> model
-document.getElementById('apply-btn').addEventListener('click', () => {
-  const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
-  if (!ctrl) return;
+    // Add control palette
+    if (e.key === 'a' || e.key === 'A') { openPalette(); e.preventDefault(); return; }
 
-  const newName = document.getElementById('f-name').value.trim();
-  const newSection = document.getElementById('f-section').value;
-  const newTypeName = document.getElementById('f-type').value;
-
-  ctrl.name = newName || ctrl.name;
-  ctrl.idc = parseInt(document.getElementById('f-idc').value) || -2;
-  ctrl.text = document.getElementById('f-text').value;
-  ctrl.parent = document.getElementById('f-parent').value.trim();
-  ctrl.x = parseFloat(document.getElementById('f-x').value) || 0;
-  ctrl.y = parseFloat(document.getElementById('f-y').value) || 0;
-  ctrl.w = parseFloat(document.getElementById('f-w').value) || 0.1;
-  ctrl.h = parseFloat(document.getElementById('f-h').value) || 0.04;
-
-  // Handle type change
-  if (newTypeName !== ctrl.type_name) {
-    ctrl.type_name = newTypeName;
-    ctrl.type = TYPE_NUM[newTypeName] !== undefined ? TYPE_NUM[newTypeName] : ctrl.type;
+    // Arrow nudge (fractional units)
+    const arrows = { ArrowLeft: [-1,0], ArrowRight: [1,0], ArrowUp: [0,-1], ArrowDown: [0,1] };
+    if (arrows[e.key] && selectedSet.size) {
+      const nudgeStep = 0.001; // 0.1% of screen
+      const mult = e.shiftKey ? 10 : 1;
+      const [ndx, ndy] = arrows[e.key].map(v => v * nudgeStep * mult);
+      pushUndo();
+      for (const c of selectedSet) {
+        if (getMeta(c).locked) continue;
+        const r = c.resolved || c.props || {};
+        const p = c.props || {};
+        const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+        const cx = resolveGeo(c, 'x', posSystem);
+        const cy = resolveGeo(c, 'y', posSystem);
+        p.x = Math.max(0, cx + ndx);
+        p.y = Math.max(0, cy + ndy);
+        if (c.resolved) { c.resolved.x = p.x; c.resolved.y = p.y; }
+      }
+      renderControls();
+      renderInspector();
+      e.preventDefault();
+      return;
+    }
   }
-
-  // Handle section move
-  if (newSection !== ctrl.section) {
-    model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
-    ctrl.section = newSection;
-    model[newSection].push(ctrl);
-  }
-
-  render();
 });
 
-// Delete
-document.getElementById('delete-btn').addEventListener('click', () => {
-  if (selectedId === null) return;
-  const ctrl = getCtrlById(selectedId);
-  if (!ctrl) return;
-  model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
-  selectedId = null;
-  render();
+// ============================================================
+// Edit / Preview mode toggle
+// ============================================================
+function setMode(isEdit) {
+  editMode = isEdit;
+  document.getElementById('btn-preview').classList.toggle('active', !isEdit);
+  document.getElementById('btn-edit').classList.toggle('active', isEdit);
+  document.getElementById('edit-toolbar').classList.toggle('visible', isEdit);
+  renderControls();
+  updateUndoButtons();
+}
+
+document.getElementById('btn-preview').addEventListener('click', () => setMode(false));
+document.getElementById('btn-edit').addEventListener('click', () => setMode(true));
+
+// Sample data toggle
+document.getElementById('sample-data-chk').addEventListener('change', e => {
+  sampleDataEnabled = e.target.checked;
+  renderControls();
 });
 
-// Live number input update (x/y/w/h) syncs canvas while typing
-['f-x','f-y','f-w','f-h'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
-    if (!ctrl) return;
-    const v = parseFloat(document.getElementById(id).value);
-    if (isNaN(v)) return;
-    const key = id.replace('f-', '');
-    ctrl[key] = v;
-    renderControls();
+// ============================================================
+// Pro editing: Copy / Paste / Duplicate / Delete
+// ============================================================
+function copySelection() {
+  if (!selectedSet.size) return;
+  clipboard = [...selectedSet].map(c => JSON.parse(JSON.stringify(c)));
+  setStatus('Copied ' + clipboard.length + ' control(s).', 'ok');
+}
+
+function pasteSelection() {
+  if (!clipboard.length || !displayData) return;
+  pushUndo();
+  const offset = 0.02;
+  const newCtrls = clipboard.map(snap => {
+    const c = JSON.parse(JSON.stringify(snap));
+    c.name = uniqueName(c.name);
+    c.idc = nextIdc();
+    if (c.props) { c.props.x = (parseFloat(c.props.x) || 0) + offset; c.props.y = (parseFloat(c.props.y) || 0) + offset; }
+    if (c.resolved) { c.resolved.x = (parseFloat(c.resolved.x) || 0) + offset; c.resolved.y = (parseFloat(c.resolved.y) || 0) + offset; }
+    c._section = snap._section || 'controls';
+    return c;
   });
-});
+  newCtrls.forEach(c => {
+    if (c._section === 'background') (displayData.background = displayData.background || []).push(c);
+    else (displayData.controls = displayData.controls || []).push(c);
+  });
+  selectMulti(newCtrls);
+  renderAll();
+  setStatus('Pasted ' + newCtrls.length + ' control(s).', 'ok');
+}
 
-// ============================================================
-// Layers list
-// ============================================================
-function renderLayers() {
-  const el = document.getElementById('layer-list');
-  el.innerHTML = '';
+function duplicateSelection() {
+  copySelection();
+  pasteSelection();
+}
 
-  function addSection(arr, label, isBg) {
-    if (arr.length === 0) return;
-    const hdr = document.createElement('div');
-    hdr.style.cssText = 'padding:5px 10px;font-size:9px;font-family:JetBrains Mono,monospace;color:#39414b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(57,65,75,.3)';
-    hdr.textContent = label;
-    hdr.setAttribute('aria-hidden', 'true');
-    el.appendChild(hdr);
+function deleteSelection() {
+  if (!selectedSet.size) return;
+  pushUndo();
+  const toDelete = new Set(selectedSet);
+  displayData.background = (displayData.background || []).filter(c => !toDelete.has(c));
+  displayData.controls = (displayData.controls || []).filter(c => !toDelete.has(c));
+  selectedSet.clear();
+  selectedCtrl = null;
+  renderAll();
+  setStatus('Deleted ' + toDelete.size + ' control(s).', 'ok');
+}
 
-    arr.forEach(c => {
-      const row = document.createElement('div');
-      row.className = 'layer-item' + (c._id === selectedId ? ' selected' : '') + (isBg ? ' bg-ctrl' : '');
-      row.dataset.id = c._id;
-      row.setAttribute('role', 'listitem');
-      row.setAttribute('tabindex', '0');
-      row.setAttribute('aria-label', c.name + ' (' + c.type_name + ')' + (c._id === selectedId ? ', selected' : ''));
-
-      const dot = document.createElement('span');
-      dot.className = 'layer-dot';
-      dot.style.background = TYPE_DOT_COLOR[c.type_name] || '#39414b';
-      dot.setAttribute('aria-hidden', 'true');
-      row.appendChild(dot);
-
-      const name = document.createElement('span');
-      name.className = 'layer-name';
-      name.textContent = c.name;
-      name.title = c.name;
-      row.appendChild(name);
-
-      const idc = document.createElement('span');
-      idc.className = 'layer-idc';
-      idc.textContent = c.idc !== undefined && c.idc !== -2 ? c.idc : '';
-      idc.setAttribute('aria-label', c.idc !== undefined && c.idc !== -2 ? 'IDC ' + c.idc : '');
-      row.appendChild(idc);
-
-      const del = document.createElement('button');
-      del.className = 'layer-del';
-      del.textContent = '×';
-      del.title = 'Delete ' + c.name;
-      del.setAttribute('aria-label', 'Delete ' + c.name);
-      del.addEventListener('click', ev => {
-        ev.stopPropagation();
-        model[c.section] = model[c.section].filter(x => x._id !== c._id);
-        if (selectedId === c._id) selectedId = null;
-        render();
-      });
-      row.appendChild(del);
-
-      row.addEventListener('click', () => selectCtrl(c._id));
-      row.addEventListener('keydown', ev => {
-        if (ev.key === 'Enter' || ev.key === ' ') { selectCtrl(c._id); ev.preventDefault(); }
-        if (ev.key === 'Delete') {
-          model[c.section] = model[c.section].filter(x => x._id !== c._id);
-          if (selectedId === c._id) selectedId = null;
-          render();
-          ev.preventDefault();
-        }
-      });
-      el.appendChild(row);
-    });
-  }
-
-  addSection(model.controlsBackground, 'controlsBackground', true);
-  addSection(model.controls, 'controls', false);
+function uniqueName(base) {
+  const existing = new Set(allCtrls().map(c => c.name));
+  if (!existing.has(base)) return base;
+  let i = 2;
+  while (existing.has(base + '_' + i)) i++;
+  return base + '_' + i;
 }
 
 // ============================================================
-// Palette: Add control
+// Pro editing: Align + Distribute
 // ============================================================
-document.querySelectorAll('.type-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const typeName = btn.dataset.type;
-    const isBg = btn.dataset.bg === '1';
-    const idc = nextIdcBase++;
-    const ctrl = makeCtrl({
-      type_name: typeName,
-      type: TYPE_NUM[typeName] !== undefined ? TYPE_NUM[typeName] : 0,
-      idc: isBg ? -2 : idc,
-      name: typeName + '_' + idc,
-      section: isBg ? 'controlsBackground' : 'controls',
-      x: 0.25,
-      y: 0.3,
-      w: typeName === 'RscShortcutButton' ? 0.313727 : 0.2,
-      h: typeName === 'RscShortcutButton' ? 0.104575 : 0.04
-    });
-    model[ctrl.section].push(ctrl);
-    selectedId = ctrl._id;
-    render();
+function alignSelection(mode) {
+  const ctrls = [...selectedSet].filter(c => !getMeta(c).locked);
+  if (ctrls.length < 2) return;
+  pushUndo();
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+
+  const geos = ctrls.map(c => ({
+    c,
+    x: resolveGeo(c, 'x', posSystem), y: resolveGeo(c, 'y', posSystem),
+    w: resolveGeo(c, 'w', posSystem), h: resolveGeo(c, 'h', posSystem),
+  }));
+
+  let ref;
+  switch (mode) {
+    case 'left':   ref = Math.min(...geos.map(g => g.x)); geos.forEach(g => setGeo(g.c,'x',ref)); break;
+    case 'right':  ref = Math.max(...geos.map(g => g.x + g.w)); geos.forEach(g => setGeo(g.c,'x',ref - g.w)); break;
+    case 'top':    ref = Math.min(...geos.map(g => g.y)); geos.forEach(g => setGeo(g.c,'y',ref)); break;
+    case 'bottom': ref = Math.max(...geos.map(g => g.y + g.h)); geos.forEach(g => setGeo(g.c,'y',ref - g.h)); break;
+    case 'hcenter': ref = (Math.min(...geos.map(g=>g.x)) + Math.max(...geos.map(g=>g.x+g.w))) / 2;
+      geos.forEach(g => setGeo(g.c,'x',ref - g.w/2)); break;
+    case 'vcenter': ref = (Math.min(...geos.map(g=>g.y)) + Math.max(...geos.map(g=>g.y+g.h))) / 2;
+      geos.forEach(g => setGeo(g.c,'y',ref - g.h/2)); break;
+  }
+  renderControls();
+  renderInspector();
+}
+
+function distributeSelection(axis) {
+  const ctrls = [...selectedSet].filter(c => !getMeta(c).locked);
+  if (ctrls.length < 3) return;
+  pushUndo();
+  const posSystem = (displayData && displayData.posSystem) || 'unit_square';
+  if (axis === 'h') {
+    const sorted = [...ctrls].sort((a,b) => resolveGeo(a,'x',posSystem) - resolveGeo(b,'x',posSystem));
+    const first = resolveGeo(sorted[0],'x',posSystem);
+    const last = resolveGeo(sorted[sorted.length-1],'x',posSystem) + resolveGeo(sorted[sorted.length-1],'w',posSystem);
+    const totalW = sorted.reduce((s,c) => s + resolveGeo(c,'w',posSystem), 0);
+    const gap = (last - first - totalW) / (sorted.length - 1);
+    let cx = first;
+    sorted.forEach(c => { setGeo(c,'x',cx); cx += resolveGeo(c,'w',posSystem) + gap; });
+  } else {
+    const sorted = [...ctrls].sort((a,b) => resolveGeo(a,'y',posSystem) - resolveGeo(b,'y',posSystem));
+    const first = resolveGeo(sorted[0],'y',posSystem);
+    const last = resolveGeo(sorted[sorted.length-1],'y',posSystem) + resolveGeo(sorted[sorted.length-1],'h',posSystem);
+    const totalH = sorted.reduce((s,c) => s + resolveGeo(c,'h',posSystem), 0);
+    const gap = (last - first - totalH) / (sorted.length - 1);
+    let cy = first;
+    sorted.forEach(c => { setGeo(c,'y',cy); cy += resolveGeo(c,'h',posSystem) + gap; });
+  }
+  renderControls();
+}
+
+function setGeo(ctrl, key, val) {
+  if (!ctrl.props) ctrl.props = {};
+  ctrl.props[key] = val;
+  if (ctrl.resolved) ctrl.resolved[key] = val;
+}
+
+// ============================================================
+// Pro editing: Z-order
+// ============================================================
+function zOrder(action) {
+  if (!selectedCtrl || !displayData) return;
+  pushUndo();
+  const ctrl = selectedCtrl;
+  // Operate within the correct section array
+  const arr = ctrl._section === 'background' ? displayData.background : displayData.controls;
+  if (!arr) return;
+  const idx = arr.indexOf(ctrl);
+  if (idx < 0) return;
+  switch (action) {
+    case 'front': arr.splice(idx,1); arr.push(ctrl); break;
+    case 'back':  arr.splice(idx,1); arr.unshift(ctrl); break;
+    case 'up':    if (idx < arr.length-1) { [arr[idx],arr[idx+1]] = [arr[idx+1],arr[idx]]; } break;
+    case 'down':  if (idx > 0) { [arr[idx],arr[idx-1]] = [arr[idx-1],arr[idx]]; } break;
+  }
+  renderAll();
+}
+
+// ============================================================
+// Pro editing: Group / Ungroup
+// ============================================================
+function groupSelection() {
+  const ctrls = [...selectedSet];
+  if (ctrls.length < 2) return;
+  pushUndo();
+  groupCounter++;
+  const gid = groupCounter;
+  ctrls.forEach(c => getMeta(c).groupId = gid);
+  renderAll();
+  setStatus('Grouped ' + ctrls.length + ' controls (group ' + gid + ').', 'ok');
+}
+
+function ungroupSelection() {
+  const ctrls = [...selectedSet];
+  if (!ctrls.length) return;
+  pushUndo();
+  // Collect all group IDs in selection
+  const gids = new Set(ctrls.map(c => getMeta(c).groupId).filter(g => g !== null));
+  // Ungroup ALL controls in those groups
+  allCtrls().forEach(c => { if (gids.has(getMeta(c).groupId)) getMeta(c).groupId = null; });
+  renderAll();
+  setStatus('Ungrouped ' + gids.size + ' group(s).', 'ok');
+}
+
+// Clicking a grouped control selects entire group
+function maybeSelectGroup(ctrl) {
+  const meta = getMeta(ctrl);
+  if (meta.groupId === null) { selectCtrl(ctrl); return; }
+  const group = allCtrls().filter(c => getMeta(c).groupId === meta.groupId);
+  selectMulti(group);
+}
+
+// ============================================================
+// Pro editing: Add Control Palette
+// ============================================================
+function openPalette() {
+  if (!uiData) return;
+  const modal = document.getElementById('palette-modal');
+  const baseSelect = document.getElementById('pal-base');
+  baseSelect.innerHTML = '';
+  const baseClasses = Object.keys(uiData.baseClasses || {});
+  const common = ['RscText','RscButton','RscButton_Main','RscButton_Exit',
+    'RscShortcutButton','RscShortcutButtonMain','RscListBox','RscCombo',
+    'RscEdit','RscStructuredText','RscPicture','RscFrame','IGUIBack','RscMapControl','RscXSliderH'];
+  const sorted = [...new Set([...common, ...baseClasses])];
+  sorted.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    baseSelect.appendChild(opt);
   });
+  document.getElementById('pal-name').value = '';
+  document.getElementById('pal-idc').value = '';
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('pal-name').focus(), 50);
+}
+
+function closePalette() {
+  document.getElementById('palette-modal').classList.remove('open');
+}
+
+function addControlFromPalette() {
+  const nameEl = document.getElementById('pal-name');
+  const baseEl = document.getElementById('pal-base');
+  const idcEl = document.getElementById('pal-idc');
+  const secEl = document.getElementById('pal-section');
+
+  let name = nameEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  name = uniqueName(name);
+
+  const baseClass = baseEl.value;
+  const idc = idcEl.value ? parseInt(idcEl.value) : nextIdc();
+  const section = secEl.value;
+
+  pushUndo();
+
+  // Build a new control with sensible defaults
+  const resolved = uiData.baseClasses && uiData.baseClasses[baseClass]
+    ? Object.assign({}, uiData.baseClasses[baseClass].props || {})
+    : {};
+
+  const newCtrl = {
+    name,
+    baseClass,
+    idc,
+    props: { x: 0.1, y: 0.1, w: 0.15, h: 0.05 },
+    resolved: Object.assign({ x: 0.1, y: 0.1, w: 0.15, h: 0.05 }, resolved),
+    _section: section,
+  };
+
+  if (section === 'background') {
+    if (!displayData.background) displayData.background = [];
+    displayData.background.push(newCtrl);
+  } else {
+    if (!displayData.controls) displayData.controls = [];
+    displayData.controls.push(newCtrl);
+  }
+
+  closePalette();
+  selectCtrl(newCtrl);
+  renderAll();
+  setStatus('Added ' + name + ' (' + baseClass + ', idc ' + idc + ').', 'ok');
+}
+
+// Palette modal events
+document.getElementById('palette-close').addEventListener('click', closePalette);
+document.getElementById('palette-cancel').addEventListener('click', closePalette);
+document.getElementById('palette-add').addEventListener('click', addControlFromPalette);
+document.getElementById('palette-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('palette-modal')) closePalette();
+});
+document.getElementById('pal-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { addControlFromPalette(); e.preventDefault(); }
 });
 
 // ============================================================
-// Export: generate class controls { ... } block
+// Pro editing toolbar button wiring
 // ============================================================
-const TYPE_NUM_EXPORT = {
-  CT_STATIC:0, CT_BUTTON:1, CT_EDIT:2, CT_COMBO:4, CT_LISTBOX:5,
-  CT_CLICKABLETEXT:11, CT_STRUCTUREDTEXT:13, CT_CONTROLS_GROUP:15,
-  RscShortcutButton:16, CT_LISTNBOX:102, RscXSliderH:43, RscMapControl:101
-};
+document.getElementById('et-undo').addEventListener('click', undoAction);
+document.getElementById('et-redo').addEventListener('click', redoAction);
+document.getElementById('et-copy').addEventListener('click', copySelection);
+document.getElementById('et-paste').addEventListener('click', pasteSelection);
+document.getElementById('et-dupe').addEventListener('click', duplicateSelection);
+document.getElementById('et-del').addEventListener('click', deleteSelection);
+document.getElementById('et-al-l').addEventListener('click', () => alignSelection('left'));
+document.getElementById('et-al-r').addEventListener('click', () => alignSelection('right'));
+document.getElementById('et-al-t').addEventListener('click', () => alignSelection('top'));
+document.getElementById('et-al-b').addEventListener('click', () => alignSelection('bottom'));
+document.getElementById('et-al-hc').addEventListener('click', () => alignSelection('hcenter'));
+document.getElementById('et-al-vc').addEventListener('click', () => alignSelection('vcenter'));
+document.getElementById('et-dist-h').addEventListener('click', () => distributeSelection('h'));
+document.getElementById('et-dist-v').addEventListener('click', () => distributeSelection('v'));
+document.getElementById('et-z-front').addEventListener('click', () => zOrder('front'));
+document.getElementById('et-z-up').addEventListener('click', () => zOrder('up'));
+document.getElementById('et-z-down').addEventListener('click', () => zOrder('down'));
+document.getElementById('et-z-back').addEventListener('click', () => zOrder('back'));
+document.getElementById('et-group').addEventListener('click', groupSelection);
+document.getElementById('et-ungroup').addEventListener('click', ungroupSelection);
+document.getElementById('et-add').addEventListener('click', openPalette);
 
-function round6(v) { return parseFloat(v.toFixed(6)); }
+// ============================================================
+// Export — faithful whole-display .hpp with delta-only props
+// ============================================================
+
+/**
+ * Resolve the full inherited props for a control's baseClass chain.
+ * Returns a flat object of key→value from the chain (no ctrl.props overrides).
+ */
+function resolveBaseChain(baseClassName) {
+  if (!uiData || !uiData.baseClasses) return {};
+  const result = {};
+  const visited = new Set();
+  let cur = baseClassName;
+  // Walk up the chain and collect props (child overrides parent)
+  const chain = [];
+  while (cur && !visited.has(cur)) {
+    visited.add(cur);
+    const bc = uiData.baseClasses[cur];
+    if (!bc) break;
+    chain.push(bc.props || {});
+    cur = bc.parent;
+  }
+  // Apply from root down so child wins
+  for (let i = chain.length - 1; i >= 0; i--) {
+    Object.assign(result, chain[i]);
+  }
+  return result;
+}
+
+/**
+ * Check if two values are "equal enough" for delta detection.
+ * Handles RGBA arrays (within 0.0005 per channel) and primitives.
+ */
+function valsEqual(a, b) {
+  if (a === b) return true;
+  if (Array.isArray(a) && Array.isArray(b) && a.length === b.length) {
+    return a.every((v, i) => Math.abs(v - (b[i] || 0)) < 0.0005);
+  }
+  if (typeof a === 'number' && typeof b === 'number') return Math.abs(a - b) < 0.000001;
+  return false;
+}
+
+/**
+ * For an RGBA array value, check if it matches a WFBE_* macro.
+ * Returns the macro name (string) or null.
+ */
+function rgbaToMacro(val) {
+  if (!uiData || !Array.isArray(val)) return null;
+  for (const [name, mv] of Object.entries(uiData.macros || {})) {
+    if (!name.startsWith('WFBE_') && !name.startsWith('subcolor')) continue;
+    if (Array.isArray(mv) && mv.length === val.length) {
+      if (mv.every((v, i) => Math.abs(v - val[i]) < 0.0005)) return name;
+    }
+  }
+  return null;
+}
+
+/**
+ * For a scalar/string value, check if it matches a WFBE_* scalar macro.
+ * Returns macro name or null.
+ */
+function scalarToMacro(val) {
+  if (!uiData) return null;
+  for (const [name, mv] of Object.entries(uiData.macros || {})) {
+    if (!name.startsWith('WFBE_')) continue;
+    if (typeof mv === 'number' && typeof val === 'number' && Math.abs(mv - val) < 0.000001) return name;
+    if (typeof mv === 'string' && typeof val === 'string' && mv === val) return name;
+  }
+  return null;
+}
+
+// Keys that use [] array syntax in Arma .hpp
+const ARRAY_KEYS = new Set([
+  'colorText','colorBackground','colorBackgroundActive','colorFocused',
+  'colorShadow','colorBorder','colorDisabled','colorBackgroundDisabled',
+  'colorSelectBackground','color','color2','colorBackground2','colorSelect',
+  'colorActive','colorOutside','colorPictureFocused',
+  'soundEnter','soundPush','soundClick','soundEscape',
+  'soundSelect','soundExpand','soundCollapse','soundDoubleClick',
+  'animTextureNormal','animTextureDisabled','animTextureOver','animTextureFocused',
+  'animTexturePressed','animTextureDefault','textureNoShortcut',
+]);
+
+// Keys whose string value should be double-quoted in output
+const QUOTED_STRING_KEYS = new Set([
+  'text','tooltip','action','onButtonClick','onLoad','onUnload',
+  'onLBSelChanged','onLBDblClick','onKeyUp','onKeyDown','onMouseButtonDown',
+  'onMouseButtonUp','onMouseMove','onMouseEnter','onMouseExit',
+]);
+
+/**
+ * Emit a single prop line at a given indent level.
+ * Handles: RGBA arrays → macro names, scalar macros, quoted strings, plain values.
+ */
+function emitProp(key, val, indent) {
+  const tab = indent;
+
+  // Special: $STR_ text refs — no quotes in .hpp
+  if ((key === 'text' || key === 'tooltip') && typeof val === 'string' && val.startsWith('$')) {
+    return tab + key + ' = ' + val + ';';
+  }
+
+  if (Array.isArray(val)) {
+    // Try macro match first
+    const macro = rgbaToMacro(val);
+    if (macro) {
+      return tab + key + '[] = ' + macro + ';';
+    }
+    // Emit as numeric array
+    const nums = val.map(x => typeof x === 'number' ? parseFloat(x.toFixed(6)) : JSON.stringify(x));
+    return tab + key + '[] = {' + nums.join(', ') + '};';
+  }
+
+  if (typeof val === 'number') {
+    // Try scalar macro match
+    const macro = scalarToMacro(val);
+    if (macro) return tab + key + ' = ' + macro + ';';
+    return tab + key + ' = ' + parseFloat(val.toFixed(6)) + ';';
+  }
+
+  if (typeof val === 'string') {
+    // Try scalar macro match (string macros like WFBE_SoundClick)
+    const macro = scalarToMacro(val);
+    if (macro) return tab + key + ' = ' + macro + ';';
+    if (QUOTED_STRING_KEYS.has(key)) {
+      // Escape inner quotes
+      return tab + key + ' = "' + val.replace(/"/g, '""') + '";';
+    }
+    // Unquoted string (e.g. macro expressions like "WFBE_MenuAction = 1")
+    return tab + key + ' = ' + val + ';';
+  }
+
+  if (val !== null && val !== undefined) {
+    return tab + key + ' = ' + val + ';';
+  }
+  return null;
+}
+
+/**
+ * Emit a sub-class block verbatim from the ctrl.subClasses structure.
+ * Sub-class format: { Attributes: { align:'left', color:'#...', font:'...', shadow:true } }
+ */
+function emitSubClass(name, body, indent) {
+  const lines = [];
+  lines.push(indent + 'class ' + name + ' {');
+  for (const [k, v] of Object.entries(body)) {
+    if (v === true || v === false) {
+      lines.push(indent + '\t' + k + ' = ' + (v ? 1 : 0) + ';');
+    } else if (typeof v === 'number') {
+      lines.push(indent + '\t' + k + ' = ' + v + ';');
+    } else if (typeof v === 'string') {
+      // color hex strings and align values stay unquoted in Arma sub-classes
+      lines.push(indent + '\t' + k + ' = "' + v + '";');
+    } else if (Array.isArray(v)) {
+      const nums = v.map(x => typeof x === 'number' ? parseFloat(x.toFixed(6)) : JSON.stringify(x));
+      lines.push(indent + '\t' + k + '[] = {' + nums.join(', ') + '};');
+    }
+  }
+  lines.push(indent + '};');
+  return lines;
+}
+
+/**
+ * Compute the delta props for a control vs its baseClass chain.
+ * Returns only props that differ from the inherited value, PLUS
+ * any props that were explicitly set (props object) even if same value
+ * (since the source file had them explicitly).
+ *
+ * Strategy: emit ctrl.props if present; for any key also in the baseChain,
+ * skip it if it's identical (that's the "delta only" rule). Always emit
+ * geometry (x/y/w/h), idc, text, tooltip, action since those define the control.
+ */
+function computeDelta(ctrl) {
+  const p = ctrl.props || {};
+  const base = ctrl.baseClass || ctrl.rscBase || '';
+  const inherited = base ? resolveBaseChain(base) : {};
+
+  // Also check if baseClass is a sibling control name (in-array inheritance)
+  // In that case inherited = that sibling's props (already merged by the generator)
+  const allCtrlsList = displayData ? [...(displayData.background || []), ...(displayData.controls || [])] : [];
+  const siblingBase = allCtrlsList.find(c => c !== ctrl && c.name === base);
+  const siblingInherited = siblingBase ? (siblingBase.props || {}) : null;
+
+  const delta = {};
+  // Always include geometry + core identity props if present
+  const ALWAYS_EMIT = new Set(['idc', 'x', 'y', 'w', 'h', 'text', 'tooltip', 'action',
+    'onButtonClick', 'onLoad', 'onUnload', 'onLBSelChanged', 'onLBDblClick',
+    'moving', 'movingEnable']);
+
+  for (const [k, v] of Object.entries(p)) {
+    if (k === 'idc' && (v === -1 || v === -2) && !ALWAYS_EMIT.has(k)) continue; // skip default idc
+    if (k === 'type' || k === 'type_name') continue; // skip internal
+    if (k === 'idc' && v < 0) continue; // skip negative idc
+
+    const inhVal = siblingInherited ? (siblingInherited[k] ?? inherited[k]) : inherited[k];
+
+    if (ALWAYS_EMIT.has(k)) {
+      // Always emit these if present in props
+      delta[k] = v;
+    } else if (inhVal !== undefined && valsEqual(v, inhVal)) {
+      // Inherited and identical → skip (true delta)
+      continue;
+    } else {
+      delta[k] = v;
+    }
+  }
+  return delta;
+}
 
 function exportHpp() {
+  if (!displayData) return '';
   const lines = [];
-  const allCtrl = [...model.controlsBackground, ...model.controls];
+  const name = currentDisplay || 'WF_Menu';
 
-  // Emit full dialog class
-  lines.push('class WF_Menu {');
-  lines.push('\tidd = 11000;');
-  lines.push('\tmovingEnable = 1;');
+  lines.push('class ' + name + ' {');
+  lines.push('\tidd = ' + (displayData.idd || -1) + ';');
+  if (displayData.movingEnable !== undefined) {
+    lines.push('\tmovingEnable = ' + (displayData.movingEnable ? 1 : 0) + ';');
+  }
   lines.push('');
 
-  // controlsBackground
-  lines.push('\tclass controlsBackground {');
-  model.controlsBackground.forEach(c => {
-    lines.push('\t\tclass ' + c.name + (c.parent ? ' : ' + c.parent : '') + ' {');
-    if (c.idc !== undefined && c.idc !== -2) lines.push('\t\t\tidc = ' + c.idc + ';');
-    if (c.type !== undefined) lines.push('\t\t\ttype = ' + (TYPE_NUM_EXPORT[c.type_name] !== undefined ? TYPE_NUM_EXPORT[c.type_name] : c.type) + ';');
-    lines.push('\t\t\tx = ' + round6(c.x) + ';');
-    lines.push('\t\t\ty = ' + round6(c.y) + ';');
-    lines.push('\t\t\tw = ' + round6(c.w) + ';');
-    lines.push('\t\t\th = ' + round6(c.h) + ';');
-    if (c.moving) lines.push('\t\t\tmoving = ' + c.moving + ';');
-    if (c.text) lines.push('\t\t\ttext = "' + c.text + '";');
-    lines.push('\t\t};');
-  });
-  lines.push('\t};');
-  lines.push('');
+  function emitSection(arr, sectionName) {
+    lines.push('\tclass ' + sectionName + ' {');
+    (arr || []).forEach(ctrl => {
+      const base = ctrl.baseClass || ctrl.rscBase || '';
+      lines.push('\t\tclass ' + ctrl.name + (base ? ' : ' + base : '') + ' {');
 
-  // controls
-  lines.push('\tclass controls {');
-  model.controls.forEach(c => {
-    lines.push('\t\tclass ' + c.name + (c.parent ? ' : ' + c.parent : '') + ' {');
-    if (c.idc !== undefined && c.idc !== -2) lines.push('\t\t\tidc = ' + c.idc + ';');
-    const typeNum = TYPE_NUM_EXPORT[c.type_name];
-    if (typeNum !== undefined) lines.push('\t\t\ttype = ' + typeNum + ';');
-    lines.push('\t\t\tx = ' + round6(c.x) + ';');
-    lines.push('\t\t\ty = ' + round6(c.y) + ';');
-    lines.push('\t\t\tw = ' + round6(c.w) + ';');
-    lines.push('\t\t\th = ' + round6(c.h) + ';');
-    if (c.text) lines.push('\t\t\ttext = "' + c.text + '";');
-    if (c.action) lines.push('\t\t\taction = "' + c.action + '";');
-    if (c.tooltip) lines.push('\t\t\ttooltip = "' + c.tooltip + '";');
-    if (c.onButtonClick) lines.push('\t\t\tonButtonClick = "' + c.onButtonClick + '";');
-    lines.push('\t\t};');
-  });
-  lines.push('\t};');
+      // Delta props only
+      const delta = computeDelta(ctrl);
+      for (const [k, v] of Object.entries(delta)) {
+        const line = emitProp(k, v, '\t\t\t');
+        if (line !== null) lines.push(line);
+      }
+
+      // Sub-class blocks verbatim (HitZone, ShortcutPos, TextPos, Attributes, ScrollBar, etc.)
+      if (ctrl.subClasses) {
+        for (const [scName, scBody] of Object.entries(ctrl.subClasses)) {
+          if (scBody && typeof scBody === 'object') {
+            lines.push(...emitSubClass(scName, scBody, '\t\t\t'));
+          }
+        }
+      }
+
+      lines.push('\t\t};');
+    });
+    lines.push('\t};');
+  }
+
+  emitSection(displayData.background, 'controlsBackground');
+  lines.push('');
+  emitSection(displayData.controls, 'controls');
+
+  // RscTitles HUD displays also emit a controls[] name array
+  if (displayData.titlesArray && displayData.titlesArray.length) {
+    lines.push('');
+    lines.push('\tcontrols[] = {' + displayData.titlesArray.map(n => '"' + n + '"').join(', ') + '};');
+  }
+
   lines.push('};');
-
   return lines.join('\n');
 }
 
 document.getElementById('export-btn').addEventListener('click', () => {
-  const hpp = exportHpp();
-  document.getElementById('export-out').value = hpp;
-  // Push to localStorage for cross-tool handoff
-  try { localStorage.setItem('wfmenu_export', hpp); } catch(_) {}
+  document.getElementById('export-out').value = exportHpp();
+  const body = document.getElementById('export-body');
+  if (!body.classList.contains('open')) {
+    body.classList.add('open');
+    document.getElementById('export-tog-label').textContent = '▲';
+    document.getElementById('export-toggle').setAttribute('aria-expanded', 'true');
+  }
 });
 
-// Copy with flash feedback (WDDM pattern)
 document.getElementById('copy-btn').addEventListener('click', () => {
   const txt = document.getElementById('export-out').value;
-  if (!txt) { setStatus('Nothing to copy — click Export first.', 'err'); return; }
-  const btn = document.getElementById('copy-btn');
+  if (!txt) { setStatus('Nothing to copy.', 'err'); return; }
   navigator.clipboard.writeText(txt).then(() => {
-    btn.textContent = 'Copied!';
-    btn.classList.add('flash');
-    setStatus('Copied to clipboard.', 'ok');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('flash'); }, 1400);
-  }).catch(() => {
-    // Fallback
-    document.getElementById('export-out').select();
-    try { document.execCommand('copy'); } catch(_) {}
+    const btn = document.getElementById('copy-btn');
     btn.textContent = 'Copied!';
     btn.classList.add('flash');
     setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('flash'); }, 1400);
+    setStatus('Copied.', 'ok');
   });
 });
 
 document.getElementById('download-btn').addEventListener('click', () => {
   const txt = document.getElementById('export-out').value;
-  if (!txt) { setStatus('Nothing to download — click Export first.', 'err'); return; }
+  if (!txt) { setStatus('Nothing to download.', 'err'); return; }
   const a = document.createElement('a');
   a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
-  a.download = 'WF_Menu.hpp';
+  a.download = (currentDisplay || 'WF_Menu') + '.hpp';
   a.click();
 });
 
 // ============================================================
-// Status message helper
+// Import — parse .hpp text → display data model
 // ============================================================
-function setStatus(msg, type) {
-  const el = document.getElementById('status-msg');
-  el.textContent = msg;
-  el.className = type || '';
-}
 
-// ============================================================
-// Load .hpp (JS port of extractor: minimal subset)
-// ============================================================
-function parseHppControls(src) {
-  const controls = [];
-  const controlsBg = [];
-  const errors = [];
+/**
+ * Parse a .hpp display class string into the internal display model.
+ *
+ * Handles:
+ *   class DisplayName { idd = N; movingEnable = N; class controlsBackground { ... }; class controls { ... }; controls[] = {"A","B",...}; };
+ *   class controls { class CtrlName : Base { ... }; ... }  (partial block)
+ *
+ * Returns: { name, idd, movingEnable, posSystem, background:[], controls:[], titlesArray? }
+ * or throws with a descriptive message.
+ */
+function parseHpp(src) {
+  // Strip C-style block comments (/* ... */)
+  src = src.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Strip line comments (// ...)
+  src = src.replace(/\/\/.*/g, '');
 
-  function extractSectionBody(text, sectionName) {
-    const re = new RegExp('class\\s+' + sectionName + '\\s*\\{');
-    const m = re.exec(text);
-    if (!m) return null;
-    let depth = 0, start = m.index + m[0].length - 1;
-    for (let i = start; i < text.length; i++) {
-      if (text[i] === '{') depth++;
-      else if (text[i] === '}') { depth--; if (depth === 0) return text.slice(start, i + 1); }
-    }
-    return null;
+  // Tokenize into a flat string without extra whitespace
+  src = src.trim();
+
+  // ---- Tokenizer ----
+  // We build a simple recursive-descent parser over the token stream.
+  // Tokens: identifiers, numbers, strings (quoted), punctuation
+  const TOKEN_RE = /([A-Za-z_$][A-Za-z0-9_$]*)|("(?:[^"\\]|\\.)*")|(\$[A-Za-z_][A-Za-z0-9_]*)|([0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)|(-[0-9]+(?:\.[0-9]+)?)|([{}();,\[\]=])|(\#[^\n]*)/g;
+
+  const tokens = [];
+  let m;
+  while ((m = TOKEN_RE.exec(src)) !== null) {
+    if (m[8]) continue; // preprocessor directive — skip
+    tokens.push(m[0]);
   }
 
-  function parseSection(body, sectionName) {
-    if (!body) return [];
-    const result = [];
-    const innerRe = /class\s+(\w+)\s*(?::\s*(\w+)\s*)?\{/g;
-    let m;
-    while ((m = innerRe.exec(body)) !== null) {
-      const name = m[1], parent = m[2] || '';
-      const start = m.index + m[0].length - 1;
-      let depth = 0, end = start;
-      for (let i = start; i < body.length; i++) {
-        if (body[i] === '{') depth++;
-        else if (body[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+  let pos = 0;
+  function peek() { return tokens[pos]; }
+  function consume() { return tokens[pos++]; }
+  function expect(t) {
+    const v = consume();
+    if (v !== t) throw new Error('Expected "' + t + '" but got "' + v + '" at token ' + pos);
+    return v;
+  }
+  function consumeIdent() {
+    const v = consume();
+    if (!/^[A-Za-z_$]/.test(v)) throw new Error('Expected identifier, got: ' + v);
+    return v;
+  }
+
+  // Parse a value: number | string | identifier | array {v, v, ...} | macro name
+  function parseValue() {
+    const t = peek();
+    if (t === '{') {
+      // Array value
+      consume(); // {
+      const arr = [];
+      while (peek() !== '}') {
+        arr.push(parseAtom());
+        if (peek() === ',') consume();
       }
-      const cb = body.slice(start, end + 1);
-      const props = {};
-      const propRe = /^\s*(\w+)\s*(?:\[\])?\s*=\s*(.+?)\s*;/gm;
-      let pm;
-      while ((pm = propRe.exec(cb)) !== null) {
-        const k = pm[1], rv = pm[2].trim();
-        if (rv.startsWith('{')) {
-          const nums = rv.match(/[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?/g);
-          props[k] = nums ? nums.map(Number) : [];
+      consume(); // }
+      return arr;
+    }
+    return parseAtom();
+  }
+
+  function parseAtom() {
+    const t = consume();
+    if (t === undefined) throw new Error('Unexpected end of input');
+    if (/^"/.test(t)) return t.slice(1, -1).replace(/""/g, '"'); // unquote, unescape
+    if (/^\$/.test(t)) return t; // $STR_ reference — keep as-is
+    // Number (possibly negative)
+    const n = parseFloat(t);
+    if (!isNaN(n) && /^-?[0-9]/.test(t)) return n;
+    // Hex
+    if (/^0x/i.test(t)) return parseInt(t, 16);
+    // Identifier / macro name — return as string
+    return t;
+  }
+
+  // Parse a multi-token value that may be a macro expression:
+  // e.g. "WFBE_MenuAction = 1" (unquoted RHS of action = WFBE_MenuAction = 1)
+  // We read until ';' collecting tokens, joining with spaces.
+  function parseRawUntilSemicolon() {
+    const parts = [];
+    while (peek() !== ';' && peek() !== undefined) {
+      parts.push(consume());
+    }
+    const raw = parts.join(' ');
+    // If it looks like a number, return number
+    const n = parseFloat(raw);
+    if (!isNaN(n) && /^-?[0-9.eE+\-]+$/.test(raw.trim())) return n;
+    // Quoted string
+    if (/^".*"$/.test(raw.trim())) return raw.trim().slice(1,-1);
+    // Otherwise: might be a macro name like WFBE_Background_Color
+    // or an array literal — check if the first token was already consumed as value
+    return raw;
+  }
+
+  // Parse class body: { properties + sub-classes }; returns {props, subClasses}
+  function parseClassBody() {
+    expect('{');
+    const props = {};
+    const subClasses = {};
+
+    while (peek() !== '}' && peek() !== undefined) {
+      const t = peek();
+
+      if (t === 'class') {
+        // nested sub-class
+        consume(); // class
+        const subName = consumeIdent();
+        // optional : Base
+        if (peek() === ':') { consume(); consumeIdent(); }
+        const {props: sp} = parseClassBody();
+        subClasses[subName] = sp;
+        if (peek() === ';') consume();
+        continue;
+      }
+
+      // Property: ident ([] optional) = value;
+      const key = consumeIdent();
+
+      // Check for [] array declaration (e.g. colorBackground[] = ...)
+      let isArray = false;
+      if (peek() === '[') {
+        consume(); // [
+        expect(']');
+        isArray = true;
+      }
+
+      expect('=');
+
+      let val;
+      if (peek() === '{') {
+        // Inline array
+        val = parseValue();
+        // If it's an array, resolve RGBA floats
+        if (Array.isArray(val)) {
+          val = val.map(v => typeof v === 'number' ? v : parseFloat(v) || 0);
+        }
+      } else if (peek() === '$') {
+        val = consume(); // $STR_... reference
+      } else {
+        // Could be: number, string, identifier (macro name), or compound expression
+        // Collect all tokens until ';'
+        const rawParts = [];
+        while (peek() !== ';' && peek() !== undefined && peek() !== '}') {
+          rawParts.push(consume());
+        }
+        const raw = rawParts.join(' ').trim();
+
+        // Resolve: number?
+        const n = parseFloat(raw);
+        if (!isNaN(n) && /^-?[0-9.eE+\-xX]+$/.test(raw)) {
+          val = /^0x/i.test(raw) ? parseInt(raw, 16) : n;
+        } else if (/^".*"$/.test(raw)) {
+          // Quoted string
+          val = raw.slice(1, -1).replace(/""/g, '"');
+        } else if (raw.startsWith('$')) {
+          val = raw; // $STR_ ref
         } else {
-          const n = parseFloat(rv);
-          props[k] = isNaN(n) ? rv.replace(/^"|"$/g,'') : n;
+          // Macro name or expression — store as string
+          // Try resolving against known macros
+          const resolved = uiData && uiData.macros && uiData.macros[raw];
+          if (resolved !== undefined) {
+            val = resolved; // Store resolved value (array or number)
+            // But we want to preserve the macro name for round-trip
+            // Store as string if it's a recognized WFBE_ macro
+            if (typeof resolved !== 'string' || !resolved.startsWith('"')) {
+              // Keep macro name as string so delta detection can re-emit it
+              // Actually, store the resolved value + annotate with macroName
+              val = resolved;
+              // We'll tag it so export can emit the macro name
+              // For arrays: the rgbaToMacro() in export will re-detect it
+              // For scalars: scalarToMacro() will re-detect it
+            }
+          } else {
+            // Unknown expression — store as raw string
+            val = raw;
+          }
         }
       }
 
-      const TYPE_FROM_PARENT = {
-        RscText:0, RscText_Title:0, RscText_SubTitle:0, RscText_Small:0, RscFrame:0, IGUIBack:0,
-        RscButton:1, RscButton_Main:1, RscButton_Back:1, RscButton_Exit:1,
-        RscEdit:2, RscCombo:4, RscListBox:5,
-        RscClickableText:11, RscStructuredText:13, RscControlsGroup:15,
-        RscShortcutButton:16, RscShortcutButtonMain:16, RscIGUIShortcutButton:16,
-        RscListnBox:102, RscListBoxA:102
-      };
-      const typeNum = props.type !== undefined ? parseInt(props.type) : (TYPE_FROM_PARENT[parent] !== undefined ? TYPE_FROM_PARENT[parent] : 0);
-      const typeName = TYPE_NAME[typeNum] || (parent.startsWith('RscShortcut') ? 'RscShortcutButton' : 'CT_STATIC');
+      if (peek() === ';') consume();
 
-      result.push(makeCtrl({
-        name, parent,
-        idc: props.idc !== undefined ? parseInt(props.idc) : -2,
-        type: typeNum,
-        type_name: typeName,
-        x: parseFloat(props.x) || 0,
-        y: parseFloat(props.y) || 0,
-        w: parseFloat(props.w) || 0.1,
-        h: parseFloat(props.h) || 0.04,
-        text: props.text || '',
-        action: props.action || '',
-        tooltip: props.tooltip || '',
-        section: sectionName === 'controlsBackground' ? 'controlsBackground' : 'controls'
-      }));
+      props[key] = val;
     }
-    return result;
+
+    expect('}');
+    return { props, subClasses };
   }
 
-  const bgBody = extractSectionBody(src, 'controlsBackground');
-  const ctrlBody = extractSectionBody(src, 'controls');
+  // ---- Main parse ----
+  // Detect if input starts with a full display class or a controls section
+  let displayName = null;
+  let idd = -1;
+  let movingEnable = undefined;
+  let background = [];
+  let controls = [];
+  let titlesArray = null;
 
-  if (!bgBody && !ctrlBody) {
-    errors.push('No controlsBackground or controls sections found.');
+  // Could be: "class DISPLAY { ... }" or "class controls { ... }"
+  if (peek() !== 'class') throw new Error('Expected "class" keyword, got: ' + peek());
+  consume(); // class
+
+  const firstName = consumeIdent();
+
+  // Detect if this is a controls section (shorthand paste)
+  if (firstName === 'controls' || firstName === 'controlsBackground') {
+    // Partial block paste — just load controls
+    displayName = currentDisplay || 'Imported';
+    idd = displayData ? displayData.idd : -1;
+    movingEnable = displayData ? displayData.movingEnable : undefined;
+    const {props: sectProps, subClasses: sectSubs} = parseClassBody();
+    // sectSubs contains the named control classes
+    const ctrls = parseControlsBlock(sectSubs);
+    if (firstName === 'controls') controls = ctrls;
+    else background = ctrls;
+    if (peek() === ';') consume();
+  } else {
+    // Full display class
+    displayName = firstName;
+    expect('{');
+
+    while (peek() !== '}' && peek() !== undefined) {
+      const t = peek();
+
+      if (t === 'class') {
+        consume(); // class
+        const sectionName = consumeIdent();
+        const { subClasses: sectSubs } = parseClassBody();
+        const ctrls = parseControlsBlock(sectSubs);
+        if (sectionName === 'controlsBackground') background = ctrls;
+        else controls = ctrls;
+        if (peek() === ';') consume();
+        continue;
+      }
+
+      // Top-level property (idd, movingEnable, controls[], etc.)
+      const key = consumeIdent();
+
+      let isArray = false;
+      if (peek() === '[') {
+        consume(); expect(']');
+        isArray = true;
+      }
+      expect('=');
+
+      if (isArray && peek() === '{') {
+        // e.g. controls[] = {"Ctrl1", "Ctrl2"};
+        consume(); // {
+        const arr = [];
+        while (peek() !== '}') {
+          const v = consume();
+          if (v === ',') continue;
+          arr.push(v.replace(/^"|"$/g, ''));
+        }
+        consume(); // }
+        if (key === 'controls') titlesArray = arr;
+      } else {
+        // scalar value
+        const rawParts = [];
+        while (peek() !== ';' && peek() !== '}' && peek() !== undefined) {
+          rawParts.push(consume());
+        }
+        const raw = rawParts.join(' ').trim();
+        const n = parseFloat(raw);
+        const v = isNaN(n) ? raw : n;
+        if (key === 'idd') idd = Math.round(n);
+        else if (key === 'movingEnable') movingEnable = n ? 1 : 0;
+      }
+
+      if (peek() === ';') consume();
+    }
+
+    if (peek() === '}') consume();
+    if (peek() === ';') consume();
   }
 
-  return {
-    controlsBackground: parseSection(bgBody, 'controlsBackground'),
-    controls: parseSection(ctrlBody, 'controls'),
-    errors
-  };
+  return { name: displayName, idd, movingEnable, background, controls, titlesArray };
 }
 
-document.getElementById('load-btn').addEventListener('click', () => {
-  const src = document.getElementById('load-in').value.trim();
-  if (!src) { setStatus('Nothing to load.', 'err'); return; }
-  const {controlsBackground, controls, errors} = parseHppControls(src);
-  if (errors.length) {
-    setStatus('Error: ' + errors.join(' '), 'err');
-    return;
+/**
+ * Convert the subClasses map from parseClassBody into an array of control objects
+ * with the shape the rest of the app expects: {name, baseClass, idc, props, subClasses}
+ */
+function parseControlsBlock(subClassMap) {
+  // subClassMap is what parseClassBody returns as subClasses:
+  // { CtrlName: { props: {...}, subClasses: {...} }, ... }
+  // But our parseClassBody doesn't separate sub-class children from props
+  // because we call it recursively. Let's re-parse by looking at the raw subClasses.
+  const result = [];
+  for (const [ctrlName, ctrlData] of Object.entries(subClassMap)) {
+    const p = ctrlData || {};
+    // The parseClassBody stored {props, subClasses} but we passed the result as just body
+    // Need to handle both paths depending on how it was called
+    const rawProps = (p.props !== undefined) ? p.props : p;
+    const rawSubs = (p.subClasses !== undefined) ? p.subClasses : {};
+
+    // Extract baseClass — it was stored by the caller when it saw ": Base"
+    // Unfortunately our current parser doesn't preserve it in the value.
+    // We need the baseClass from the parser. Let's store it in a sentinel key.
+    const baseClass = rawProps.__base__ || '';
+    const props = Object.assign({}, rawProps);
+    delete props.__base__;
+
+    const idc = props.idc !== undefined ? Math.round(props.idc) : -1;
+
+    // Resolve inherited props from baseClass for the 'resolved' field
+    const inherited = baseClass ? resolveBaseChain(baseClass) : {};
+    const resolved = Object.assign({}, inherited, props);
+
+    result.push({
+      name: ctrlName,
+      baseClass: baseClass || (uiData && uiData.baseClasses && uiData.baseClasses[ctrlName] ? ctrlName : ''),
+      rscBase: baseClass,
+      idc,
+      props,
+      resolved,
+      subClasses: rawSubs,
+      _section: 'controls', // will be fixed by caller
+    });
   }
-  model.controlsBackground = controlsBackground;
-  model.controls = controls;
-  selectedId = null;
-  render();
-  const total = controlsBackground.length + controls.length;
-  setStatus('Loaded ' + total + ' controls (' + controlsBackground.length + ' bg + ' + controls.length + ' ctrl).', 'ok');
-  // Auto-regenerate export after load
-  document.getElementById('export-out').value = exportHpp();
+  return result;
+}
+
+/**
+ * Full import parse that properly captures the ": BaseClass" inheritance.
+ * This is a revised entry point that uses a tokenizer with baseClass support.
+ */
+function importHppFull(src) {
+  // Strip comments
+  src = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '').trim();
+
+  // We'll tokenize differently: build a list including all identifiers,
+  // punctuation, numbers, strings
+  const TOKEN_RE2 = /("(?:[^"\\]|\\.)*")|\$[A-Za-z_][A-Za-z0-9_]*|0x[0-9a-fA-F]+|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|[A-Za-z_][A-Za-z0-9_]*|[{}();,\[\]=:]/g;
+  const toks = [];
+  let m2;
+  while ((m2 = TOKEN_RE2.exec(src)) !== null) {
+    toks.push(m2[0]);
+  }
+
+  let tp = 0;
+  const pk = () => toks[tp];
+  const cn = () => toks[tp++];
+  const ex = (v) => { if (toks[tp] !== v) throw new Error('Expected "' + v + '" got "' + toks[tp] + '" at ' + tp); tp++; };
+  const ident = () => {
+    const v = toks[tp];
+    if (!/^[A-Za-z_$]/.test(v || '')) throw new Error('Expected ident got ' + v + ' at ' + tp);
+    return toks[tp++];
+  };
+
+  function parseVal() {
+    if (pk() === '{') {
+      cn(); // {
+      const arr = [];
+      while (pk() !== '}' && pk() !== undefined) {
+        if (pk() === ',') { cn(); continue; }
+        arr.push(parseAtomV());
+      }
+      ex('}');
+      return arr.map(v => typeof v === 'string' && !isNaN(parseFloat(v)) ? parseFloat(v) : v);
+    }
+    return parseAtomV();
+  }
+
+  function parseAtomV() {
+    const t = cn();
+    if (t === undefined) return '';
+    if (/^"/.test(t)) return t.slice(1, -1).replace(/""/g, '"');
+    if (/^\$/.test(t)) return t;
+    const n = parseFloat(t);
+    if (!isNaN(n)) return n;
+    if (/^0x/i.test(t)) return parseInt(t, 16);
+    return t; // identifier / macro name
+  }
+
+  // Parse a class body; returns {name, baseClass, props, subClasses}[]  (for sections)
+  // or {props, subClasses} for simple props blocks
+  function parseBodyAsSection() {
+    // Returns array of control objects
+    ex('{');
+    const ctrls = [];
+    while (pk() !== '}' && pk() !== undefined) {
+      if (pk() !== 'class') { skipStatement(); continue; }
+      cn(); // class
+      const ctrlName = ident();
+      let base = '';
+      if (pk() === ':') { cn(); base = ident(); }
+      const { props, subClasses } = parsePropsBlock();
+      if (pk() === ';') cn();
+
+      const idc = props.idc !== undefined ? Math.round(Number(props.idc)) : -1;
+      const inherited = base ? resolveBaseChain(base) : {};
+      const resolved = Object.assign({}, inherited, props);
+
+      ctrls.push({ name: ctrlName, baseClass: base, rscBase: base, idc, props, resolved, subClasses });
+    }
+    ex('}');
+    return ctrls;
+  }
+
+  function parsePropsBlock() {
+    ex('{');
+    const props = {};
+    const subClasses = {};
+    while (pk() !== '}' && pk() !== undefined) {
+      if (pk() === 'class') {
+        cn();
+        const subName = ident();
+        let subBase = '';
+        if (pk() === ':') { cn(); subBase = ident(); }
+        const { props: sp } = parsePropsBlock();
+        if (pk() === ';') cn();
+        subClasses[subName] = sp;
+        continue;
+      }
+      skipStatement_into(props);
+    }
+    ex('}');
+    return { props, subClasses };
+  }
+
+  function skipStatement() {
+    // Skip an unknown statement up to ';'
+    while (pk() !== ';' && pk() !== '}' && pk() !== undefined) cn();
+    if (pk() === ';') cn();
+  }
+
+  function skipStatement_into(props) {
+    // Parse a key (= value)? ; and store into props
+    const key = toks[tp];
+    if (!/^[A-Za-z_$]/.test(key || '')) { skipStatement(); return; }
+    tp++; // key
+
+    let isArr = false;
+    if (pk() === '[') { cn(); ex(']'); isArr = true; }
+    if (pk() !== '=') { skipStatement(); return; }
+    cn(); // =
+
+    if (pk() === '{') {
+      const arr = [];
+      cn(); // {
+      while (pk() !== '}' && pk() !== undefined) {
+        if (pk() === ',') { cn(); continue; }
+        arr.push(parseAtomV());
+      }
+      if (pk() === '}') cn();
+      // Resolve RGBA
+      const resolved_arr = arr.map(v => {
+        if (typeof v === 'number') return v;
+        const n = parseFloat(v);
+        return isNaN(n) ? v : n;
+      });
+      props[key] = resolved_arr;
+    } else if (pk() === '$') {
+      props[key] = cn();
+    } else {
+      // Collect until ';' — may be macro name, expression, quoted string
+      const parts = [];
+      while (pk() !== ';' && pk() !== '}' && pk() !== undefined) {
+        parts.push(cn());
+      }
+      const raw = parts.join(' ').trim();
+      // Resolve
+      if (/^".*"$/.test(raw)) {
+        props[key] = raw.slice(1,-1).replace(/""/g,'"');
+      } else if (/^-?[0-9.eE+\-]+$/.test(raw)) {
+        props[key] = parseFloat(raw);
+      } else if (/^0x/i.test(raw)) {
+        props[key] = parseInt(raw, 16);
+      } else if (raw.startsWith('$')) {
+        props[key] = raw;
+      } else {
+        // Macro name or expression — try resolving
+        const macroVal = uiData && uiData.macros && uiData.macros[raw];
+        props[key] = macroVal !== undefined ? macroVal : raw;
+      }
+    }
+    if (pk() === ';') cn();
+  }
+
+  // ---- Main parse ----
+  let displayName = null;
+  let idd = -1;
+  let movingEnable = undefined;
+  let background = [];
+  let controls = [];
+  let titlesArray = null;
+  let posSystem = 'unit_square';
+
+  if (pk() !== 'class') throw new Error('Expected "class", got: ' + pk());
+  cn(); // class
+
+  const firstName = ident();
+
+  if (firstName === 'controls' || firstName === 'controlsBackground') {
+    // Partial section paste
+    displayName = currentDisplay || 'Imported';
+    idd = displayData ? displayData.idd : -1;
+    movingEnable = displayData ? displayData.movingEnable : undefined;
+    posSystem = displayData ? (displayData.posSystem || 'unit_square') : 'unit_square';
+    const ctrls = parseBodyAsSection();
+    if (pk() === ';') cn();
+    if (firstName === 'controls') controls = ctrls;
+    else background = ctrls;
+  } else {
+    // Full display
+    displayName = firstName;
+    ex('{');
+
+    while (pk() !== '}' && pk() !== undefined) {
+      if (pk() === 'class') {
+        cn();
+        const sname = ident();
+        const ctrls = parseBodyAsSection();
+        if (pk() === ';') cn();
+        if (sname === 'controlsBackground') background = ctrls;
+        else if (sname === 'controls') controls = ctrls;
+        continue;
+      }
+
+      // Top-level prop
+      const key = toks[tp];
+      if (!/^[A-Za-z_$]/.test(key || '')) { skipStatement(); continue; }
+      tp++;
+
+      let isArr = false;
+      if (pk() === '[') { cn(); ex(']'); isArr = true; }
+      if (pk() !== '=') { skipStatement(); continue; }
+      cn(); // =
+
+      if (isArr && pk() === '{') {
+        cn(); // {
+        const arr = [];
+        while (pk() !== '}' && pk() !== undefined) {
+          if (pk() === ',') { cn(); continue; }
+          const v = cn();
+          arr.push(v.replace(/^"|"$/g, ''));
+        }
+        if (pk() === '}') cn();
+        if (key === 'controls') titlesArray = arr;
+      } else {
+        const parts = [];
+        while (pk() !== ';' && pk() !== '}' && pk() !== undefined) parts.push(cn());
+        const raw = parts.join(' ').trim();
+        const n = parseFloat(raw);
+        if (key === 'idd') idd = isNaN(n) ? -1 : Math.round(n);
+        else if (key === 'movingEnable') movingEnable = n ? 1 : 0;
+        else if (key === 'posSystem') posSystem = raw.replace(/^"|"$/g,'');
+      }
+      if (pk() === ';') cn();
+    }
+    if (pk() === '}') cn();
+    if (pk() === ';') cn();
+
+    // Detect posSystem from display name (HUD displays)
+    if (posSystem === 'unit_square' && uiData && uiData.displays) {
+      const known = uiData.displays[displayName];
+      if (known) posSystem = known.posSystem || 'unit_square';
+    }
+  }
+
+  // Tag sections
+  background.forEach(c => { c._section = 'background'; });
+  controls.forEach(c => { c._section = 'controls'; });
+
+  return { name: displayName, idd, movingEnable, posSystem, background, controls, titlesArray };
+}
+
+function doImport() {
+  const src = document.getElementById('import-in').value.trim();
+  if (!src) { setStatus('Paste a .hpp class to import.', 'err'); return; }
+
+  try {
+    const parsed = importHppFull(src);
+    if (!parsed) { setStatus('Parse returned nothing.', 'err'); return; }
+
+    // Load into UI as a new display (or override current)
+    const name = parsed.name || currentDisplay || 'Imported';
+
+    // Merge into uiData.displays (or create new entry)
+    if (!uiData) { setStatus('ui.json not loaded yet.', 'err'); return; }
+
+    uiData.displays[name] = {
+      idd: parsed.idd,
+      movingEnable: parsed.movingEnable,
+      posSystem: parsed.posSystem || 'unit_square',
+      category: parsed.posSystem === 'safezone' ? 'hud' : 'dialog',
+      background: parsed.background,
+      controls: parsed.controls,
+      titlesArray: parsed.titlesArray || null,
+    };
+
+    // Add to picker if not already there
+    buildDisplayPicker();
+    loadDisplay(name);
+
+    document.getElementById('import-in').value = '';
+    setStatus('Imported "' + name + '" — ' +
+      (parsed.background.length + parsed.controls.length) + ' controls loaded.', 'ok');
+  } catch(e) {
+    setStatus('Parse error: ' + e.message, 'err');
+    console.error('HPP import error:', e);
+  }
+}
+
+document.getElementById('import-btn').addEventListener('click', doImport);
+document.getElementById('import-clear-btn').addEventListener('click', () => {
+  document.getElementById('import-in').value = '';
+  setStatus('', '');
 });
 
 // ============================================================
@@ -1083,35 +4060,29 @@ document.getElementById('export-toggle').addEventListener('click', () => {
   const lbl = document.getElementById('export-tog-label');
   const hdr = document.getElementById('export-toggle');
   const isOpen = body.classList.contains('open');
-  if (isOpen) {
-    body.classList.remove('open');
-    lbl.textContent = '▼';
-    hdr.setAttribute('aria-expanded', 'false');
-  } else {
-    body.classList.add('open');
-    lbl.textContent = '▲';
-    hdr.setAttribute('aria-expanded', 'true');
-  }
+  body.classList.toggle('open', !isOpen);
+  lbl.textContent = isOpen ? '▼' : '▲';
+  hdr.setAttribute('aria-expanded', String(!isOpen));
+});
+
+document.getElementById('export-toggle').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('export-toggle').click(); }
 });
 
 // ============================================================
-// Cross-link: Garrison Editor — push current layout to localStorage
-// so the garrison editor can offer to load the control list
+// Status
 // ============================================================
-document.getElementById('garrison-link').addEventListener('click', e => {
-  // Write the current HPP to localStorage before navigating
-  try {
-    const hpp = exportHpp();
-    localStorage.setItem('wfmenu_export', hpp);
-  } catch(_) {}
-  // Let the default href open in a new tab
-});
+function setStatus(msg, type) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = type || '';
+}
 
 // ============================================================
 // Boot
 // ============================================================
-setZoom(1.0);
-loadJson();
+setZoom(0.75); // default zoom so 1920x1080 frame fits in viewport
+loadUiJson();
 </script>
 </body>
 </html>
