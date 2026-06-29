@@ -88,6 +88,8 @@ def load_macros(styles_text: str, ressources_text: str) -> dict:
 
     resolved: dict[str, object] = {}
     for name, value in raw.items():
+        # Strip inline // comments before parsing (e.g. "0.0005 //unused")
+        value = re.sub(r"\s*//.*", "", value).strip()
         if "{" in value:
             resolved[name] = _parse_array(value)
         else:
@@ -153,12 +155,25 @@ _PROP_LINE_RE = re.compile(
 )
 
 
+# Prop-name normalisation: lowercase HPP spellings -> canonical camelCase
+_PROP_NAME_NORMALISE = {
+    "colorbackground": "colorBackground",
+    "colorbackground2": "colorBackground2",
+    "colortext": "colorText",
+    "colordisabled": "colorDisabled",
+    "colorselected": "colorSelected",
+    "colorborder": "colorBorder",
+}
+
+
 def parse_class_props(body: str, macros: dict) -> dict:
     """Parse property lines from a class body (one level, no nested classes)."""
     # Strip nested class blocks first so we don't match their properties
     clean = re.sub(r"class\s+\w+\s*\{[^{}]*\}", "", body)
     props: dict[str, object] = {}
     for name, raw in _PROP_LINE_RE.findall(clean):
+        # Normalise known color prop names to camelCase
+        name = _PROP_NAME_NORMALISE.get(name.lower(), name)
         raw = raw.strip()
         if raw.startswith("{"):
             value: object = _parse_array(raw)

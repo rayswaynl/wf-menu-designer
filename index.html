@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WF Menu / HUD Designer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2096%2096'%3E%3Cpolyline%20points%3D'20%2C54%2048%2C30%2076%2C54'%20fill%3D'none'%20stroke%3D'%23D9763C'%20stroke-width%3D'7'%2F%3E%3Cpolyline%20points%3D'20%2C72%2048%2C48%2076%2C72'%20fill%3D'none'%20stroke%3D'%235C6536'%20stroke-width%3D'7'%2F%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gunmetal:#14171B;--steel:#2A2F36;--steel2:#343b44;
+  --olive:#5C6536;--bone:#E7E3D6;--orange:#D9763C;--orange-deep:#B85F2A;
+  --chalk:#F2EFE8;--line:#39414b;--danger:#c0392b;--cyan:#4BB8C8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:Inter,system-ui,'Segoe UI',Arial,sans-serif;background:var(--gunmetal);color:var(--bone);overflow:hidden}
+h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px}
+
+/* ---- Brand bar ---- */
+.brandbar{height:50px;display:flex;align-items:center;gap:12px;padding:0 14px;
+  background:#101317;border-bottom:1px solid var(--line);position:relative;z-index:5;flex:0 0 auto}
+.brandbar .mark{width:30px;height:30px;flex:0 0 auto}
+.brandbar .word{display:flex;flex-direction:column;line-height:1}
+.brandbar .word .t1{font-family:Oswald,sans-serif;font-weight:600;font-size:17px;letter-spacing:2px;color:var(--bone)}
+.brandbar .word .t2{font-family:Oswald,sans-serif;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--orange);margin-top:2px}
+.brandbar .spacer{flex:1}
+.chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:#8b939c;border:1px solid var(--line);border-radius:10px;padding:3px 9px;background:#0d1014}
+.chip b{color:var(--olive)}
+.brand-actions{display:flex;gap:8px;align-items:center}
+
+/* ---- Layout ---- */
+.layout{display:flex;height:calc(100vh - 50px);overflow:hidden}
+.panel{display:flex;flex-direction:column;min-height:0}
+.panel-left{width:180px;flex:0 0 180px;border-right:1px solid var(--line);background:var(--steel)}
+.panel-center{flex:1;min-width:0;background:var(--gunmetal)}
+.panel-right{width:240px;flex:0 0 240px;border-left:1px solid var(--line);background:var(--steel)}
+
+.panel-hdr{padding:9px 12px;border-bottom:1px solid var(--line);background:var(--gunmetal);flex:0 0 auto}
+.panel-hdr h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad}
+.scroll{overflow-y:auto;flex:1;min-height:0}
+
+/* ---- Palette ---- */
+.palette-list{padding:8px}
+.type-btn{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:none;
+  border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin-bottom:4px;
+  color:var(--bone);font-family:Inter,sans-serif;font-size:11px;cursor:pointer;transition:all .12s}
+.type-btn:hover{border-color:var(--orange);background:rgba(217,118,60,.08)}
+.type-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.palette-divider{height:1px;background:var(--line);margin:6px 0}
+.palette-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;padding:3px 4px 5px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ---- Canvas area ---- */
+.canvas-toolbar{padding:8px 12px;border-bottom:1px solid var(--line);background:#101317;
+  display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.canvas-toolbar label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace}
+.canvas-toolbar input[type=checkbox]{accent-color:var(--orange)}
+.canvas-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:#0d1014}
+.stage{position:relative;background:#1a1e24;border:1px solid var(--line);
+  flex:0 0 auto;user-select:none;overflow:hidden}
+.stage-bg{position:absolute;inset:0;pointer-events:none}
+
+/* ---- Controls on canvas ---- */
+.ctrl-box{position:absolute;border:1px solid;cursor:move;display:flex;
+  align-items:center;justify-content:center;font-size:9px;font-family:'JetBrains Mono',monospace;
+  text-align:center;padding:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  line-height:1.2;transition:box-shadow .08s}
+.ctrl-box.selected{outline:2px solid var(--orange);outline-offset:1px;z-index:100!important}
+.ctrl-box .resize-handle{position:absolute;right:-4px;bottom:-4px;width:8px;height:8px;
+  background:var(--orange);cursor:se-resize;z-index:10;border-radius:1px}
+
+/* ---- Type colours ---- */
+.t-CT_STATIC      {background:rgba(42,47,54,.85);border-color:#39414b;color:#aab}
+.t-CT_BUTTON      {background:rgba(41,61,92,.8);border-color:#2a5a8c;color:#a8ccee}
+.t-RscShortcutButton{background:rgba(30,65,100,.85);border-color:#4bb8c8;color:#8de0ec}
+.t-CT_CLICKABLETEXT{background:rgba(92,101,54,.7);border-color:#7a8a38;color:#c8d88a}
+.t-CT_LISTBOX     {background:rgba(80,40,80,.8);border-color:#884488;color:#d4a0d4}
+.t-CT_COMBO       {background:rgba(80,60,20,.8);border-color:#b88820;color:#e8c860}
+.t-CT_STRUCTUREDTEXT{background:rgba(60,80,40,.8);border-color:#6a9040;color:#a8d870}
+.t-CT_EDIT        {background:rgba(80,30,30,.8);border-color:#a04040;color:#e88080}
+.t-CT_CONTROLS_GROUP{background:rgba(30,30,60,.8);border-color:#4444aa;color:#9090d8}
+.t-CT_LISTNBOX    {background:rgba(80,50,60,.8);border-color:#a06070;color:#e0b0c0}
+.t-RscXSliderH    {background:rgba(50,70,50,.8);border-color:#609060;color:#a0c0a0}
+.t-RscMapControl  {background:rgba(20,60,50,.8);border-color:#208060;color:#60c0a0}
+
+/* ---- Layer list ---- */
+.layer-item{display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;
+  border-bottom:1px solid rgba(57,65,75,.4);font-size:11px;transition:background .08s}
+.layer-item:hover{background:rgba(255,255,255,.04)}
+.layer-item.selected{background:rgba(217,118,60,.12);border-left:2px solid var(--orange)}
+.layer-item.bg-ctrl{border-left:2px solid var(--line)}
+.layer-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
+.layer-idc{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;margin-left:auto;white-space:nowrap}
+.layer-del{margin-left:4px;background:none;border:none;color:#556;cursor:pointer;font-size:11px;padding:0 2px}
+.layer-del:hover{color:var(--danger)}
+.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px}
+
+/* ---- Inspector ---- */
+.inspector{padding:10px 12px}
+.inspector h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad;margin-bottom:8px}
+.field-row{margin-bottom:8px}
+.field-row label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa3ad;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.field-row input,.field-row select{width:100%;background:var(--gunmetal);border:1px solid var(--line);
+  color:var(--bone);border-radius:4px;padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
+.field-row input:focus,.field-row select:focus{border-color:var(--orange)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.inspector-placeholder{font-size:11px;color:#556;font-family:'JetBrains Mono',monospace;
+  padding:20px 12px;text-align:center;line-height:1.6}
+
+/* ---- Export / load panel ---- */
+.export-panel{border-top:1px solid var(--line);flex:0 0 auto}
+.export-panel-hdr{padding:8px 12px;border-bottom:1px solid var(--line);background:var(--gunmetal);cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;user-select:none}
+.export-panel-hdr h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad}
+.export-panel-hdr .tog{font-size:10px;color:#556}
+.export-body{padding:8px 12px;display:none}
+.export-body.open{display:block}
+.export-body textarea{width:100%;background:var(--gunmetal);border:1px solid var(--line);
+  color:#a8d890;font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:4px;
+  padding:6px;resize:vertical;outline:none;min-height:100px}
+.export-body textarea:focus{border-color:var(--orange)}
+.btnbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+button{cursor:pointer;background:var(--steel2);color:var(--bone);border:1px solid var(--line);
+  border-radius:4px;padding:5px 10px;font-family:Inter,sans-serif;font-size:11px}
+button:hover{border-color:var(--orange)}
+button.primary{background:var(--orange);border-color:var(--orange);color:#1a1208;font-weight:600}
+button.primary:hover{background:var(--orange-deep);border-color:var(--orange-deep)}
+button.sm{font-size:10px;padding:4px 8px}
+.snap-label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace}
+
+/* ---- Scrollbars ---- */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--steel2);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+
+<!-- Brand bar -->
+<div class="brandbar">
+  <svg class="mark" viewBox="0 0 96 96" aria-label="WF Menu Designer">
+    <g fill="none" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter">
+      <polyline points="20,54 48,30 76,54" stroke="#D9763C"/>
+      <polyline points="20,72 48,48 76,72" stroke="#5C6536"/>
+    </g>
+  </svg>
+  <div class="word">
+    <span class="t1">WF MENU / HUD DESIGNER</span>
+    <span class="t2">WASP WARFARE · ARMA 2</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="brand-actions">
+    <span class="chip" id="ctrl-count-chip"><b>0</b> controls</span>
+    <span class="chip" id="dialog-chip">WF_Menu · idd 11000</span>
+  </div>
+</div>
+
+<!-- Main 3-column layout -->
+<div class="layout">
+
+  <!-- Left: Palette + Layer list -->
+  <div class="panel panel-left">
+    <div class="panel-hdr"><h2>Add control</h2></div>
+    <div style="padding:8px;flex:0 0 auto;border-bottom:1px solid var(--line)">
+      <div class="palette-label">background</div>
+      <button class="type-btn" data-type="CT_STATIC" data-bg="1" title="Background/frame (CT_STATIC)">
+        <span class="type-dot" style="background:#39414b"></span>CT_STATIC
+      </button>
+      <div class="palette-divider"></div>
+      <div class="palette-label">controls</div>
+      <button class="type-btn" data-type="CT_BUTTON" title="Button (CT_BUTTON)">
+        <span class="type-dot" style="background:#2a5a8c"></span>CT_BUTTON
+      </button>
+      <button class="type-btn" data-type="RscShortcutButton" title="Shortcut button (main menu style)">
+        <span class="type-dot" style="background:#4bb8c8"></span>ShortcutBtn
+      </button>
+      <button class="type-btn" data-type="CT_CLICKABLETEXT" title="Clickable text / icon (CT_CLICKABLETEXT)">
+        <span class="type-dot" style="background:#7a8a38"></span>ClickText
+      </button>
+      <button class="type-btn" data-type="CT_LISTBOX" title="List box (CT_LISTBOX)">
+        <span class="type-dot" style="background:#884488"></span>CT_LISTBOX
+      </button>
+      <button class="type-btn" data-type="CT_COMBO" title="Combo / dropdown (CT_COMBO)">
+        <span class="type-dot" style="background:#b88820"></span>CT_COMBO
+      </button>
+      <button class="type-btn" data-type="CT_EDIT" title="Text edit (CT_EDIT)">
+        <span class="type-dot" style="background:#a04040"></span>CT_EDIT
+      </button>
+      <button class="type-btn" data-type="CT_STRUCTUREDTEXT" title="Structured text (CT_STRUCTUREDTEXT)">
+        <span class="type-dot" style="background:#6a9040"></span>StructText
+      </button>
+      <button class="type-btn" data-type="CT_CONTROLS_GROUP" title="Controls group (CT_CONTROLS_GROUP)">
+        <span class="type-dot" style="background:#4444aa"></span>CtrlGroup
+      </button>
+    </div>
+    <div class="panel-hdr" style="margin-top:0"><h2>Layers</h2></div>
+    <div class="scroll" id="layer-list"></div>
+  </div>
+
+  <!-- Center: Canvas -->
+  <div class="panel panel-center">
+    <div class="canvas-toolbar">
+      <label><input type="checkbox" id="snap-chk"> Grid snap</label>
+      <span class="snap-label">Grid:</span>
+      <select id="snap-size" style="width:58px;background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:3px;padding:3px 5px;font-size:10px;font-family:'JetBrains Mono',monospace">
+        <option value="0.01">1%</option>
+        <option value="0.005">0.5%</option>
+        <option value="0.02">2%</option>
+      </select>
+      <div style="flex:1"></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#556" id="cursor-pos">x:0 y:0</span>
+      <button class="sm" id="zoom-out" title="Zoom out">−</button>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;min-width:36px;text-align:center" id="zoom-label">100%</span>
+      <button class="sm" id="zoom-in" title="Zoom in">+</button>
+      <button class="sm" id="zoom-fit" title="Fit to view">fit</button>
+    </div>
+    <div class="canvas-wrap" id="canvas-wrap">
+      <div class="stage" id="stage">
+        <!-- controls rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Inspector + Export -->
+  <div class="panel panel-right">
+    <div class="panel-hdr"><h2>Inspector</h2></div>
+    <div class="scroll" id="inspector-wrap">
+      <div class="inspector-placeholder" id="inspector-placeholder">Select a control<br>to edit its properties</div>
+      <div class="inspector" id="inspector" style="display:none">
+        <div class="field-row">
+          <label>Name</label>
+          <input type="text" id="f-name" placeholder="ControlName">
+        </div>
+        <div class="field-row">
+          <label>IDC</label>
+          <input type="number" id="f-idc" placeholder="-2">
+        </div>
+        <div class="field-row">
+          <label>Type</label>
+          <select id="f-type">
+            <option value="CT_STATIC">CT_STATIC (0)</option>
+            <option value="CT_BUTTON">CT_BUTTON (1)</option>
+            <option value="CT_EDIT">CT_EDIT (2)</option>
+            <option value="CT_COMBO">CT_COMBO (4)</option>
+            <option value="CT_LISTBOX">CT_LISTBOX (5)</option>
+            <option value="CT_CLICKABLETEXT">CT_CLICKABLETEXT (11)</option>
+            <option value="CT_STRUCTUREDTEXT">CT_STRUCTUREDTEXT (13)</option>
+            <option value="CT_CONTROLS_GROUP">CT_CONTROLS_GROUP (15)</option>
+            <option value="RscShortcutButton">RscShortcutButton (16)</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label>Text / Tooltip</label>
+          <input type="text" id="f-text" placeholder="">
+        </div>
+        <div class="field-row">
+          <label>Parent class</label>
+          <input type="text" id="f-parent" placeholder="RscText">
+        </div>
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div class="field-row">
+          <label>Position &amp; Size (0–1 fractions)</label>
+          <div class="grid-2">
+            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">x</label><input type="number" id="f-x" step="0.001" min="0" max="1"></div>
+            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">y</label><input type="number" id="f-y" step="0.001" min="0" max="1"></div>
+            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">w</label><input type="number" id="f-w" step="0.001" min="0.001" max="1"></div>
+            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">h</label><input type="number" id="f-h" step="0.001" min="0.001" max="1"></div>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div class="field-row">
+          <label>Section</label>
+          <select id="f-section">
+            <option value="controls">controls</option>
+            <option value="controlsBackground">controlsBackground</option>
+          </select>
+        </div>
+        <div class="btnbar">
+          <button id="apply-btn" class="primary sm">Apply</button>
+          <button id="delete-btn" class="sm" style="border-color:var(--danger);color:#e88">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export panel -->
+    <div class="export-panel">
+      <div class="export-panel-hdr" id="export-toggle">
+        <h2>Export / Load .hpp</h2>
+        <span class="tog" id="export-tog-label">▲</span>
+      </div>
+      <div class="export-body open" id="export-body">
+        <textarea id="export-out" readonly placeholder="Click Export to generate..." rows="8"></textarea>
+        <div class="btnbar">
+          <button class="sm primary" id="export-btn">Export</button>
+          <button class="sm" id="copy-btn">Copy</button>
+          <button class="sm" id="download-btn">Save .hpp</button>
+        </div>
+        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:4px">Load .hpp (paste class controls {...})</div>
+        <textarea id="load-in" placeholder="Paste class controls { ... }; here" rows="5"></textarea>
+        <div class="btnbar">
+          <button class="sm" id="load-btn">Load</button>
+        </div>
+        <div id="load-msg" style="font-size:10px;color:#556;font-family:'JetBrains Mono',monospace;margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Model
+// ============================================================
+const TYPE_NUM = {
+  CT_STATIC:0, CT_BUTTON:1, CT_EDIT:2, CT_COMBO:4,
+  CT_LISTBOX:5, CT_CLICKABLETEXT:11, CT_STRUCTUREDTEXT:13,
+  CT_CONTROLS_GROUP:15, RscShortcutButton:16,
+  CT_LISTNBOX:102, RscXSliderH:43, RscMapControl:101
+};
+const TYPE_NAME = Object.fromEntries(Object.entries(TYPE_NUM).map(([k,v])=>[v,k]));
+
+const TYPE_DOT_COLOR = {
+  CT_STATIC:'#39414b', CT_BUTTON:'#2a5a8c', RscShortcutButton:'#4bb8c8',
+  CT_CLICKABLETEXT:'#7a8a38', CT_LISTBOX:'#884488', CT_COMBO:'#b88820',
+  CT_STRUCTUREDTEXT:'#6a9040', CT_EDIT:'#a04040', CT_CONTROLS_GROUP:'#4444aa',
+  CT_LISTNBOX:'#a06070', RscXSliderH:'#609060', RscMapControl:'#208060'
+};
+
+// Arma dialog SafeZone: 16:9 unit-square -> pixel mapping
+// Dialog coords: 0..1 = full screen. We render at STAGE_W x STAGE_H.
+const STAGE_W = 800;
+const STAGE_H = 450; // 16:9
+
+let model = { controls: [], controlsBackground: [] };
+let nextIdcBase = 20000;
+let selectedId = null;
+let zoom = 1.0;
+let idCounter = 0;
+
+function genId() { return ++idCounter; }
+
+function makeCtrl(overrides) {
+  const type_name = overrides.type_name || overrides.type_key || 'CT_STATIC';
+  const n = {
+    _id: genId(),
+    name: overrides.name || (type_name + '_' + (idCounter)),
+    parent: overrides.parent || '',
+    idc: overrides.idc !== undefined ? overrides.idc : -2,
+    type: overrides.type !== undefined ? overrides.type : (TYPE_NUM[type_name] || 0),
+    type_name: type_name,
+    x: overrides.x !== undefined ? overrides.x : 0.3,
+    y: overrides.y !== undefined ? overrides.y : 0.3,
+    w: overrides.w !== undefined ? overrides.w : 0.2,
+    h: overrides.h !== undefined ? overrides.h : 0.06,
+    text: overrides.text || '',
+    tooltip: overrides.tooltip || '',
+    action: overrides.action || '',
+    section: overrides.section || 'controls'
+  };
+  return n;
+}
+
+// ============================================================
+// Load dialogs.json on boot
+// ============================================================
+async function loadJson() {
+  try {
+    const r = await fetch('assets/data/dialogs.json');
+    const data = await r.json();
+    const wfMenu = data.WF_Menu;
+    if (!wfMenu) { console.warn('WF_Menu not in JSON'); return; }
+
+    model.controlsBackground = (wfMenu.controlsBackground || []).map(c => makeCtrl({
+      ...c,
+      type_name: c.type_name || TYPE_NAME[c.type] || 'CT_STATIC',
+      section: 'controlsBackground'
+    }));
+
+    model.controls = (wfMenu.controls || []).map(c => makeCtrl({
+      ...c,
+      type_name: c.type_name || TYPE_NAME[c.type] || 'CT_STATIC',
+      section: 'controls'
+    }));
+
+    render();
+  } catch(e) {
+    console.error('Failed to load dialogs.json', e);
+  }
+}
+
+// ============================================================
+// Stage + zoom
+// ============================================================
+const stage = document.getElementById('stage');
+const zoomLabel = document.getElementById('zoom-label');
+
+function setZoom(z) {
+  zoom = Math.max(0.3, Math.min(3, z));
+  stage.style.width = (STAGE_W * zoom) + 'px';
+  stage.style.height = (STAGE_H * zoom) + 'px';
+  zoomLabel.textContent = Math.round(zoom * 100) + '%';
+  renderControls();
+}
+
+document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom + 0.15));
+document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom - 0.15));
+document.getElementById('zoom-fit').addEventListener('click', () => {
+  const wrap = document.getElementById('canvas-wrap');
+  const wz = (wrap.clientWidth - 48) / STAGE_W;
+  const hz = (wrap.clientHeight - 48) / STAGE_H;
+  setZoom(Math.min(wz, hz));
+});
+
+// ============================================================
+// Render
+// ============================================================
+function allControls() {
+  return [...model.controlsBackground, ...model.controls];
+}
+
+function getCtrlById(id) {
+  return allControls().find(c => c._id === id);
+}
+
+function render() {
+  renderControls();
+  renderLayers();
+  renderInspector();
+  updateChip();
+}
+
+function updateChip() {
+  const total = model.controls.length + model.controlsBackground.length;
+  document.getElementById('ctrl-count-chip').innerHTML = '<b>' + total + '</b> controls';
+}
+
+function typeClass(type_name) {
+  if (type_name === 'RscShortcutButton' || type_name === 'RscShortcutButtonMain') return 't-RscShortcutButton';
+  return 't-' + (type_name || 'CT_STATIC');
+}
+
+function ctrlLabel(c) {
+  const txt = c.text ? c.text.replace(/^\$STR_WF_/, '').replace(/^\$STR_WF_MAIN_/, '') : '';
+  return txt || c.name;
+}
+
+function renderControls() {
+  // Remove all ctrl-box children
+  [...stage.querySelectorAll('.ctrl-box')].forEach(el => el.remove());
+
+  const all = allControls();
+  all.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'ctrl-box ' + typeClass(c.type_name);
+    if (c._id === selectedId) el.classList.add('selected');
+
+    const px = Math.round(c.x * STAGE_W * zoom);
+    const py = Math.round(c.y * STAGE_H * zoom);
+    const pw = Math.max(6, Math.round(c.w * STAGE_W * zoom));
+    const ph = Math.max(4, Math.round(c.h * STAGE_H * zoom));
+
+    el.style.left = px + 'px';
+    el.style.top = py + 'px';
+    el.style.width = pw + 'px';
+    el.style.height = ph + 'px';
+    el.style.zIndex = i + 1;
+    el.dataset.id = c._id;
+    el.title = c.name + (c.tooltip ? '\n' + c.tooltip : '');
+
+    // Label
+    const lbl = document.createElement('span');
+    lbl.textContent = ctrlLabel(c);
+    lbl.style.pointerEvents = 'none';
+    el.appendChild(lbl);
+
+    // Resize handle
+    const rh = document.createElement('div');
+    rh.className = 'resize-handle';
+    rh.dataset.resize = '1';
+    el.appendChild(rh);
+
+    // Events
+    el.addEventListener('mousedown', onCtrlMouseDown);
+
+    stage.appendChild(el);
+  });
+}
+
+// ============================================================
+// Drag + Resize
+// ============================================================
+let dragging = null; // {_id, mode:'move'|'resize', startMx, startMy, startX, startY, startW, startH}
+
+function snapVal(v) {
+  if (!document.getElementById('snap-chk').checked) return v;
+  const step = parseFloat(document.getElementById('snap-size').value) || 0.01;
+  return Math.round(v / step) * step;
+}
+
+function onCtrlMouseDown(e) {
+  const id = parseInt(e.currentTarget.dataset.id);
+  selectCtrl(id);
+
+  const ctrl = getCtrlById(id);
+  if (!ctrl) return;
+
+  const isResize = e.target.dataset.resize === '1';
+  dragging = {
+    _id: id,
+    mode: isResize ? 'resize' : 'move',
+    startMx: e.clientX,
+    startMy: e.clientY,
+    startX: ctrl.x,
+    startY: ctrl.y,
+    startW: ctrl.w,
+    startH: ctrl.h
+  };
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+document.addEventListener('mousemove', e => {
+  if (!dragging) {
+    // Update cursor position display
+    const stageRect = stage.getBoundingClientRect();
+    const mx = e.clientX - stageRect.left;
+    const my = e.clientY - stageRect.top;
+    const fx = mx / (STAGE_W * zoom);
+    const fy = my / (STAGE_H * zoom);
+    if (fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1) {
+      document.getElementById('cursor-pos').textContent =
+        'x:' + fx.toFixed(3) + ' y:' + fy.toFixed(3);
+    }
+    return;
+  }
+
+  const dx = (e.clientX - dragging.startMx) / (STAGE_W * zoom);
+  const dy = (e.clientY - dragging.startMy) / (STAGE_H * zoom);
+  const ctrl = getCtrlById(dragging._id);
+  if (!ctrl) return;
+
+  if (dragging.mode === 'move') {
+    ctrl.x = snapVal(Math.max(0, Math.min(1 - ctrl.w, dragging.startX + dx)));
+    ctrl.y = snapVal(Math.max(0, Math.min(1 - ctrl.h, dragging.startY + dy)));
+  } else {
+    ctrl.w = snapVal(Math.max(0.01, Math.min(1 - ctrl.x, dragging.startW + dx)));
+    ctrl.h = snapVal(Math.max(0.005, Math.min(1 - ctrl.y, dragging.startH + dy)));
+  }
+
+  renderControls();
+  if (ctrl._id === selectedId) syncInspectorPos(ctrl);
+});
+
+document.addEventListener('mouseup', () => {
+  if (dragging) {
+    dragging = null;
+    renderLayers();
+  }
+});
+
+// Click on empty stage to deselect
+stage.addEventListener('mousedown', e => {
+  if (e.target === stage) { selectCtrl(null); }
+});
+
+// ============================================================
+// Selection
+// ============================================================
+function selectCtrl(id) {
+  selectedId = id;
+  render();
+}
+
+// ============================================================
+// Inspector
+// ============================================================
+function renderInspector() {
+  const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
+  if (!ctrl) {
+    document.getElementById('inspector-placeholder').style.display = '';
+    document.getElementById('inspector').style.display = 'none';
+    return;
+  }
+  document.getElementById('inspector-placeholder').style.display = 'none';
+  document.getElementById('inspector').style.display = '';
+
+  document.getElementById('f-name').value = ctrl.name || '';
+  document.getElementById('f-idc').value = ctrl.idc !== undefined ? ctrl.idc : -2;
+  document.getElementById('f-type').value = ctrl.type_name || 'CT_STATIC';
+  document.getElementById('f-text').value = ctrl.text || '';
+  document.getElementById('f-parent').value = ctrl.parent || '';
+  document.getElementById('f-x').value = parseFloat(ctrl.x.toFixed(6));
+  document.getElementById('f-y').value = parseFloat(ctrl.y.toFixed(6));
+  document.getElementById('f-w').value = parseFloat(ctrl.w.toFixed(6));
+  document.getElementById('f-h').value = parseFloat(ctrl.h.toFixed(6));
+  document.getElementById('f-section').value = ctrl.section || 'controls';
+}
+
+function syncInspectorPos(ctrl) {
+  document.getElementById('f-x').value = parseFloat(ctrl.x.toFixed(6));
+  document.getElementById('f-y').value = parseFloat(ctrl.y.toFixed(6));
+  document.getElementById('f-w').value = parseFloat(ctrl.w.toFixed(6));
+  document.getElementById('f-h').value = parseFloat(ctrl.h.toFixed(6));
+}
+
+// Apply inspector -> model
+document.getElementById('apply-btn').addEventListener('click', () => {
+  const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
+  if (!ctrl) return;
+
+  const newName = document.getElementById('f-name').value.trim();
+  const newSection = document.getElementById('f-section').value;
+  const newTypeName = document.getElementById('f-type').value;
+
+  ctrl.name = newName || ctrl.name;
+  ctrl.idc = parseInt(document.getElementById('f-idc').value) || -2;
+  ctrl.text = document.getElementById('f-text').value;
+  ctrl.parent = document.getElementById('f-parent').value.trim();
+  ctrl.x = parseFloat(document.getElementById('f-x').value) || 0;
+  ctrl.y = parseFloat(document.getElementById('f-y').value) || 0;
+  ctrl.w = parseFloat(document.getElementById('f-w').value) || 0.1;
+  ctrl.h = parseFloat(document.getElementById('f-h').value) || 0.04;
+
+  // Handle type change
+  if (newTypeName !== ctrl.type_name) {
+    ctrl.type_name = newTypeName;
+    ctrl.type = TYPE_NUM[newTypeName] !== undefined ? TYPE_NUM[newTypeName] : ctrl.type;
+  }
+
+  // Handle section move
+  if (newSection !== ctrl.section) {
+    // Remove from old section
+    model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
+    ctrl.section = newSection;
+    model[newSection].push(ctrl);
+  }
+
+  render();
+});
+
+// Delete
+document.getElementById('delete-btn').addEventListener('click', () => {
+  if (selectedId === null) return;
+  const ctrl = getCtrlById(selectedId);
+  if (!ctrl) return;
+  model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
+  selectedId = null;
+  render();
+});
+
+// Live number input update (x/y/w/h) syncs canvas while typing
+['f-x','f-y','f-w','f-h'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const ctrl = selectedId !== null ? getCtrlById(selectedId) : null;
+    if (!ctrl) return;
+    const v = parseFloat(document.getElementById(id).value);
+    if (isNaN(v)) return;
+    const key = id.replace('f-', '');
+    ctrl[key] = v;
+    renderControls();
+  });
+});
+
+// ============================================================
+// Layers list
+// ============================================================
+function renderLayers() {
+  const el = document.getElementById('layer-list');
+  el.innerHTML = '';
+
+  function addSection(arr, label, isBg) {
+    if (arr.length === 0) return;
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:5px 10px;font-size:9px;font-family:JetBrains Mono,monospace;color:#39414b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(57,65,75,.3)';
+    hdr.textContent = label;
+    el.appendChild(hdr);
+
+    arr.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'layer-item' + (c._id === selectedId ? ' selected' : '') + (isBg ? ' bg-ctrl' : '');
+      row.dataset.id = c._id;
+
+      const dot = document.createElement('span');
+      dot.className = 'layer-dot';
+      dot.style.background = TYPE_DOT_COLOR[c.type_name] || '#39414b';
+      row.appendChild(dot);
+
+      const name = document.createElement('span');
+      name.className = 'layer-name';
+      name.textContent = c.name;
+      name.title = c.name;
+      row.appendChild(name);
+
+      const idc = document.createElement('span');
+      idc.className = 'layer-idc';
+      idc.textContent = c.idc !== undefined && c.idc !== -2 ? c.idc : '';
+      row.appendChild(idc);
+
+      const del = document.createElement('button');
+      del.className = 'layer-del';
+      del.textContent = '×';
+      del.title = 'Delete';
+      del.addEventListener('click', ev => {
+        ev.stopPropagation();
+        model[c.section] = model[c.section].filter(x => x._id !== c._id);
+        if (selectedId === c._id) selectedId = null;
+        render();
+      });
+      row.appendChild(del);
+
+      row.addEventListener('click', () => selectCtrl(c._id));
+      el.appendChild(row);
+    });
+  }
+
+  addSection(model.controlsBackground, 'controlsBackground', true);
+  addSection(model.controls, 'controls', false);
+}
+
+// ============================================================
+// Palette: Add control
+// ============================================================
+document.querySelectorAll('.type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const typeName = btn.dataset.type;
+    const isBg = btn.dataset.bg === '1';
+    const idc = nextIdcBase++;
+    const ctrl = makeCtrl({
+      type_name: typeName,
+      type: TYPE_NUM[typeName] !== undefined ? TYPE_NUM[typeName] : 0,
+      idc: isBg ? -2 : idc,
+      name: typeName + '_' + idc,
+      section: isBg ? 'controlsBackground' : 'controls',
+      x: 0.25,
+      y: 0.3,
+      w: typeName === 'RscShortcutButton' ? 0.313727 : 0.2,
+      h: typeName === 'RscShortcutButton' ? 0.104575 : 0.04
+    });
+    model[ctrl.section].push(ctrl);
+    selectedId = ctrl._id;
+    render();
+  });
+});
+
+// ============================================================
+// Export: generate class controls { ... } block
+// ============================================================
+const TYPE_NUM_EXPORT = {
+  CT_STATIC:0, CT_BUTTON:1, CT_EDIT:2, CT_COMBO:4, CT_LISTBOX:5,
+  CT_CLICKABLETEXT:11, CT_STRUCTUREDTEXT:13, CT_CONTROLS_GROUP:15,
+  RscShortcutButton:16, CT_LISTNBOX:102, RscXSliderH:43, RscMapControl:101
+};
+
+function round6(v) { return parseFloat(v.toFixed(6)); }
+
+function exportHpp() {
+  const lines = [];
+  const allCtrl = [...model.controlsBackground, ...model.controls];
+
+  // Emit full dialog class
+  lines.push('class WF_Menu {');
+  lines.push('\tidd = 11000;');
+  lines.push('\tmovingEnable = 1;');
+  lines.push('');
+
+  // controlsBackground
+  lines.push('\tclass controlsBackground {');
+  model.controlsBackground.forEach(c => {
+    lines.push('\t\tclass ' + c.name + (c.parent ? ' : ' + c.parent : '') + ' {');
+    if (c.idc !== undefined && c.idc !== -2) lines.push('\t\t\tidc = ' + c.idc + ';');
+    if (c.type !== undefined) lines.push('\t\t\ttype = ' + (TYPE_NUM_EXPORT[c.type_name] !== undefined ? TYPE_NUM_EXPORT[c.type_name] : c.type) + ';');
+    lines.push('\t\t\tx = ' + round6(c.x) + ';');
+    lines.push('\t\t\ty = ' + round6(c.y) + ';');
+    lines.push('\t\t\tw = ' + round6(c.w) + ';');
+    lines.push('\t\t\th = ' + round6(c.h) + ';');
+    if (c.moving) lines.push('\t\t\tmoving = ' + c.moving + ';');
+    if (c.text) lines.push('\t\t\ttext = "' + c.text + '";');
+    lines.push('\t\t};');
+  });
+  lines.push('\t};');
+  lines.push('');
+
+  // controls
+  lines.push('\tclass controls {');
+  model.controls.forEach(c => {
+    lines.push('\t\tclass ' + c.name + (c.parent ? ' : ' + c.parent : '') + ' {');
+    if (c.idc !== undefined && c.idc !== -2) lines.push('\t\t\tidc = ' + c.idc + ';');
+    const typeNum = TYPE_NUM_EXPORT[c.type_name];
+    if (typeNum !== undefined) lines.push('\t\t\ttype = ' + typeNum + ';');
+    lines.push('\t\t\tx = ' + round6(c.x) + ';');
+    lines.push('\t\t\ty = ' + round6(c.y) + ';');
+    lines.push('\t\t\tw = ' + round6(c.w) + ';');
+    lines.push('\t\t\th = ' + round6(c.h) + ';');
+    if (c.text) lines.push('\t\t\ttext = "' + c.text + '";');
+    if (c.action) lines.push('\t\t\taction = "' + c.action + '";');
+    if (c.tooltip) lines.push('\t\t\ttooltip = "' + c.tooltip + '";');
+    if (c.onButtonClick) lines.push('\t\t\tonButtonClick = "' + c.onButtonClick + '";');
+    lines.push('\t\t};');
+  });
+  lines.push('\t};');
+  lines.push('};');
+
+  return lines.join('\n');
+}
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  document.getElementById('export-out').value = exportHpp();
+});
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const txt = document.getElementById('export-out').value;
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).catch(() => {
+    document.getElementById('export-out').select();
+    document.execCommand('copy');
+  });
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  const txt = document.getElementById('export-out').value;
+  if (!txt) return;
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
+  a.download = 'WF_Menu.hpp';
+  a.click();
+});
+
+// ============================================================
+// Load .hpp (JS port of extractor: minimal subset)
+// ============================================================
+function parseHppControls(src) {
+  const controls = [];
+  const controlsBg = [];
+  const errors = [];
+
+  // Try to find class controlsBackground { ... } and class controls { ... }
+  function extractSectionBody(text, sectionName) {
+    const re = new RegExp('class\\s+' + sectionName + '\\s*\\{');
+    const m = re.exec(text);
+    if (!m) return null;
+    let depth = 0, start = m.index + m[0].length - 1;
+    for (let i = start; i < text.length; i++) {
+      if (text[i] === '{') depth++;
+      else if (text[i] === '}') { depth--; if (depth === 0) return text.slice(start, i + 1); }
+    }
+    return null;
+  }
+
+  function parseSection(body, sectionName) {
+    if (!body) return [];
+    const result = [];
+    const innerRe = /class\s+(\w+)\s*(?::\s*(\w+)\s*)?\{/g;
+    let m;
+    while ((m = innerRe.exec(body)) !== null) {
+      const name = m[1], parent = m[2] || '';
+      const start = m.index + m[0].length - 1;
+      let depth = 0, end = start;
+      for (let i = start; i < body.length; i++) {
+        if (body[i] === '{') depth++;
+        else if (body[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+      }
+      const cb = body.slice(start, end + 1);
+      const props = {};
+      const propRe = /^\s*(\w+)\s*(?:\[\])?\s*=\s*(.+?)\s*;/gm;
+      let pm;
+      while ((pm = propRe.exec(cb)) !== null) {
+        const k = pm[1], rv = pm[2].trim();
+        if (rv.startsWith('{')) {
+          const nums = rv.match(/[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?/g);
+          props[k] = nums ? nums.map(Number) : [];
+        } else {
+          const n = parseFloat(rv);
+          props[k] = isNaN(n) ? rv.replace(/^"|"$/g,'') : n;
+        }
+      }
+
+      // Infer type
+      const TYPE_FROM_PARENT = {
+        RscText:0, RscText_Title:0, RscText_SubTitle:0, RscText_Small:0, RscFrame:0, IGUIBack:0,
+        RscButton:1, RscButton_Main:1, RscButton_Back:1, RscButton_Exit:1,
+        RscEdit:2, RscCombo:4, RscListBox:5,
+        RscClickableText:11, RscStructuredText:13, RscControlsGroup:15,
+        RscShortcutButton:16, RscShortcutButtonMain:16, RscIGUIShortcutButton:16,
+        RscListnBox:102, RscListBoxA:102
+      };
+      const typeNum = props.type !== undefined ? parseInt(props.type) : (TYPE_FROM_PARENT[parent] !== undefined ? TYPE_FROM_PARENT[parent] : 0);
+      const typeName = TYPE_NAME[typeNum] || (parent.startsWith('RscShortcut') ? 'RscShortcutButton' : 'CT_STATIC');
+
+      result.push(makeCtrl({
+        name, parent,
+        idc: props.idc !== undefined ? parseInt(props.idc) : -2,
+        type: typeNum,
+        type_name: typeName,
+        x: parseFloat(props.x) || 0,
+        y: parseFloat(props.y) || 0,
+        w: parseFloat(props.w) || 0.1,
+        h: parseFloat(props.h) || 0.04,
+        text: props.text || '',
+        action: props.action || '',
+        tooltip: props.tooltip || '',
+        section: sectionName === 'controlsBackground' ? 'controlsBackground' : 'controls'
+      }));
+    }
+    return result;
+  }
+
+  const bgBody = extractSectionBody(src, 'controlsBackground');
+  const ctrlBody = extractSectionBody(src, 'controls');
+
+  if (!bgBody && !ctrlBody) {
+    errors.push('No controlsBackground or controls sections found.');
+  }
+
+  return {
+    controlsBackground: parseSection(bgBody, 'controlsBackground'),
+    controls: parseSection(ctrlBody, 'controls'),
+    errors
+  };
+}
+
+document.getElementById('load-btn').addEventListener('click', () => {
+  const src = document.getElementById('load-in').value.trim();
+  if (!src) { document.getElementById('load-msg').textContent = 'Nothing to load.'; return; }
+  const {controlsBackground, controls, errors} = parseHppControls(src);
+  if (errors.length) {
+    document.getElementById('load-msg').textContent = 'Error: ' + errors.join(' ');
+    return;
+  }
+  model.controlsBackground = controlsBackground;
+  model.controls = controls;
+  selectedId = null;
+  render();
+  const total = controlsBackground.length + controls.length;
+  document.getElementById('load-msg').textContent = 'Loaded ' + total + ' controls (' + controlsBackground.length + ' bg + ' + controls.length + ' ctrl).';
+});
+
+// ============================================================
+// Export panel toggle
+// ============================================================
+document.getElementById('export-toggle').addEventListener('click', () => {
+  const body = document.getElementById('export-body');
+  const lbl = document.getElementById('export-tog-label');
+  if (body.classList.contains('open')) {
+    body.classList.remove('open');
+    lbl.textContent = '▼';
+  } else {
+    body.classList.add('open');
+    lbl.textContent = '▲';
+  }
+});
+
+// ============================================================
+// Boot
+// ============================================================
+setZoom(1.0);
+loadJson();
+</script>
+</body>
+</html>
