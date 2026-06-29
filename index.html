@@ -47,6 +47,7 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
   border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin-bottom:4px;
   color:var(--bone);font-family:Inter,sans-serif;font-size:11px;cursor:pointer;transition:all .12s}
 .type-btn:hover{border-color:var(--orange);background:rgba(217,118,60,.08)}
+.type-btn:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 .type-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
 .palette-divider{height:1px;background:var(--line);margin:6px 0}
 .palette-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;padding:3px 4px 5px;text-transform:uppercase;letter-spacing:.5px}
@@ -54,7 +55,7 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 /* ---- Canvas area ---- */
 .canvas-toolbar{padding:8px 12px;border-bottom:1px solid var(--line);background:#101317;
   display:flex;align-items:center;gap:10px;flex:0 0 auto}
-.canvas-toolbar label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace}
+.canvas-toolbar label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;cursor:pointer}
 .canvas-toolbar input[type=checkbox]{accent-color:var(--orange)}
 .canvas-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;
   padding:24px;background:#0d1014}
@@ -93,8 +94,9 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .layer-item.bg-ctrl{border-left:2px solid var(--line)}
 .layer-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
 .layer-idc{font-family:'JetBrains Mono',monospace;font-size:9px;color:#556;margin-left:auto;white-space:nowrap}
-.layer-del{margin-left:4px;background:none;border:none;color:#556;cursor:pointer;font-size:11px;padding:0 2px}
+.layer-del{margin-left:4px;background:none;border:none;color:#556;cursor:pointer;font-size:11px;padding:0 2px;border-radius:3px}
 .layer-del:hover{color:var(--danger)}
+.layer-del:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 .layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px}
 
 /* ---- Inspector ---- */
@@ -105,6 +107,7 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .field-row input,.field-row select{width:100%;background:var(--gunmetal);border:1px solid var(--line);
   color:var(--bone);border-radius:4px;padding:5px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
 .field-row input:focus,.field-row select:focus{border-color:var(--orange)}
+.field-row input:focus-visible,.field-row select:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .inspector-placeholder{font-size:11px;color:#556;font-family:'JetBrains Mono',monospace;
   padding:20px 12px;text-align:center;line-height:1.6}
@@ -113,6 +116,7 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
 .export-panel{border-top:1px solid var(--line);flex:0 0 auto}
 .export-panel-hdr{padding:8px 12px;border-bottom:1px solid var(--line);background:var(--gunmetal);cursor:pointer;
   display:flex;align-items:center;justify-content:space-between;user-select:none}
+.export-panel-hdr:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
 .export-panel-hdr h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa3ad}
 .export-panel-hdr .tog{font-size:10px;color:#556}
 .export-body{padding:8px 12px;display:none}
@@ -121,14 +125,30 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
   color:#a8d890;font-family:'JetBrains Mono',monospace;font-size:9px;border-radius:4px;
   padding:6px;resize:vertical;outline:none;min-height:100px}
 .export-body textarea:focus{border-color:var(--orange)}
+.export-body textarea:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
 .btnbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 button{cursor:pointer;background:var(--steel2);color:var(--bone);border:1px solid var(--line);
   border-radius:4px;padding:5px 10px;font-family:Inter,sans-serif;font-size:11px}
 button:hover{border-color:var(--orange)}
+button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 button.primary{background:var(--orange);border-color:var(--orange);color:#1a1208;font-weight:600}
 button.primary:hover{background:var(--orange-deep);border-color:var(--orange-deep)}
 button.sm{font-size:10px;padding:4px 8px}
+button.flash{animation:btn-flash .4s ease}
+@keyframes btn-flash{0%{background:var(--olive);border-color:var(--olive);color:#fff}100%{}}
 .snap-label{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace}
+
+/* ---- Status / live region ---- */
+#status-msg{font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;min-height:14px;margin-top:4px}
+#status-msg.ok{color:var(--olive)}
+#status-msg.err{color:var(--danger)}
+
+/* ---- Cross-link chip ---- */
+.xlink-btn{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:#8b939c;border:1px solid var(--line);border-radius:10px;padding:3px 9px;background:#0d1014;
+  text-decoration:none;cursor:pointer;transition:border-color .12s,color .12s}
+.xlink-btn:hover,.xlink-btn:focus-visible{border-color:var(--orange);color:var(--orange);outline:none}
+.xlink-dot{width:6px;height:6px;border-radius:50%;background:#884488;flex:0 0 6px}
 
 /* ---- Scrollbars ---- */
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -139,106 +159,113 @@ button.sm{font-size:10px;padding:4px 8px}
 <body>
 
 <!-- Brand bar -->
-<div class="brandbar">
-  <svg class="mark" viewBox="0 0 96 96" aria-label="WF Menu Designer">
+<div class="brandbar" role="banner">
+  <svg class="mark" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
     <g fill="none" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter">
       <polyline points="20,54 48,30 76,54" stroke="#D9763C"/>
       <polyline points="20,72 48,48 76,72" stroke="#5C6536"/>
     </g>
   </svg>
-  <div class="word">
+  <div class="word" aria-label="WF Menu / HUD Designer — WASP Warfare Arma 2">
     <span class="t1">WF MENU / HUD DESIGNER</span>
     <span class="t2">WASP WARFARE · ARMA 2</span>
   </div>
   <div class="spacer"></div>
   <div class="brand-actions">
-    <span class="chip" id="ctrl-count-chip"><b>0</b> controls</span>
+    <span class="chip" id="ctrl-count-chip" aria-live="polite" aria-atomic="true"><b>0</b> controls</span>
     <span class="chip" id="dialog-chip">WF_Menu · idd 11000</span>
+    <a class="xlink-btn" id="garrison-link" href="https://rayswaynl.github.io/garrison-editor/" target="_blank" rel="noopener"
+       title="Open Garrison Editor — shares current layout via localStorage" aria-label="Open Garrison Editor">
+      <span class="xlink-dot" aria-hidden="true"></span>Garrison Editor ↗
+    </a>
   </div>
 </div>
 
 <!-- Main 3-column layout -->
-<div class="layout">
+<div class="layout" role="main">
 
   <!-- Left: Palette + Layer list -->
-  <div class="panel panel-left">
-    <div class="panel-hdr"><h2>Add control</h2></div>
-    <div style="padding:8px;flex:0 0 auto;border-bottom:1px solid var(--line)">
-      <div class="palette-label">background</div>
-      <button class="type-btn" data-type="CT_STATIC" data-bg="1" title="Background/frame (CT_STATIC)">
-        <span class="type-dot" style="background:#39414b"></span>CT_STATIC
+  <div class="panel panel-left" role="region" aria-label="Control palette and layers">
+    <div class="panel-hdr"><h2 id="palette-heading">Add control</h2></div>
+    <div style="padding:8px;flex:0 0 auto;border-bottom:1px solid var(--line)" role="group" aria-labelledby="palette-heading">
+      <div class="palette-label" aria-hidden="true">background</div>
+      <button class="type-btn" data-type="CT_STATIC" data-bg="1" title="Background/frame (CT_STATIC)" aria-label="Add CT_STATIC background/frame">
+        <span class="type-dot" style="background:#39414b" aria-hidden="true"></span>CT_STATIC
       </button>
-      <div class="palette-divider"></div>
-      <div class="palette-label">controls</div>
-      <button class="type-btn" data-type="CT_BUTTON" title="Button (CT_BUTTON)">
-        <span class="type-dot" style="background:#2a5a8c"></span>CT_BUTTON
+      <div class="palette-divider" role="separator"></div>
+      <div class="palette-label" aria-hidden="true">controls</div>
+      <button class="type-btn" data-type="CT_BUTTON" title="Button (CT_BUTTON)" aria-label="Add CT_BUTTON">
+        <span class="type-dot" style="background:#2a5a8c" aria-hidden="true"></span>CT_BUTTON
       </button>
-      <button class="type-btn" data-type="RscShortcutButton" title="Shortcut button (main menu style)">
-        <span class="type-dot" style="background:#4bb8c8"></span>ShortcutBtn
+      <button class="type-btn" data-type="RscShortcutButton" title="Shortcut button (main menu style)" aria-label="Add RscShortcutButton">
+        <span class="type-dot" style="background:#4bb8c8" aria-hidden="true"></span>ShortcutBtn
       </button>
-      <button class="type-btn" data-type="CT_CLICKABLETEXT" title="Clickable text / icon (CT_CLICKABLETEXT)">
-        <span class="type-dot" style="background:#7a8a38"></span>ClickText
+      <button class="type-btn" data-type="CT_CLICKABLETEXT" title="Clickable text / icon (CT_CLICKABLETEXT)" aria-label="Add CT_CLICKABLETEXT">
+        <span class="type-dot" style="background:#7a8a38" aria-hidden="true"></span>ClickText
       </button>
-      <button class="type-btn" data-type="CT_LISTBOX" title="List box (CT_LISTBOX)">
-        <span class="type-dot" style="background:#884488"></span>CT_LISTBOX
+      <button class="type-btn" data-type="CT_LISTBOX" title="List box (CT_LISTBOX)" aria-label="Add CT_LISTBOX">
+        <span class="type-dot" style="background:#884488" aria-hidden="true"></span>CT_LISTBOX
       </button>
-      <button class="type-btn" data-type="CT_COMBO" title="Combo / dropdown (CT_COMBO)">
-        <span class="type-dot" style="background:#b88820"></span>CT_COMBO
+      <button class="type-btn" data-type="CT_COMBO" title="Combo / dropdown (CT_COMBO)" aria-label="Add CT_COMBO dropdown">
+        <span class="type-dot" style="background:#b88820" aria-hidden="true"></span>CT_COMBO
       </button>
-      <button class="type-btn" data-type="CT_EDIT" title="Text edit (CT_EDIT)">
-        <span class="type-dot" style="background:#a04040"></span>CT_EDIT
+      <button class="type-btn" data-type="CT_EDIT" title="Text edit (CT_EDIT)" aria-label="Add CT_EDIT text input">
+        <span class="type-dot" style="background:#a04040" aria-hidden="true"></span>CT_EDIT
       </button>
-      <button class="type-btn" data-type="CT_STRUCTUREDTEXT" title="Structured text (CT_STRUCTUREDTEXT)">
-        <span class="type-dot" style="background:#6a9040"></span>StructText
+      <button class="type-btn" data-type="CT_STRUCTUREDTEXT" title="Structured text (CT_STRUCTUREDTEXT)" aria-label="Add CT_STRUCTUREDTEXT">
+        <span class="type-dot" style="background:#6a9040" aria-hidden="true"></span>StructText
       </button>
-      <button class="type-btn" data-type="CT_CONTROLS_GROUP" title="Controls group (CT_CONTROLS_GROUP)">
-        <span class="type-dot" style="background:#4444aa"></span>CtrlGroup
+      <button class="type-btn" data-type="CT_CONTROLS_GROUP" title="Controls group (CT_CONTROLS_GROUP)" aria-label="Add CT_CONTROLS_GROUP">
+        <span class="type-dot" style="background:#4444aa" aria-hidden="true"></span>CtrlGroup
       </button>
     </div>
-    <div class="panel-hdr" style="margin-top:0"><h2>Layers</h2></div>
-    <div class="scroll" id="layer-list"></div>
+    <div class="panel-hdr" style="margin-top:0"><h2 id="layers-heading">Layers</h2></div>
+    <div class="scroll" id="layer-list" role="list" aria-labelledby="layers-heading" aria-live="polite"></div>
   </div>
 
   <!-- Center: Canvas -->
-  <div class="panel panel-center">
-    <div class="canvas-toolbar">
-      <label><input type="checkbox" id="snap-chk"> Grid snap</label>
-      <span class="snap-label">Grid:</span>
-      <select id="snap-size" style="width:58px;background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:3px;padding:3px 5px;font-size:10px;font-family:'JetBrains Mono',monospace">
+  <div class="panel panel-center" role="region" aria-label="Canvas">
+    <div class="canvas-toolbar" role="toolbar" aria-label="Canvas controls">
+      <label>
+        <input type="checkbox" id="snap-chk" aria-label="Enable grid snap">
+        Grid snap
+      </label>
+      <label for="snap-size" class="snap-label">Grid:</label>
+      <select id="snap-size" aria-label="Grid snap size" style="width:58px;background:var(--gunmetal);border:1px solid var(--line);color:var(--bone);border-radius:3px;padding:3px 5px;font-size:10px;font-family:'JetBrains Mono',monospace">
         <option value="0.01">1%</option>
         <option value="0.005">0.5%</option>
         <option value="0.02">2%</option>
       </select>
       <div style="flex:1"></div>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#556" id="cursor-pos">x:0 y:0</span>
-      <button class="sm" id="zoom-out" title="Zoom out">−</button>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;min-width:36px;text-align:center" id="zoom-label">100%</span>
-      <button class="sm" id="zoom-in" title="Zoom in">+</button>
-      <button class="sm" id="zoom-fit" title="Fit to view">fit</button>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#556" id="cursor-pos" aria-live="off">x:0 y:0</span>
+      <button class="sm" id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3ad;min-width:36px;text-align:center" id="zoom-label" aria-live="polite" aria-atomic="true">100%</span>
+      <button class="sm" id="zoom-in" title="Zoom in" aria-label="Zoom in">+</button>
+      <button class="sm" id="zoom-fit" title="Fit canvas to view" aria-label="Fit canvas to view">fit</button>
     </div>
     <div class="canvas-wrap" id="canvas-wrap">
-      <div class="stage" id="stage">
+      <div class="stage" id="stage" role="application" aria-label="Dialog layout canvas — drag controls to reposition, use Escape to deselect">
         <!-- controls rendered here -->
       </div>
     </div>
   </div>
 
   <!-- Right: Inspector + Export -->
-  <div class="panel panel-right">
+  <div class="panel panel-right" role="region" aria-label="Inspector and export">
     <div class="panel-hdr"><h2>Inspector</h2></div>
     <div class="scroll" id="inspector-wrap">
       <div class="inspector-placeholder" id="inspector-placeholder">Select a control<br>to edit its properties</div>
-      <div class="inspector" id="inspector" style="display:none">
+      <div class="inspector" id="inspector" style="display:none" role="form" aria-label="Selected control properties">
         <div class="field-row">
-          <label>Name</label>
-          <input type="text" id="f-name" placeholder="ControlName">
+          <label for="f-name">Name</label>
+          <input type="text" id="f-name" placeholder="ControlName" autocomplete="off">
         </div>
         <div class="field-row">
-          <label>IDC</label>
+          <label for="f-idc">IDC</label>
           <input type="number" id="f-idc" placeholder="-2">
         </div>
         <div class="field-row">
-          <label>Type</label>
+          <label for="f-type">Type</label>
           <select id="f-type">
             <option value="CT_STATIC">CT_STATIC (0)</option>
             <option value="CT_BUTTON">CT_BUTTON (1)</option>
@@ -252,26 +279,38 @@ button.sm{font-size:10px;padding:4px 8px}
           </select>
         </div>
         <div class="field-row">
-          <label>Text / Tooltip</label>
+          <label for="f-text">Text / Tooltip</label>
           <input type="text" id="f-text" placeholder="">
         </div>
         <div class="field-row">
-          <label>Parent class</label>
-          <input type="text" id="f-parent" placeholder="RscText">
+          <label for="f-parent">Parent class</label>
+          <input type="text" id="f-parent" placeholder="RscText" autocomplete="off">
         </div>
-        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
         <div class="field-row">
           <label>Position &amp; Size (0–1 fractions)</label>
           <div class="grid-2">
-            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">x</label><input type="number" id="f-x" step="0.001" min="0" max="1"></div>
-            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">y</label><input type="number" id="f-y" step="0.001" min="0" max="1"></div>
-            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">w</label><input type="number" id="f-w" step="0.001" min="0.001" max="1"></div>
-            <div><label style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">h</label><input type="number" id="f-h" step="0.001" min="0.001" max="1"></div>
+            <div>
+              <label for="f-x" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">x</label>
+              <input type="number" id="f-x" step="0.001" min="0" max="1" aria-label="X position">
+            </div>
+            <div>
+              <label for="f-y" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">y</label>
+              <input type="number" id="f-y" step="0.001" min="0" max="1" aria-label="Y position">
+            </div>
+            <div>
+              <label for="f-w" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">w</label>
+              <input type="number" id="f-w" step="0.001" min="0.001" max="1" aria-label="Width">
+            </div>
+            <div>
+              <label for="f-h" style="font-size:9px;text-transform:none;letter-spacing:0;color:#556">h</label>
+              <input type="number" id="f-h" step="0.001" min="0.001" max="1" aria-label="Height">
+            </div>
           </div>
         </div>
-        <div style="height:1px;background:var(--line);margin:8px 0"></div>
+        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
         <div class="field-row">
-          <label>Section</label>
+          <label for="f-section">Section</label>
           <select id="f-section">
             <option value="controls">controls</option>
             <option value="controlsBackground">controlsBackground</option>
@@ -279,31 +318,33 @@ button.sm{font-size:10px;padding:4px 8px}
         </div>
         <div class="btnbar">
           <button id="apply-btn" class="primary sm">Apply</button>
-          <button id="delete-btn" class="sm" style="border-color:var(--danger);color:#e88">Delete</button>
+          <button id="delete-btn" class="sm" style="border-color:var(--danger);color:#e88" aria-label="Delete selected control">Delete</button>
         </div>
       </div>
     </div>
 
     <!-- Export panel -->
-    <div class="export-panel">
-      <div class="export-panel-hdr" id="export-toggle">
+    <div class="export-panel" role="region" aria-label="Export and load">
+      <div class="export-panel-hdr" id="export-toggle" role="button" tabindex="0"
+           aria-expanded="true" aria-controls="export-body">
         <h2>Export / Load .hpp</h2>
-        <span class="tog" id="export-tog-label">▲</span>
+        <span class="tog" id="export-tog-label" aria-hidden="true">▲</span>
       </div>
       <div class="export-body open" id="export-body">
-        <textarea id="export-out" readonly placeholder="Click Export to generate..." rows="8"></textarea>
+        <label for="export-out" style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px">Generated .hpp</label>
+        <textarea id="export-out" readonly placeholder="Click Export to generate…" rows="8" aria-label="Exported HPP code" aria-live="polite"></textarea>
         <div class="btnbar">
-          <button class="sm primary" id="export-btn">Export</button>
-          <button class="sm" id="copy-btn">Copy</button>
-          <button class="sm" id="download-btn">Save .hpp</button>
+          <button class="sm primary" id="export-btn" aria-label="Generate HPP export">Export</button>
+          <button class="sm" id="copy-btn" aria-label="Copy HPP to clipboard">Copy</button>
+          <button class="sm" id="download-btn" aria-label="Download as WF_Menu.hpp">Save .hpp</button>
         </div>
-        <div style="height:1px;background:var(--line);margin:8px 0"></div>
-        <div style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;margin-bottom:4px">Load .hpp (paste class controls {...})</div>
-        <textarea id="load-in" placeholder="Paste class controls { ... }; here" rows="5"></textarea>
+        <div style="height:1px;background:var(--line);margin:8px 0" role="separator"></div>
+        <label for="load-in" style="font-size:10px;color:#9aa3ad;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px">Load .hpp (paste class controls {...})</label>
+        <textarea id="load-in" placeholder="Paste class controls { ... }; here" rows="5" aria-label="Paste HPP source to import"></textarea>
         <div class="btnbar">
-          <button class="sm" id="load-btn">Load</button>
+          <button class="sm" id="load-btn" aria-label="Load HPP from textarea">Load</button>
         </div>
-        <div id="load-msg" style="font-size:10px;color:#556;font-family:'JetBrains Mono',monospace;margin-top:4px"></div>
+        <div id="status-msg" role="status" aria-live="polite" aria-atomic="true"></div>
       </div>
     </div>
   </div>
@@ -385,6 +426,8 @@ async function loadJson() {
     }));
 
     render();
+    // Auto-generate export on boot so the textarea isn't empty
+    document.getElementById('export-out').value = exportHpp();
   } catch(e) {
     console.error('Failed to load dialogs.json', e);
   }
@@ -411,6 +454,43 @@ document.getElementById('zoom-fit').addEventListener('click', () => {
   const wz = (wrap.clientWidth - 48) / STAGE_W;
   const hz = (wrap.clientHeight - 48) / STAGE_H;
   setZoom(Math.min(wz, hz));
+});
+
+// Keyboard: Escape deselects, +/- zoom
+document.addEventListener('keydown', e => {
+  // Only act if not focused on a text input / textarea
+  const tag = document.activeElement && document.activeElement.tagName;
+  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+  if (e.key === 'Escape') {
+    if (selectedId !== null) {
+      selectCtrl(null);
+      e.preventDefault();
+    }
+  }
+  if (!inInput) {
+    if (e.key === '+' || e.key === '=') { setZoom(zoom + 0.15); e.preventDefault(); }
+    if (e.key === '-') { setZoom(zoom - 0.15); e.preventDefault(); }
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (selectedId !== null) {
+        const ctrl = getCtrlById(selectedId);
+        if (ctrl) {
+          model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
+          selectedId = null;
+          render();
+          e.preventDefault();
+        }
+      }
+    }
+  }
+});
+
+// Export toggle: also keyboard-activatable (space/enter on the header div)
+document.getElementById('export-toggle').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    document.getElementById('export-toggle').click();
+  }
 });
 
 // ============================================================
@@ -468,21 +548,32 @@ function renderControls() {
     el.style.zIndex = i + 1;
     el.dataset.id = c._id;
     el.title = c.name + (c.tooltip ? '\n' + c.tooltip : '');
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', c.name + ' (' + c.type_name + ')' + (c._id === selectedId ? ', selected' : ''));
+    el.setAttribute('tabindex', '0');
 
     // Label
     const lbl = document.createElement('span');
     lbl.textContent = ctrlLabel(c);
     lbl.style.pointerEvents = 'none';
+    lbl.setAttribute('aria-hidden', 'true');
     el.appendChild(lbl);
 
     // Resize handle
     const rh = document.createElement('div');
     rh.className = 'resize-handle';
     rh.dataset.resize = '1';
+    rh.setAttribute('aria-hidden', 'true');
     el.appendChild(rh);
 
     // Events
     el.addEventListener('mousedown', onCtrlMouseDown);
+    el.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        selectCtrl(c._id);
+        ev.preventDefault();
+      }
+    });
 
     stage.appendChild(el);
   });
@@ -571,6 +662,13 @@ stage.addEventListener('mousedown', e => {
 function selectCtrl(id) {
   selectedId = id;
   render();
+  // Return focus to the selected element if set programmatically
+  if (id !== null) {
+    requestAnimationFrame(() => {
+      const el = stage.querySelector('[data-id="' + id + '"]');
+      if (el) el.focus({ preventScroll: true });
+    });
+  }
 }
 
 // ============================================================
@@ -596,6 +694,9 @@ function renderInspector() {
   document.getElementById('f-w').value = parseFloat(ctrl.w.toFixed(6));
   document.getElementById('f-h').value = parseFloat(ctrl.h.toFixed(6));
   document.getElementById('f-section').value = ctrl.section || 'controls';
+
+  // Update delete button label with control name
+  document.getElementById('delete-btn').setAttribute('aria-label', 'Delete ' + ctrl.name);
 }
 
 function syncInspectorPos(ctrl) {
@@ -631,7 +732,6 @@ document.getElementById('apply-btn').addEventListener('click', () => {
 
   // Handle section move
   if (newSection !== ctrl.section) {
-    // Remove from old section
     model[ctrl.section] = model[ctrl.section].filter(c => c._id !== ctrl._id);
     ctrl.section = newSection;
     model[newSection].push(ctrl);
@@ -675,16 +775,21 @@ function renderLayers() {
     const hdr = document.createElement('div');
     hdr.style.cssText = 'padding:5px 10px;font-size:9px;font-family:JetBrains Mono,monospace;color:#39414b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(57,65,75,.3)';
     hdr.textContent = label;
+    hdr.setAttribute('aria-hidden', 'true');
     el.appendChild(hdr);
 
     arr.forEach(c => {
       const row = document.createElement('div');
       row.className = 'layer-item' + (c._id === selectedId ? ' selected' : '') + (isBg ? ' bg-ctrl' : '');
       row.dataset.id = c._id;
+      row.setAttribute('role', 'listitem');
+      row.setAttribute('tabindex', '0');
+      row.setAttribute('aria-label', c.name + ' (' + c.type_name + ')' + (c._id === selectedId ? ', selected' : ''));
 
       const dot = document.createElement('span');
       dot.className = 'layer-dot';
       dot.style.background = TYPE_DOT_COLOR[c.type_name] || '#39414b';
+      dot.setAttribute('aria-hidden', 'true');
       row.appendChild(dot);
 
       const name = document.createElement('span');
@@ -696,12 +801,14 @@ function renderLayers() {
       const idc = document.createElement('span');
       idc.className = 'layer-idc';
       idc.textContent = c.idc !== undefined && c.idc !== -2 ? c.idc : '';
+      idc.setAttribute('aria-label', c.idc !== undefined && c.idc !== -2 ? 'IDC ' + c.idc : '');
       row.appendChild(idc);
 
       const del = document.createElement('button');
       del.className = 'layer-del';
       del.textContent = '×';
-      del.title = 'Delete';
+      del.title = 'Delete ' + c.name;
+      del.setAttribute('aria-label', 'Delete ' + c.name);
       del.addEventListener('click', ev => {
         ev.stopPropagation();
         model[c.section] = model[c.section].filter(x => x._id !== c._id);
@@ -711,6 +818,15 @@ function renderLayers() {
       row.appendChild(del);
 
       row.addEventListener('click', () => selectCtrl(c._id));
+      row.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ') { selectCtrl(c._id); ev.preventDefault(); }
+        if (ev.key === 'Delete') {
+          model[c.section] = model[c.section].filter(x => x._id !== c._id);
+          if (selectedId === c._id) selectedId = null;
+          render();
+          ev.preventDefault();
+        }
+      });
       el.appendChild(row);
     });
   }
@@ -806,26 +922,49 @@ function exportHpp() {
 }
 
 document.getElementById('export-btn').addEventListener('click', () => {
-  document.getElementById('export-out').value = exportHpp();
+  const hpp = exportHpp();
+  document.getElementById('export-out').value = hpp;
+  // Push to localStorage for cross-tool handoff
+  try { localStorage.setItem('wfmenu_export', hpp); } catch(_) {}
 });
 
+// Copy with flash feedback (WDDM pattern)
 document.getElementById('copy-btn').addEventListener('click', () => {
   const txt = document.getElementById('export-out').value;
-  if (!txt) return;
-  navigator.clipboard.writeText(txt).catch(() => {
+  if (!txt) { setStatus('Nothing to copy — click Export first.', 'err'); return; }
+  const btn = document.getElementById('copy-btn');
+  navigator.clipboard.writeText(txt).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('flash');
+    setStatus('Copied to clipboard.', 'ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('flash'); }, 1400);
+  }).catch(() => {
+    // Fallback
     document.getElementById('export-out').select();
-    document.execCommand('copy');
+    try { document.execCommand('copy'); } catch(_) {}
+    btn.textContent = 'Copied!';
+    btn.classList.add('flash');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('flash'); }, 1400);
   });
 });
 
 document.getElementById('download-btn').addEventListener('click', () => {
   const txt = document.getElementById('export-out').value;
-  if (!txt) return;
+  if (!txt) { setStatus('Nothing to download — click Export first.', 'err'); return; }
   const a = document.createElement('a');
   a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt);
   a.download = 'WF_Menu.hpp';
   a.click();
 });
+
+// ============================================================
+// Status message helper
+// ============================================================
+function setStatus(msg, type) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = type || '';
+}
 
 // ============================================================
 // Load .hpp (JS port of extractor: minimal subset)
@@ -835,7 +974,6 @@ function parseHppControls(src) {
   const controlsBg = [];
   const errors = [];
 
-  // Try to find class controlsBackground { ... } and class controls { ... }
   function extractSectionBody(text, sectionName) {
     const re = new RegExp('class\\s+' + sectionName + '\\s*\\{');
     const m = re.exec(text);
@@ -876,7 +1014,6 @@ function parseHppControls(src) {
         }
       }
 
-      // Infer type
       const TYPE_FROM_PARENT = {
         RscText:0, RscText_Title:0, RscText_SubTitle:0, RscText_Small:0, RscFrame:0, IGUIBack:0,
         RscButton:1, RscButton_Main:1, RscButton_Back:1, RscButton_Exit:1,
@@ -922,10 +1059,10 @@ function parseHppControls(src) {
 
 document.getElementById('load-btn').addEventListener('click', () => {
   const src = document.getElementById('load-in').value.trim();
-  if (!src) { document.getElementById('load-msg').textContent = 'Nothing to load.'; return; }
+  if (!src) { setStatus('Nothing to load.', 'err'); return; }
   const {controlsBackground, controls, errors} = parseHppControls(src);
   if (errors.length) {
-    document.getElementById('load-msg').textContent = 'Error: ' + errors.join(' ');
+    setStatus('Error: ' + errors.join(' '), 'err');
     return;
   }
   model.controlsBackground = controlsBackground;
@@ -933,7 +1070,9 @@ document.getElementById('load-btn').addEventListener('click', () => {
   selectedId = null;
   render();
   const total = controlsBackground.length + controls.length;
-  document.getElementById('load-msg').textContent = 'Loaded ' + total + ' controls (' + controlsBackground.length + ' bg + ' + controls.length + ' ctrl).';
+  setStatus('Loaded ' + total + ' controls (' + controlsBackground.length + ' bg + ' + controls.length + ' ctrl).', 'ok');
+  // Auto-regenerate export after load
+  document.getElementById('export-out').value = exportHpp();
 });
 
 // ============================================================
@@ -942,13 +1081,30 @@ document.getElementById('load-btn').addEventListener('click', () => {
 document.getElementById('export-toggle').addEventListener('click', () => {
   const body = document.getElementById('export-body');
   const lbl = document.getElementById('export-tog-label');
-  if (body.classList.contains('open')) {
+  const hdr = document.getElementById('export-toggle');
+  const isOpen = body.classList.contains('open');
+  if (isOpen) {
     body.classList.remove('open');
     lbl.textContent = '▼';
+    hdr.setAttribute('aria-expanded', 'false');
   } else {
     body.classList.add('open');
     lbl.textContent = '▲';
+    hdr.setAttribute('aria-expanded', 'true');
   }
+});
+
+// ============================================================
+// Cross-link: Garrison Editor — push current layout to localStorage
+// so the garrison editor can offer to load the control list
+// ============================================================
+document.getElementById('garrison-link').addEventListener('click', e => {
+  // Write the current HPP to localStorage before navigating
+  try {
+    const hpp = exportHpp();
+    localStorage.setItem('wfmenu_export', hpp);
+  } catch(_) {}
+  // Let the default href open in a new tab
 });
 
 // ============================================================
