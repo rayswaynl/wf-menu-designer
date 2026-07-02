@@ -174,14 +174,7 @@ h1,h2,h3{font-family:Oswald,Inter,sans-serif;font-weight:600;letter-spacing:.5px
   background:var(--orange);cursor:se-resize;z-index:10;border-radius:1px;display:none}
 .edit-mode .rh{display:block}
 
-/* Corner handles for multi-select bounding box */
-.ctrl.selected .rh-tl,.ctrl.selected .rh-tr,.ctrl.selected .rh-bl{
-  position:absolute;width:7px;height:7px;background:var(--orange);
-  z-index:10;border-radius:1px;display:none}
-.edit-mode .rh-tl,.edit-mode .rh-tr,.edit-mode .rh-bl{display:block}
-.rh-tl{left:-3px;top:-3px;cursor:nw-resize}
-.rh-tr{right:-3px;top:-3px;cursor:ne-resize}
-.rh-bl{left:-3px;bottom:-3px;cursor:sw-resize}
+/* Corner handles rh-tl/tr/bl removed — never instantiated in JS, omitted to avoid false affordance */
 
 /* ---- Per-type style bases ---- */
 
@@ -520,6 +513,8 @@ button.flash{animation:btn-flash .4s ease}
   </div>
   <div class="spacer"></div>
   <div class="brand-actions">
+    <a class="xlink-btn" href="https://miksuu.com/tools" title="Back to all tools" aria-label="Back to all tools"
+       style="font-size:10px;opacity:.75;letter-spacing:.5px">← All Tools</a>
     <span class="chip" id="ctrl-count-chip" aria-live="polite" aria-atomic="true"><b>0</b> controls</span>
     <span class="chip" id="dialog-chip">—</span>
     <a class="xlink-btn" href="https://rayswaynl.github.io/garrison-editor/" target="_blank" rel="noopener"
@@ -757,6 +752,49 @@ let marqueeState = null;     // {startX,startY} in stage px during marquee drag
 let snapGuides = [];         // active guide elements
 let altCycleStack = [];      // for alt-click overlap cycling
 let altCyclePos = 0;
+let isDirty = false;         // true once any edit has been made (drives beforeunload + autosave)
+
+// ---- Autosave / dirty state ----
+const AUTOSAVE_KEY = 'wf-menu-designer-autosave';
+let _autosaveTimer = null;
+
+function markDirty() {
+  isDirty = true;
+}
+
+function scheduleAutosave() {
+  markDirty();
+  clearTimeout(_autosaveTimer);
+  _autosaveTimer = setTimeout(doAutosave, 1500);
+}
+
+function doAutosave() {
+  if (!displayData || !currentDisplay) return;
+  try {
+    const payload = JSON.stringify({
+      display: currentDisplay,
+      background: displayData.background,
+      controls: displayData.controls,
+      savedAt: Date.now(),
+    });
+    localStorage.setItem(AUTOSAVE_KEY, payload);
+  } catch(e) {
+    console.warn('Autosave failed:', e);
+  }
+}
+
+function clearAutosave() {
+  localStorage.removeItem(AUTOSAVE_KEY);
+  isDirty = false;
+}
+
+window.addEventListener('beforeunload', e => {
+  if (isDirty) {
+    e.preventDefault();
+    // Most modern browsers ignore custom messages and show their own
+    e.returnValue = 'You have unsaved edits. Leave page?';
+  }
+});
 
 // ---- Undo/redo helpers ----
 function snapshotState() {
@@ -771,6 +809,7 @@ function pushUndo() {
   if (undoStack.length > 100) undoStack.shift();
   redoStack = [];
   updateUndoButtons();
+  scheduleAutosave();
 }
 
 function applySnapshot(snap) {
@@ -853,7 +892,7 @@ function px(frac, dim) {
  */
 function evalSZ(val) {
   if (typeof val === 'number') return val;
-  if (typeof val == null || val === undefined) return 0;
+  if (val == null) return 0;
   if (typeof val !== 'string') return 0;
 
   // Replace all case variants of safezone[XYWH] with numeric constants.
@@ -888,12 +927,11 @@ function cleanText(t) {
     .replace(/^\$STR_WF_/, '')
     .replace(/^\$STR_RUBHUD_/, '')
     .replace(/^\$STR_/, '');
-  // If multiple segments remain, take the last word as the primary label
+  // Join all remaining segments with spaces (preserves "Purchase Units" from "Purchase_Units")
   const parts = stripped.split('_').filter(Boolean);
   if (parts.length === 0) return stripped;
-  // Title-case the last part
-  const last = parts[parts.length - 1];
-  return last.charAt(0).toUpperCase() + last.slice(1).toLowerCase();
+  // Title-case each part and join
+  return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
 }
 
 /**
@@ -1045,8 +1083,33 @@ async function loadUiJson() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     uiData = await r.json();
     buildDisplayPicker();
-    // Auto-load WF_Menu
-    loadDisplay('WF_Menu');
+    // Check for autosaved session
+    let restorePayload = null;
+    let autoDisplay = 'WF_Menu';
+    try {
+      const saved = localStorage.getItem(AUTOSAVE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const ageMin = (Date.now() - (parsed.savedAt || 0)) / 60000;
+        const dispName = parsed.display || 'WF_Menu';
+        if (uiData.displays[dispName] && ageMin < 1440) { // within 24h
+          const restoreMsg = 'Restore autosaved session for "' + dispName + '"?\n'
+            + '(Saved ' + Math.round(ageMin) + ' min ago — ' + new Date(parsed.savedAt).toLocaleTimeString() + ')';
+          if (confirm(restoreMsg)) {
+            autoDisplay = dispName;
+            restorePayload = parsed;
+            setStatus('Session restored from autosave.', 'ok');
+          } else {
+            clearAutosave();
+          }
+        } else {
+          localStorage.removeItem(AUTOSAVE_KEY);
+        }
+      }
+    } catch(e) {
+      console.warn('Autosave restore failed:', e);
+    }
+    loadDisplay(autoDisplay, restorePayload);
   } catch(e) {
     console.error('Failed to load ui.json:', e);
     setStatus('Failed to load ui.json: ' + e.message, 'err');
@@ -1090,15 +1153,23 @@ function buildDisplayPicker() {
 // ============================================================
 // Load a display
 // ============================================================
-function loadDisplay(name) {
+function loadDisplay(name, restorePayload) {
   if (!uiData || !uiData.displays[name]) return;
   currentDisplay = name;
-  displayData = uiData.displays[name];
+  // Deep-clone the display so we mutate a local copy, not the parsed source
+  displayData = JSON.parse(JSON.stringify(uiData.displays[name]));
+  if (restorePayload) {
+    // Overlay autosave data on top of the display
+    displayData.background = restorePayload.background || displayData.background;
+    displayData.controls   = restorePayload.controls   || displayData.controls;
+  }
   selectedCtrl = null;
   selectedSet.clear();
   undoStack = [];
   redoStack = [];
   ctrlMeta = new WeakMap();
+  isDirty = false;
+  clearTimeout(_autosaveTimer);
   updateUndoButtons();
 
   // Tag controls with section
@@ -1420,6 +1491,16 @@ function buildControlEl(ctrl, zIndex) {
       const ct = r.colorText || p.colorText || [1, 1, 0.7, 1];
       el.style.color = rgba(ct);
       el.style.fontSize = Math.max(6, fontPx * 0.85) + 'px';
+      // Apply text alignment from style flags (ST_RIGHT=0x04, ST_CENTER=0x02)
+      const stStyleVal = r.style !== undefined ? r.style : (p.style !== undefined ? p.style : 0);
+      const stStyleBits = parseInt(stStyleVal) || 0;
+      if (stStyleBits & 0x04) {
+        el.style.textAlign = 'right';
+      } else if (stStyleBits & 0x02) {
+        el.style.textAlign = 'center';
+      } else {
+        el.style.textAlign = 'left';
+      }
       const rawTxtST = r.text !== undefined ? r.text : p.text;
       el.textContent = cleanText(rawTxtST || '');
       break;
@@ -1476,6 +1557,17 @@ function buildControlEl(ctrl, zIndex) {
         el.style.background = rgba(bg);
       } else {
         el.style.background = 'transparent';
+      }
+
+      // Apply text alignment from style flags (ST_RIGHT=0x04, ST_CENTER=0x02)
+      const styleVal = r.style !== undefined ? r.style : (p.style !== undefined ? p.style : 0);
+      const styleBits = parseInt(styleVal) || 0;
+      if (styleBits & 0x04) {
+        el.style.textAlign = 'right';
+      } else if (styleBits & 0x02) {
+        el.style.textAlign = 'center';
+      } else {
+        el.style.textAlign = 'left';
       }
 
       el.style.fontSize = Math.max(6, fontPx) + 'px';
@@ -2513,6 +2605,9 @@ function onCtrlMouseDown(e, ctrl) {
     w: getF(c, 'w'), h: getF(c, 'h'),
   }));
 
+  // Push undo BEFORE the move so that undo returns to the correct pre-drag state.
+  pushUndo();
+
   dragging = {
     ctrl, isResize,
     startMx: e.clientX, startMy: e.clientY,
@@ -2727,9 +2822,6 @@ document.addEventListener('mouseup', e => {
     return;
   }
 
-  if (dragging && dragging.moved) {
-    pushUndo();
-  }
   dragging = null;
   clearGuides();
 });
